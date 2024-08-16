@@ -1,0 +1,16 @@
+spring:
+
+  datasource:
+    url: jdbc:mysql://localhost:3306/mood_writer?useSSL=false&useUnicode=true&allowPublicKeyRetrieval=true
+    username: root
+    password: mood
+    driver-class-name: com.mysql.cj.jdbc.Driver
+
+  jpa:
+    database: mysql
+    hibernate:
+      ddl-auto: create-drop
+    show-sql: true
+    properties:
+      hibernate:
+        format_sql: true
