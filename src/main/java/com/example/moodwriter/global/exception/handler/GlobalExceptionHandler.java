@@ -37,7 +37,7 @@ public class GlobalExceptionHandler {
     log.error("MethodArgumentNotValidException is occurred. uri : {}",
         request.getRequestURI());
 
-    ErrorResponse errorResponse = ErrorResponse.of(e.getMessage(),
+    ErrorResponse errorResponse = ErrorResponse.of(ErrorCode.VALIDATION_ERROR,
         request.getRequestURI());
     errorResponse.addFieldErrors(e.getFieldErrors());
 

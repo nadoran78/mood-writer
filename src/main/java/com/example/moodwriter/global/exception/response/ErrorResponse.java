@@ -17,13 +17,13 @@ import org.springframework.validation.method.ParameterValidationResult;
 
 @Getter
 @Builder
-@RequiredArgsConstructor
+@AllArgsConstructor
 @JsonInclude(Include.NON_NULL)
 public class ErrorResponse {
 
   private ErrorCode errorCode;
-  private final String message;
-  private final String path;
+  private String message;
+  private String path;
   private List<FieldValidationError> fieldErrors;
   private List<ParameterValidationError> parameterErrors;
 
@@ -68,6 +68,7 @@ public class ErrorResponse {
 
   @JsonInclude(Include.NON_NULL)
   @RequiredArgsConstructor
+  @Getter
   private static class ParameterValidationError {
 
     private final String parameter;
@@ -77,6 +78,7 @@ public class ErrorResponse {
 
   @JsonInclude(Include.NON_NULL)
   @RequiredArgsConstructor
+  @Getter
   private static class FieldValidationError {
 
     private final String field;
