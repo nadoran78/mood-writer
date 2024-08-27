@@ -54,7 +54,7 @@ public class GlobalExceptionHandler {
 
     List<ParameterValidationResult> parameterValidationResults = e.getAllValidationResults();
 
-    ErrorResponse errorResponse = ErrorResponse.of(e.getMessage(),
+    ErrorResponse errorResponse = ErrorResponse.of(ErrorCode.VALIDATION_ERROR,
         request.getRequestURI());
     errorResponse.addParameterValidationErrors(parameterValidationResults);
 
