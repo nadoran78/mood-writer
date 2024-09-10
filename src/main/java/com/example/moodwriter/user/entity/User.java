@@ -1,6 +1,7 @@
 package com.example.moodwriter.user.entity;
 
 import com.example.moodwriter.global.entity.BaseEntity;
+import com.example.moodwriter.user.dto.UserRegisterRequest;
 import jakarta.persistence.Column;
 import jakarta.persistence.Entity;
 import jakarta.persistence.Id;
@@ -29,13 +30,25 @@ public class User extends BaseEntity {
   @Column(name = "password_hash")
   private String passwordHash;
 
+  @Column(nullable = false)
+  private String name;
+
   @Column(name = "profile_picture_url")
   private String profilePictureUrl;
 
   @Builder
-  public User(String email, String passwordHash, String profilePictureUrl) {
+  public User(String email, String passwordHash, String name, String profilePictureUrl) {
     this.email = email;
     this.passwordHash = passwordHash;
+    this.name = name;
     this.profilePictureUrl = profilePictureUrl;
+  }
+
+  public User from(UserRegisterRequest request, String passwordHash) {
+    return User.builder()
+        .email(request.getEmail())
+        .passwordHash(passwordHash)
+        .name(request.getName())
+        .build();
   }
 }

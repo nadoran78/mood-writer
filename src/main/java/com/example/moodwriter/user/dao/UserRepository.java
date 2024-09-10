@@ -1,4 +1,4 @@
-package com.example.moodwriter.user.entity.dao;
+package com.example.moodwriter.user.dao;
 
 import com.example.moodwriter.user.entity.User;
 import java.util.UUID;
@@ -7,5 +7,5 @@ import org.springframework.stereotype.Repository;
 
 @Repository
 public interface UserRepository extends JpaRepository<User, UUID> {
-
+  boolean existsByEmail(String email);
 }
