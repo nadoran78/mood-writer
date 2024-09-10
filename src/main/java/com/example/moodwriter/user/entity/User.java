@@ -44,7 +44,7 @@ public class User extends BaseEntity {
     this.profilePictureUrl = profilePictureUrl;
   }
 
-  public User from(UserRegisterRequest request, String passwordHash) {
+  public static User from(UserRegisterRequest request, String passwordHash) {
     return User.builder()
         .email(request.getEmail())
         .passwordHash(passwordHash)
