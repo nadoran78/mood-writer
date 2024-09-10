@@ -8,7 +8,7 @@ import lombok.Getter;
 
 @Getter
 @Builder
-public class UserRegisterResponse {
+public class UserResponse {
 
   private UUID id;
   private String email;
@@ -17,8 +17,8 @@ public class UserRegisterResponse {
   private LocalDateTime createdAt;
 
   @Builder
-  public static UserRegisterResponse fromEntity(User user) {
-    return UserRegisterResponse.builder()
+  public static UserResponse fromEntity(User user) {
+    return UserResponse.builder()
         .id(user.getId())
         .email(user.getEmail())
         .name(user.getName())

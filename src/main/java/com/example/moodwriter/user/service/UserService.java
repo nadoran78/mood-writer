@@ -3,7 +3,7 @@ package com.example.moodwriter.user.service;
 import com.example.moodwriter.global.exception.code.ErrorCode;
 import com.example.moodwriter.user.dao.UserRepository;
 import com.example.moodwriter.user.dto.UserRegisterRequest;
-import com.example.moodwriter.user.dto.UserRegisterResponse;
+import com.example.moodwriter.user.dto.UserResponse;
 import com.example.moodwriter.user.entity.User;
 import com.example.moodwriter.user.exception.UserException;
 import lombok.RequiredArgsConstructor;
@@ -17,7 +17,7 @@ public class UserService {
   private final UserRepository userRepository;
   private final PasswordEncoder passwordEncoder;
 
-  public UserRegisterResponse registerUser(UserRegisterRequest request) {
+  public UserResponse registerUser(UserRegisterRequest request) {
     if (userRepository.existsByEmail(request.getEmail())) {
       throw new UserException(ErrorCode.ALREADY_REGISTERED_USER);
     }
@@ -28,6 +28,6 @@ public class UserService {
 
     User savedUser = userRepository.save(user);
 
-    return UserRegisterResponse.fromEntity(savedUser);
+    return UserResponse.fromEntity(savedUser);
   }
 }
