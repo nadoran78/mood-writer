@@ -29,11 +29,11 @@ public class FileValidator implements ConstraintValidator<ValidFile, List<Multip
       }
 
       for (FileType fileType : allowedFileTypes) {
-        if (fileType.getExtensions().contains(file.getContentType())) {
-          return true;
+        if (!fileType.getExtensions().contains(file.getContentType().toLowerCase())) {
+          return false;
         }
       }
     }
-    return false;
+    return true;
   }
 }
