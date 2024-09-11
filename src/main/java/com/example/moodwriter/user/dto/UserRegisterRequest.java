@@ -1,9 +1,15 @@
 package com.example.moodwriter.user.dto;
 
+import com.example.moodwriter.global.constant.FileType;
 import com.example.moodwriter.global.constant.RegexPattern;
+import com.example.moodwriter.global.validation.annotation.ValidFile;
+import jakarta.validation.constraints.NotBlank;
 import jakarta.validation.constraints.Pattern;
+import jakarta.validation.constraints.Size;
+import java.util.List;
 import lombok.Builder;
 import lombok.Getter;
+import org.springframework.web.multipart.MultipartFile;
 
 @Getter
 @Builder
@@ -14,5 +20,11 @@ public class UserRegisterRequest {
 
   @Pattern(regexp = RegexPattern.PASSWORD, message = "암호는 소문자, 대문자, 숫자, 특수문자 각각 최소 1개 이상을 포함하는 8자리 이상 20자리 이하여야 합니다.")
   private String password;
+
+  @NotBlank
+  @Size(max = 10)
   private String name;
+
+  @ValidFile(allowFileType = FileType.IMAGE)
+  private List<MultipartFile> profileImages;
 }
