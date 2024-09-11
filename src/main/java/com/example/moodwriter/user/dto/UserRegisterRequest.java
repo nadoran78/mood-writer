@@ -21,8 +21,8 @@ public class UserRegisterRequest {
   @Pattern(regexp = RegexPattern.PASSWORD, message = "암호는 소문자, 대문자, 숫자, 특수문자 각각 최소 1개 이상을 포함하는 8자리 이상 20자리 이하여야 합니다.")
   private String password;
 
-  @NotBlank
-  @Size(max = 10)
+  @NotBlank(message = "이름을 빈칸으로 입력할 수 없습니다.")
+  @Size(max = 10, message = "이름은 10자 이하여야 합니다.")
   private String name;
 
   @ValidFile(allowFileType = FileType.IMAGE)
