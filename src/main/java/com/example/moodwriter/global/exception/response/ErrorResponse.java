@@ -47,7 +47,6 @@ public class ErrorResponse {
     for (FieldError fieldError : fieldErrors) {
       this.fieldErrors.add(new FieldValidationError(
           fieldError.getField(),
-          fieldError.getRejectedValue(),
           fieldError.getDefaultMessage()
       ));
     }
@@ -82,7 +81,6 @@ public class ErrorResponse {
   private static class FieldValidationError {
 
     private final String field;
-    private final Object rejectedValue;
     private final String message;
   }
 
