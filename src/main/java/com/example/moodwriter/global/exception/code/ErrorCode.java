@@ -17,6 +17,8 @@ public enum ErrorCode {
   INVALID_TOKEN(HttpStatus.FORBIDDEN, "토큰 정보가 유효하지 않습니다."),
   NOT_FOUND_REFRESH_TOKEN(HttpStatus.NOT_FOUND, "저장된 리프레쉬 토큰이 없습니다."),
   UNMATCHED_SAVED_REFRESH_TOKEN(HttpStatus.FORBIDDEN, "저장된 리프레쉬 토큰과 일치하지 않습니다."),
+  NEED_TO_SIGN_IN(HttpStatus.UNAUTHORIZED, "로그인이 필요합니다."),
+  ACCESS_DENIED(HttpStatus.FORBIDDEN, "접근이 제한되었습니다."),
 
   ;
 
