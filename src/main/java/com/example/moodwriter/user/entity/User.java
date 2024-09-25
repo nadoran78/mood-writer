@@ -1,5 +1,6 @@
 package com.example.moodwriter.user.entity;
 
+import com.example.moodwriter.global.constant.Role;
 import com.example.moodwriter.global.dto.FileDto;
 import com.example.moodwriter.global.entity.BaseEntity;
 import com.example.moodwriter.user.dto.UserRegisterRequest;
@@ -7,6 +8,8 @@ import com.example.moodwriter.user.entity.converter.FileDtoStringConverter;
 import jakarta.persistence.Column;
 import jakarta.persistence.Convert;
 import jakarta.persistence.Entity;
+import jakarta.persistence.EnumType;
+import jakarta.persistence.Enumerated;
 import jakarta.persistence.Id;
 import jakarta.persistence.Table;
 import java.util.List;
@@ -41,12 +44,16 @@ public class User extends BaseEntity {
   @Convert(converter = FileDtoStringConverter.class)
   private List<FileDto> profilePictureUrl;
 
+  @Enumerated(value = EnumType.STRING)
+  private Role role;
+
   @Builder
-  public User(String email, String passwordHash, String name, List<FileDto> profilePictureUrl) {
+  public User(String email, String passwordHash, String name, List<FileDto> profilePictureUrl, Role role) {
     this.email = email;
     this.passwordHash = passwordHash;
     this.name = name;
     this.profilePictureUrl = profilePictureUrl;
+    this.role = role;
   }
 
   public static User from(UserRegisterRequest request, String passwordHash,
@@ -56,6 +63,7 @@ public class User extends BaseEntity {
         .passwordHash(passwordHash)
         .name(request.getName())
         .profilePictureUrl(profilePictureUrl)
+        .role(Role.ROLE_USER)
         .build();
   }
 }
