@@ -1,6 +1,5 @@
 package com.example.moodwriter.global.security.dto;
 
-import com.example.moodwriter.global.constant.Role;
 import com.example.moodwriter.user.entity.User;
 import java.util.Collection;
 import java.util.List;
@@ -15,11 +14,12 @@ public class CustomUserDetails implements UserDetails {
 
   private final UUID id;
   private final String username;
-  private final String role = Role.ROLE_USER.toString();
+  private final String role;
 
   public CustomUserDetails(User user) {
     this.id = user.getId();
     this.username = user.getEmail();
+    this.role = user.getRole().toString();
   }
 
 
