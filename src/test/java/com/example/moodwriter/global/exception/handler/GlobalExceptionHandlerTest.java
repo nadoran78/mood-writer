@@ -9,13 +9,17 @@ import static org.springframework.test.web.servlet.result.MockMvcResultMatchers.
 import com.example.moodwriter.global.exception.CustomException;
 import com.example.moodwriter.global.exception.code.ErrorCode;
 import com.example.moodwriter.global.exception.handler.GlobalExceptionHandlerTest.ExceptionHandlerTestController;
+import com.example.moodwriter.global.security.filter.JwtAuthenticationFilter;
 import com.fasterxml.jackson.databind.ObjectMapper;
 import jakarta.validation.Valid;
 import jakarta.validation.constraints.Min;
 import jakarta.validation.constraints.NotBlank;
 import org.junit.jupiter.api.Test;
 import org.springframework.beans.factory.annotation.Autowired;
+import org.springframework.boot.test.autoconfigure.web.servlet.AutoConfigureMockMvc;
 import org.springframework.boot.test.autoconfigure.web.servlet.WebMvcTest;
+import org.springframework.context.annotation.ComponentScan;
+import org.springframework.context.annotation.FilterType;
 import org.springframework.context.annotation.Import;
 import org.springframework.http.MediaType;
 import org.springframework.test.web.servlet.MockMvc;
@@ -27,7 +31,10 @@ import org.springframework.web.bind.annotation.RestController;
 
 @Import({ExceptionHandlerTestController.class})
 @WebMvcTest(controllers = {ExceptionHandlerTestController.class,
-    GlobalExceptionHandler.class})
+    GlobalExceptionHandler.class},
+    excludeFilters = {@ComponentScan.Filter(type = FilterType.ASSIGNABLE_TYPE,
+        classes = JwtAuthenticationFilter.class)})
+@AutoConfigureMockMvc(addFilters = false)
 class GlobalExceptionHandlerTest {
 
   @Autowired
