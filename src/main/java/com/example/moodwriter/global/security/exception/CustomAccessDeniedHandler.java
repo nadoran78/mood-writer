@@ -25,6 +25,7 @@ public class CustomAccessDeniedHandler implements AccessDeniedHandler {
     ErrorCode errorCode = ErrorCode.ACCESS_DENIED;
 
     response.setContentType(MediaType.APPLICATION_JSON_VALUE);
+    response.setCharacterEncoding("UTF-8");
     response.setStatus(errorCode.getHttpStatus().value());
     response.getWriter().write(objectMapper.writeValueAsString(
         ErrorResponse.of(errorCode, request.getRequestURI())));

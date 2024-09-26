@@ -25,6 +25,7 @@ public class CustomAuthenticationEntryPoint implements AuthenticationEntryPoint 
     ErrorCode errorCode = ErrorCode.NEED_TO_SIGN_IN;
 
     response.setContentType(MediaType.APPLICATION_JSON_VALUE);
+    response.setCharacterEncoding("UTF-8");
     response.setStatus(errorCode.getHttpStatus().value());
     response.getWriter().write(objectMapper.writeValueAsString(
         ErrorResponse.of(errorCode, request.getRequestURI())));
