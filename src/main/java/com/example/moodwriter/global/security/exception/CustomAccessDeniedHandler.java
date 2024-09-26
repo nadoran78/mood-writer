@@ -21,7 +21,7 @@ public class CustomAccessDeniedHandler implements AccessDeniedHandler {
 
   @Override
   public void handle(HttpServletRequest request, HttpServletResponse response,
-      AccessDeniedException accessDeniedException) throws IOException, ServletException {
+      AccessDeniedException accessDeniedException) throws IOException {
     ErrorCode errorCode = ErrorCode.ACCESS_DENIED;
 
     response.setContentType(MediaType.APPLICATION_JSON_VALUE);
