@@ -3,15 +3,19 @@ package com.example.moodwriter.user.controller;
 import static org.mockito.ArgumentMatchers.any;
 import static org.mockito.BDDMockito.given;
 import static org.springframework.security.test.web.servlet.request.SecurityMockMvcRequestPostProcessors.csrf;
+import static org.springframework.test.web.servlet.request.MockMvcRequestBuilders.post;
 import static org.springframework.test.web.servlet.result.MockMvcResultHandlers.print;
 import static org.springframework.test.web.servlet.result.MockMvcResultMatchers.jsonPath;
 import static org.springframework.test.web.servlet.result.MockMvcResultMatchers.status;
 
 import com.example.moodwriter.global.dto.FileDto;
+import com.example.moodwriter.global.jwt.dto.TokenResponse;
 import com.example.moodwriter.global.security.filter.JwtAuthenticationFilter;
+import com.example.moodwriter.user.dto.UserLoginRequest;
 import com.example.moodwriter.user.dto.UserRegisterRequest;
 import com.example.moodwriter.user.dto.UserResponse;
 import com.example.moodwriter.user.service.UserService;
+import com.fasterxml.jackson.databind.ObjectMapper;
 import java.time.LocalDateTime;
 import java.util.List;
 import java.util.UUID;
@@ -23,6 +27,7 @@ import org.springframework.boot.test.mock.mockito.MockBean;
 import org.springframework.context.annotation.ComponentScan;
 import org.springframework.context.annotation.FilterType;
 import org.springframework.http.HttpMethod;
+import org.springframework.http.MediaType;
 import org.springframework.mock.web.MockMultipartFile;
 import org.springframework.mock.web.MockPart;
 import org.springframework.test.web.servlet.MockMvc;
@@ -39,6 +44,9 @@ class UserControllerTest {
 
   @MockBean
   private UserService userService;
+
+  @Autowired
+  private ObjectMapper objectMapper;
 
   @Test
   void successRegisterUser() throws Exception {
@@ -95,6 +103,19 @@ class UserControllerTest {
   }
 
   @Test
+  void failRegisterUserWithEmailIsNull() throws Exception {
+    mockMvc.perform(
+            MockMvcRequestBuilders.multipart(HttpMethod.POST, "/api/users/register")
+                .part(new MockPart("password", "Password123!".getBytes()))
+                .part(new MockPart("name", "example".getBytes()))
+                .file(createMockImage("profileImage1.jpg"))
+                .with(csrf()))
+        .andExpect(status().isBadRequest())
+        .andExpect(jsonPath("$.fieldErrors[0].field").value("email"))
+        .andExpect(jsonPath("$.fieldErrors[0].message").value("이메일은 반드시 입력해야 합니다."));
+  }
+
+  @Test
   void failRegisterUserWithInvalidPassword() throws Exception {
     mockMvc.perform(
             MockMvcRequestBuilders.multipart(HttpMethod.POST, "/api/users/register")
@@ -106,7 +127,22 @@ class UserControllerTest {
         .andExpect(status().isBadRequest())
         .andDo(print())
         .andExpect(jsonPath("$.fieldErrors[0].field").value("password"))
-        .andExpect(jsonPath("$.fieldErrors[0].message").value("암호는 소문자, 대문자, 숫자, 특수문자 각각 최소 1개 이상을 포함하는 8자리 이상 20자리 이하여야 합니다."));
+        .andExpect(jsonPath("$.fieldErrors[0].message").value(
+            "암호는 소문자, 대문자, 숫자, 특수문자 각각 최소 1개 이상을 포함하는 8자리 이상 20자리 이하여야 합니다."));
+  }
+
+  @Test
+  void failRegisterUserWithPasswordIsNull() throws Exception {
+    mockMvc.perform(
+            MockMvcRequestBuilders.multipart(HttpMethod.POST, "/api/users/register")
+                .part(new MockPart("email", "user@example.com".getBytes()))
+                .part(new MockPart("name", "example".getBytes()))
+                .file(createMockImage("profileImage1.jpg"))
+                .with(csrf()))
+        .andExpect(status().isBadRequest())
+        .andDo(print())
+        .andExpect(jsonPath("$.fieldErrors[0].field").value("password"))
+        .andExpect(jsonPath("$.fieldErrors[0].message").value("비밀번호는 반드시 입력해야 합니다."));
   }
 
   @Test
@@ -142,20 +178,95 @@ class UserControllerTest {
   @Test
   void failRegisterUserWithInvalidFile() throws Exception {
     mockMvc.perform(
-        MockMvcRequestBuilders.multipart(HttpMethod.POST, "/api/users/register")
-            .part(new MockPart("email", "user@example.com".getBytes()))
-            .part(new MockPart("password", "Password123!".getBytes()))
-            .part(new MockPart("name", "example".getBytes()))
-            .file(new MockMultipartFile("profileImages", "invalid-file.txt", "text/txt", "invalid-file".getBytes()))
-            .with(csrf()))
-      .andExpect(status().isBadRequest())
-      .andDo(print())
-      .andExpect(jsonPath("$.fieldErrors").exists());
+            MockMvcRequestBuilders.multipart(HttpMethod.POST, "/api/users/register")
+                .part(new MockPart("email", "user@example.com".getBytes()))
+                .part(new MockPart("password", "Password123!".getBytes()))
+                .part(new MockPart("name", "example".getBytes()))
+                .file(new MockMultipartFile("profileImages", "invalid-file.txt", "text/txt",
+                    "invalid-file".getBytes()))
+                .with(csrf()))
+        .andExpect(status().isBadRequest())
+        .andDo(print())
+        .andExpect(jsonPath("$.fieldErrors").exists());
   }
 
   private MockMultipartFile createMockImage(String filename) {
     return new MockMultipartFile("profileImages", filename, "image/png",
         "test-image-file.png".getBytes());
+  }
+
+  @Test
+  void successLogin() throws Exception {
+    // given
+    String testEmail = "test@example.com";
+
+    UserLoginRequest request = UserLoginRequest.builder()
+        .email(testEmail)
+        .password("Password1!")
+        .build();
+
+    TokenResponse tokenResponse = TokenResponse.builder()
+        .email(testEmail)
+        .accessToken("access-token")
+        .refreshToken("refresh-token")
+        .build();
+
+    given(userService.login(any(UserLoginRequest.class))).willReturn(tokenResponse);
+
+    // when & then
+    mockMvc.perform(post("/api/users/login")
+            .contentType(MediaType.APPLICATION_JSON)
+            .content(objectMapper.writeValueAsString(request)))
+        .andExpect(status().isOk())
+        .andExpect(jsonPath("$.email").value(testEmail))
+        .andExpect(jsonPath("$.accessToken").value("access-token"))
+        .andExpect(jsonPath("$.refreshToken").value("refresh-token"))
+        .andDo(print());
+  }
+
+  @Test
+  void failLogin_whenInvalidRequest_thenReturnBadRequest()
+      throws Exception {
+    // given
+    UserLoginRequest invalidRequest = UserLoginRequest.builder()
+        .email("invalid-email")
+        .password("invalid-password")
+        .build();
+
+    // when & then
+    mockMvc.perform(post("/api/users/login")
+            .contentType(MediaType.APPLICATION_JSON)
+            .content(objectMapper.writeValueAsString(invalidRequest)))
+        .andExpect(status().isBadRequest())
+        .andDo(print())
+        .andExpect(jsonPath("$.errorCode").value("VALIDATION_ERROR"))
+        .andExpect(jsonPath("$.message").value("입력값이 유효하지 않습니다."))
+        .andExpect(jsonPath("$.path").value("/api/users/login"))
+        .andExpect(jsonPath("$.fieldErrors[0].field").exists())
+        .andExpect(jsonPath("$.fieldErrors[0].message").exists())
+        .andExpect(jsonPath("$.fieldErrors[1].field").exists())
+        .andExpect(jsonPath("$.fieldErrors[1].message").exists());
+  }
+
+  @Test
+  void failLogin_whenNullRequest_thenReturnBadRequest()
+      throws Exception {
+    // given
+    UserLoginRequest invalidRequest = UserLoginRequest.builder().build();
+
+    // when & then
+    mockMvc.perform(post("/api/users/login")
+            .contentType(MediaType.APPLICATION_JSON)
+            .content(objectMapper.writeValueAsString(invalidRequest)))
+        .andExpect(status().isBadRequest())
+        .andDo(print())
+        .andExpect(jsonPath("$.errorCode").value("VALIDATION_ERROR"))
+        .andExpect(jsonPath("$.message").value("입력값이 유효하지 않습니다."))
+        .andExpect(jsonPath("$.path").value("/api/users/login"))
+        .andExpect(jsonPath("$.fieldErrors[0].field").exists())
+        .andExpect(jsonPath("$.fieldErrors[0].message").exists())
+        .andExpect(jsonPath("$.fieldErrors[1].field").exists())
+        .andExpect(jsonPath("$.fieldErrors[1].message").exists());
   }
 
 }
