@@ -3,7 +3,6 @@ package com.example.moodwriter.global.security.exception;
 import com.example.moodwriter.global.exception.code.ErrorCode;
 import com.example.moodwriter.global.exception.response.ErrorResponse;
 import com.fasterxml.jackson.databind.ObjectMapper;
-import jakarta.servlet.ServletException;
 import jakarta.servlet.http.HttpServletRequest;
 import jakarta.servlet.http.HttpServletResponse;
 import java.io.IOException;
