@@ -28,5 +28,6 @@ public class UserRegisterRequest {
   private String name;
 
   @ValidFile(allowFileType = FileType.IMAGE)
+  @Size(max = 1, message = "프로필 이미지는 1장만 업데이트 가능합니다.")
   private List<MultipartFile> profileImages;
 }
