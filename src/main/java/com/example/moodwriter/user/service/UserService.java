@@ -3,8 +3,11 @@ package com.example.moodwriter.user.service;
 import com.example.moodwriter.global.constant.FilePath;
 import com.example.moodwriter.global.dto.FileDto;
 import com.example.moodwriter.global.exception.code.ErrorCode;
+import com.example.moodwriter.global.jwt.TokenProvider;
+import com.example.moodwriter.global.jwt.dto.TokenResponse;
 import com.example.moodwriter.global.service.S3FileService;
 import com.example.moodwriter.user.dao.UserRepository;
+import com.example.moodwriter.user.dto.UserLoginRequest;
 import com.example.moodwriter.user.dto.UserRegisterRequest;
 import com.example.moodwriter.user.dto.UserResponse;
 import com.example.moodwriter.user.entity.User;
@@ -22,6 +25,7 @@ public class UserService {
   private final UserRepository userRepository;
   private final PasswordEncoder passwordEncoder;
   private final S3FileService s3FileService;
+  private final TokenProvider tokenProvider;
 
   @Transactional
   public UserResponse registerUser(UserRegisterRequest request) {
@@ -44,5 +48,17 @@ public class UserService {
     User savedUser = userRepository.save(user);
 
     return UserResponse.fromEntity(savedUser);
+  }
+
+  public TokenResponse login(UserLoginRequest request) {
+    User user = userRepository.findByEmail(request.getEmail())
+        .orElseThrow(() -> new UserException(ErrorCode.NOT_FOUND_USER));
+
+    if (!passwordEncoder.matches(request.getPassword(), user.getPasswordHash())) {
+      throw new UserException(ErrorCode.INCORRECT_PASSWORD);
+    }
+
+    return tokenProvider.generateTokenResponse(user.getEmail(),
+        List.of(user.getRole().toString()));
   }
 }
