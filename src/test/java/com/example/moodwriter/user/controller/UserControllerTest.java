@@ -2,23 +2,30 @@ package com.example.moodwriter.user.controller;
 
 import static org.mockito.ArgumentMatchers.any;
 import static org.mockito.BDDMockito.given;
+import static org.mockito.Mockito.mock;
+import static org.mockito.Mockito.when;
 import static org.springframework.security.test.web.servlet.request.SecurityMockMvcRequestPostProcessors.csrf;
+import static org.springframework.test.web.servlet.request.MockMvcRequestBuilders.get;
 import static org.springframework.test.web.servlet.request.MockMvcRequestBuilders.post;
 import static org.springframework.test.web.servlet.result.MockMvcResultHandlers.print;
 import static org.springframework.test.web.servlet.result.MockMvcResultMatchers.jsonPath;
 import static org.springframework.test.web.servlet.result.MockMvcResultMatchers.status;
 
 import com.example.moodwriter.global.dto.FileDto;
+import com.example.moodwriter.global.jwt.JwtAuthenticationToken;
 import com.example.moodwriter.global.jwt.dto.TokenResponse;
+import com.example.moodwriter.global.security.dto.CustomUserDetails;
 import com.example.moodwriter.global.security.filter.JwtAuthenticationFilter;
 import com.example.moodwriter.user.dto.UserLoginRequest;
 import com.example.moodwriter.user.dto.UserRegisterRequest;
 import com.example.moodwriter.user.dto.UserResponse;
+import com.example.moodwriter.user.entity.User;
 import com.example.moodwriter.user.service.UserService;
 import com.fasterxml.jackson.databind.ObjectMapper;
 import java.time.LocalDateTime;
 import java.util.List;
 import java.util.UUID;
+import org.junit.jupiter.api.BeforeEach;
 import org.junit.jupiter.api.Test;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.boot.test.autoconfigure.web.servlet.AutoConfigureMockMvc;
@@ -30,6 +37,8 @@ import org.springframework.http.HttpMethod;
 import org.springframework.http.MediaType;
 import org.springframework.mock.web.MockMultipartFile;
 import org.springframework.mock.web.MockPart;
+import org.springframework.security.core.context.SecurityContext;
+import org.springframework.security.core.context.SecurityContextHolder;
 import org.springframework.test.web.servlet.MockMvc;
 import org.springframework.test.web.servlet.request.MockMvcRequestBuilders;
 
@@ -48,8 +57,84 @@ class UserControllerTest {
   @Autowired
   private ObjectMapper objectMapper;
 
+  private final UUID userId = UUID.randomUUID();
+
+  @BeforeEach
+  void setup() {
+    User user = mock(User.class);
+    CustomUserDetails userDetails = mock(CustomUserDetails.class);
+
+    when(user.getId()).thenReturn(userId);
+    when(userDetails.getId()).thenReturn(userId);
+
+    SecurityContext context = SecurityContextHolder.getContext();
+    context.setAuthentication(
+        new JwtAuthenticationToken(userDetails, "", null));
+  }
+
   @Test
   void successRegisterUser() throws Exception {
+    // given
+    List<FileDto> profileImages = List.of(
+        new FileDto("https://example.com/file1.jpg", "file1.jpg"));
+
+    UserResponse response = UserResponse.builder()
+        .id(UUID.randomUUID())
+        .email("user@example.com")
+        .name("example")
+        .profilePictureUrl(profileImages)
+        .createdAt(LocalDateTime.now())
+        .build();
+
+    // when
+    given(userService.registerUser(any(UserRegisterRequest.class))).willReturn(response);
+
+    // then
+    mockMvc.perform(
+            MockMvcRequestBuilders.multipart(HttpMethod.POST, "/api/users/register")
+                .part(new MockPart("email", "user@example.com".getBytes()))
+                .part(new MockPart("password", "Password123!".getBytes()))
+                .part(new MockPart("name", "example".getBytes()))
+                .file(createMockImage("profileImage1.jpg"))
+                .with(csrf()))
+        .andExpect(status().isCreated())
+        .andExpect(jsonPath("$.id").value(response.getId().toString()))
+        .andExpect(jsonPath("$.email").value(response.getEmail()))
+        .andExpect(jsonPath("$.name").value(response.getName()))
+        .andExpect(
+            jsonPath("$.profilePictureUrl[0].url").value("https://example.com/file1.jpg"))
+        .andExpect(jsonPath("$.profilePictureUrl[0].filename").value("file1.jpg"));
+  }
+
+  @Test
+  void successRegisterUserWithProfileImageNull() throws Exception {
+    // given
+    UserResponse response = UserResponse.builder()
+        .id(UUID.randomUUID())
+        .email("user@example.com")
+        .name("example")
+        .createdAt(LocalDateTime.now())
+        .build();
+
+    // when
+    given(userService.registerUser(any(UserRegisterRequest.class))).willReturn(response);
+
+    // then
+    mockMvc.perform(
+            MockMvcRequestBuilders.multipart(HttpMethod.POST, "/api/users/register")
+                .part(new MockPart("email", "user@example.com".getBytes()))
+                .part(new MockPart("password", "Password123!".getBytes()))
+                .part(new MockPart("name", "example".getBytes()))
+                .with(csrf()))
+        .andExpect(status().isCreated())
+        .andDo(print())
+        .andExpect(jsonPath("$.id").value(response.getId().toString()))
+        .andExpect(jsonPath("$.email").value(response.getEmail()))
+        .andExpect(jsonPath("$.name").value(response.getName()));
+  }
+
+  @Test
+  void failRegisterUserWithImageFileOver2() throws Exception {
     // given
     List<FileDto> profileImages = List.of(
         new FileDto("https://example.com/file1.jpg", "file1.jpg"),
@@ -76,16 +161,9 @@ class UserControllerTest {
                 .file(createMockImage("profileImage1.jpg"))
                 .file(createMockImage("profileImage2.jpg"))
                 .with(csrf()))
-        .andExpect(status().isCreated())
-        .andExpect(jsonPath("$.id").value(response.getId().toString()))
-        .andExpect(jsonPath("$.email").value(response.getEmail()))
-        .andExpect(jsonPath("$.name").value(response.getName()))
-        .andExpect(
-            jsonPath("$.profilePictureUrl[0].url").value("https://example.com/file1.jpg"))
-        .andExpect(
-            jsonPath("$.profilePictureUrl[1].url").value("https://example.com/file2.jpg"))
-        .andExpect(jsonPath("$.profilePictureUrl[0].filename").value("file1.jpg"))
-        .andExpect(jsonPath("$.profilePictureUrl[1].filename").value("file2.jpg"));
+        .andExpect(status().isBadRequest())
+        .andExpect(jsonPath("$.fieldErrors[0].field").value("profileImages"))
+        .andExpect(jsonPath("$.fieldErrors[0].message").value("프로필 이미지는 1장만 업데이트 가능합니다."));
   }
 
   @Test
@@ -268,5 +346,30 @@ class UserControllerTest {
         .andExpect(jsonPath("$.fieldErrors[1].field").exists())
         .andExpect(jsonPath("$.fieldErrors[1].message").exists());
   }
+
+  @Test
+  void successGetUserById() throws Exception {
+    // given
+    UserResponse userResponse = UserResponse.builder()
+        .id(userId)
+        .email("user@example.com")
+        .name("John Doe")
+        .createdAt(LocalDateTime.now().minusDays(1))
+        .updatedAt(LocalDateTime.now())
+        .build();
+
+    given(userService.getUserById(userId)).willReturn(userResponse);
+
+    // when & then
+    mockMvc.perform(get("/api/users")) // 사용자 정보를 주입
+        .andExpect(status().isOk())
+        .andDo(print())
+        .andExpect(jsonPath("$.id").value(userId.toString()))
+        .andExpect(jsonPath("$.email").value("user@example.com"))
+        .andExpect(jsonPath("$.name").value("John Doe"))
+        .andDo(print());
+  }
+
+
 
 }

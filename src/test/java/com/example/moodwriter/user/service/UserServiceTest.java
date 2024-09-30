@@ -7,6 +7,7 @@ import static org.junit.jupiter.api.Assertions.assertNull;
 import static org.junit.jupiter.api.Assertions.assertThrows;
 import static org.mockito.ArgumentMatchers.any;
 import static org.mockito.BDDMockito.given;
+import static org.mockito.Mockito.spy;
 import static org.mockito.Mockito.verify;
 
 import com.example.moodwriter.global.constant.FilePath;
@@ -25,6 +26,7 @@ import com.example.moodwriter.user.exception.UserException;
 import java.util.Collections;
 import java.util.List;
 import java.util.Optional;
+import java.util.UUID;
 import org.junit.jupiter.api.Test;
 import org.junit.jupiter.api.extension.ExtendWith;
 import org.mockito.ArgumentCaptor;
@@ -228,6 +230,45 @@ class UserServiceTest {
     UserException userException = assertThrows(UserException.class,
         () -> userService.login(request));
     assertEquals(ErrorCode.INCORRECT_PASSWORD, userException.getErrorCode());
+  }
+
+  @Test
+  void successGetUserById() {
+    // given
+    UUID userId = UUID.randomUUID();
+
+    User user = spy(User.builder()
+        .email("test@example.com")
+        .name("John Doe")
+        .profilePictureUrl(List.of(new FileDto("url", "filename")))
+        .build());
+
+    given(userRepository.findById(userId)).willReturn(Optional.of(user));
+    given(user.getId()).willReturn(userId);
+
+    // when
+    UserResponse response = userService.getUserById(userId);
+
+    // then
+    assertEquals(userId, response.getId());
+    assertEquals(user.getEmail(), response.getEmail());
+    assertEquals(user.getName(), response.getName());
+    assertEquals(user.getProfilePictureUrl(), response.getProfilePictureUrl());
+    assertEquals(user.getCreatedAt(), response.getCreatedAt());
+    assertEquals(user.getUpdatedAt(), response.getUpdatedAt());
+  }
+
+  @Test
+  void failGetUserById_whenUserIsNotRegistered_throwNotFoundUser() {
+    // given
+    UUID userId = UUID.randomUUID();
+    given(userRepository.findById(userId)).willReturn(Optional.empty());
+
+    // when & then
+    UserException userException = assertThrows(UserException.class,
+        () -> userService.getUserById(userId));
+
+    assertEquals(ErrorCode.NOT_FOUND_USER, userException.getErrorCode());
   }
 
 }
