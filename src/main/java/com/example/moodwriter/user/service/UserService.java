@@ -13,6 +13,7 @@ import com.example.moodwriter.user.dto.UserResponse;
 import com.example.moodwriter.user.entity.User;
 import com.example.moodwriter.user.exception.UserException;
 import java.util.List;
+import java.util.UUID;
 import lombok.RequiredArgsConstructor;
 import org.springframework.security.crypto.password.PasswordEncoder;
 import org.springframework.stereotype.Service;
@@ -60,5 +61,13 @@ public class UserService {
 
     return tokenProvider.generateTokenResponse(user.getEmail(),
         List.of(user.getRole().toString()));
+  }
+
+  @Transactional(readOnly = true)
+  public UserResponse getUserById(UUID userId) {
+    User user = userRepository.findById(userId)
+        .orElseThrow(() -> new UserException(ErrorCode.NOT_FOUND_USER));
+
+    return UserResponse.fromEntity(user);
   }
 }
