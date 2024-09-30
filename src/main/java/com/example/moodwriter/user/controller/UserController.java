@@ -1,6 +1,7 @@
 package com.example.moodwriter.user.controller;
 
 import com.example.moodwriter.global.jwt.dto.TokenResponse;
+import com.example.moodwriter.global.security.dto.CustomUserDetails;
 import com.example.moodwriter.user.dto.UserLoginRequest;
 import com.example.moodwriter.user.dto.UserRegisterRequest;
 import com.example.moodwriter.user.dto.UserResponse;
@@ -10,6 +11,7 @@ import java.util.UUID;
 import lombok.RequiredArgsConstructor;
 import org.springframework.http.HttpStatus;
 import org.springframework.http.ResponseEntity;
+import org.springframework.security.core.annotation.AuthenticationPrincipal;
 import org.springframework.web.bind.annotation.GetMapping;
 import org.springframework.web.bind.annotation.ModelAttribute;
 import org.springframework.web.bind.annotation.PathVariable;
@@ -40,9 +42,10 @@ public class UserController {
     return ResponseEntity.ok(tokenResponse);
   }
 
-  @GetMapping("/{userId}")
-  public ResponseEntity<UserResponse> getUserById(@PathVariable UUID userId) {
-    UserResponse response = userService.getUserById(userId);
+  @GetMapping
+  public ResponseEntity<UserResponse> getUserById(@AuthenticationPrincipal
+      CustomUserDetails userDetails) {
+    UserResponse response = userService.getUserById(userDetails.getId());
     return ResponseEntity.ok(response);
   }
 
