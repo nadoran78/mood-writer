@@ -1,11 +1,13 @@
 package com.example.moodwriter.global.config;
 
+import com.example.moodwriter.global.constant.Role;
 import com.example.moodwriter.global.security.exception.CustomAccessDeniedHandler;
 import com.example.moodwriter.global.security.exception.CustomAuthenticationEntryPoint;
 import com.example.moodwriter.global.security.filter.JwtAuthenticationFilter;
 import lombok.RequiredArgsConstructor;
 import org.springframework.context.annotation.Bean;
 import org.springframework.context.annotation.Configuration;
+import org.springframework.http.HttpMethod;
 import org.springframework.security.authentication.AuthenticationManager;
 import org.springframework.security.config.annotation.authentication.configuration.AuthenticationConfiguration;
 import org.springframework.security.config.annotation.web.builders.HttpSecurity;
@@ -37,6 +39,7 @@ public class SecurityConfig {
             SessionCreationPolicy.STATELESS))
 
         .authorizeHttpRequests(request -> request
+            .requestMatchers(HttpMethod.GET, "/api/users").hasRole(Role.ROLE_USER.getRole())
             .requestMatchers("/api/users/register").permitAll()
             .requestMatchers("/api/users/login").permitAll()
             .anyRequest().authenticated())

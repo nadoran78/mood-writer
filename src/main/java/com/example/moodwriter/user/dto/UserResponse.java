@@ -17,6 +17,7 @@ public class UserResponse {
   private String name;
   private List<FileDto> profilePictureUrl;
   private LocalDateTime createdAt;
+  private LocalDateTime updatedAt;
 
   @Builder
   public static UserResponse fromEntity(User user) {
@@ -26,6 +27,7 @@ public class UserResponse {
         .name(user.getName())
         .profilePictureUrl(user.getProfilePictureUrl())
         .createdAt(user.getCreatedAt())
+        .updatedAt(user.getUpdatedAt())
         .build();
   }
 }

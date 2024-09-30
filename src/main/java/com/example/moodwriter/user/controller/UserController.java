@@ -1,6 +1,7 @@
 package com.example.moodwriter.user.controller;
 
 import com.example.moodwriter.global.jwt.dto.TokenResponse;
+import com.example.moodwriter.global.security.dto.CustomUserDetails;
 import com.example.moodwriter.user.dto.UserLoginRequest;
 import com.example.moodwriter.user.dto.UserRegisterRequest;
 import com.example.moodwriter.user.dto.UserResponse;
@@ -9,6 +10,8 @@ import jakarta.validation.Valid;
 import lombok.RequiredArgsConstructor;
 import org.springframework.http.HttpStatus;
 import org.springframework.http.ResponseEntity;
+import org.springframework.security.core.annotation.AuthenticationPrincipal;
+import org.springframework.web.bind.annotation.GetMapping;
 import org.springframework.web.bind.annotation.ModelAttribute;
 import org.springframework.web.bind.annotation.PostMapping;
 import org.springframework.web.bind.annotation.RequestBody;
@@ -35,6 +38,13 @@ public class UserController {
   public ResponseEntity<TokenResponse> login(@RequestBody @Valid UserLoginRequest request) {
     TokenResponse tokenResponse = userService.login(request);
     return ResponseEntity.ok(tokenResponse);
+  }
+
+  @GetMapping
+  public ResponseEntity<UserResponse> getUserById(@AuthenticationPrincipal
+      CustomUserDetails userDetails) {
+    UserResponse response = userService.getUserById(userDetails.getId());
+    return ResponseEntity.ok(response);
   }
 
 
