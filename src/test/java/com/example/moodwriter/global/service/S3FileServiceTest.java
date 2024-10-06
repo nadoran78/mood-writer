@@ -186,4 +186,25 @@ class S3FileServiceTest {
     // then
     verify(amazonS3Client).deleteObject(bucketName, filename);
   }
+
+  @Test
+  void successDeleteManyFile() {
+    // given
+    FileDto file1 = FileDto.builder()
+        .filename("filename1")
+        .build();
+
+    FileDto file2 = FileDto.builder()
+        .filename("filename2")
+        .build();
+
+    List<FileDto> savedFile = List.of(file1, file2);
+
+    // when
+    s3FileService.deleteManyFile(savedFile);
+
+    // then
+    verify(amazonS3Client).deleteObject(bucketName, file1.getFilename());
+    verify(amazonS3Client).deleteObject(bucketName, file2.getFilename());
+  }
 }
