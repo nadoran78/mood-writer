@@ -65,4 +65,10 @@ public class S3FileService {
   public void deleteFile(String filename) {
     amazonS3Client.deleteObject(bucketName, filename);
   }
+
+  public void deleteManyFile(List<FileDto> savedImages) {
+    for (FileDto image : savedImages) {
+      deleteFile(image.getFilename());
+    }
+  }
 }
