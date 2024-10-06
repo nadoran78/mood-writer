@@ -66,4 +66,12 @@ public class User extends BaseEntity {
         .role(Role.ROLE_USER)
         .build();
   }
+
+  public void updateName(String name) {
+    this.name = name;
+  }
+
+  public void updateProfileImage(List<FileDto> images) {
+    this.profilePictureUrl = images;
+  }
 }

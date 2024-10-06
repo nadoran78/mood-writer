@@ -5,6 +5,7 @@ import com.example.moodwriter.global.security.dto.CustomUserDetails;
 import com.example.moodwriter.user.dto.UserLoginRequest;
 import com.example.moodwriter.user.dto.UserRegisterRequest;
 import com.example.moodwriter.user.dto.UserResponse;
+import com.example.moodwriter.user.dto.UserUpdateRequest;
 import com.example.moodwriter.user.service.UserService;
 import jakarta.validation.Valid;
 import lombok.RequiredArgsConstructor;
@@ -13,6 +14,7 @@ import org.springframework.http.ResponseEntity;
 import org.springframework.security.core.annotation.AuthenticationPrincipal;
 import org.springframework.web.bind.annotation.GetMapping;
 import org.springframework.web.bind.annotation.ModelAttribute;
+import org.springframework.web.bind.annotation.PatchMapping;
 import org.springframework.web.bind.annotation.PostMapping;
 import org.springframework.web.bind.annotation.RequestBody;
 import org.springframework.web.bind.annotation.RequestMapping;
@@ -27,7 +29,7 @@ public class UserController {
 
   @PostMapping("/register")
   public ResponseEntity<UserResponse> registerUser(@Valid @ModelAttribute
-      UserRegisterRequest request) {
+  UserRegisterRequest request) {
 
     UserResponse response = userService.registerUser(request);
 
@@ -35,17 +37,24 @@ public class UserController {
   }
 
   @PostMapping("/login")
-  public ResponseEntity<TokenResponse> login(@RequestBody @Valid UserLoginRequest request) {
+  public ResponseEntity<TokenResponse> login(
+      @RequestBody @Valid UserLoginRequest request) {
     TokenResponse tokenResponse = userService.login(request);
     return ResponseEntity.ok(tokenResponse);
   }
 
   @GetMapping
   public ResponseEntity<UserResponse> getUserById(@AuthenticationPrincipal
-      CustomUserDetails userDetails) {
+  CustomUserDetails userDetails) {
     UserResponse response = userService.getUserById(userDetails.getId());
     return ResponseEntity.ok(response);
   }
 
-
+  @PatchMapping
+  public ResponseEntity<UserResponse> updateUserInfo(
+      @AuthenticationPrincipal CustomUserDetails userDetails,
+      @Valid @ModelAttribute UserUpdateRequest request) {
+    UserResponse response = userService.updateUser(userDetails.getId(), request);
+    return ResponseEntity.ok(response);
+  }
 }
