@@ -19,6 +19,7 @@ import com.example.moodwriter.global.security.filter.JwtAuthenticationFilter;
 import com.example.moodwriter.user.dto.UserLoginRequest;
 import com.example.moodwriter.user.dto.UserRegisterRequest;
 import com.example.moodwriter.user.dto.UserResponse;
+import com.example.moodwriter.user.dto.UserUpdateRequest;
 import com.example.moodwriter.user.entity.User;
 import com.example.moodwriter.user.service.UserService;
 import com.fasterxml.jackson.databind.ObjectMapper;
@@ -163,7 +164,8 @@ class UserControllerTest {
                 .with(csrf()))
         .andExpect(status().isBadRequest())
         .andExpect(jsonPath("$.fieldErrors[0].field").value("profileImages"))
-        .andExpect(jsonPath("$.fieldErrors[0].message").value("프로필 이미지는 1장만 업데이트 가능합니다."));
+        .andExpect(
+            jsonPath("$.fieldErrors[0].message").value("프로필 이미지는 1장만 업데이트 가능합니다."));
   }
 
   @Test
@@ -370,6 +372,234 @@ class UserControllerTest {
         .andDo(print());
   }
 
+  @Test
+  void successUpdateUserInfo() throws Exception {
+    // given
+    String updateName = "NewName";
+    String filename = "profileImage.jpg";
 
+    UserResponse userResponse = UserResponse.builder()
+        .id(userId)
+        .name(updateName)
+        .profilePictureUrl(List.of(new FileDto("https://image.url", filename)))
+        .build();
 
+    given(userService.updateUser(any(UUID.class), any(UserUpdateRequest.class)))
+        .willReturn(userResponse);
+
+    // when & then
+    mockMvc.perform(MockMvcRequestBuilders.multipart(HttpMethod.PATCH, "/api/users")
+            .part(new MockPart("name", updateName.getBytes()))
+            .file(createMockImage(filename))
+            .with(csrf()))
+        .andDo(print())
+        .andExpect(status().isOk())
+        .andExpect(jsonPath("$.name").value(updateName))
+        .andExpect(
+            jsonPath("$.profilePictureUrl[0].url").value(
+                userResponse.getProfilePictureUrl().get(0).getUrl()))
+        .andExpect(jsonPath("$.profilePictureUrl[0].filename").value(filename));
+  }
+
+  @Test
+  void successUpdateUserInfoWithNameIsNull() throws Exception {
+    // given
+    String oldName = "oldName";
+    String filename = "profileImage.jpg";
+
+    UserResponse userResponse = UserResponse.builder()
+        .id(userId)
+        .name(oldName)
+        .profilePictureUrl(List.of(new FileDto("https://image.url", filename)))
+        .build();
+
+    given(userService.updateUser(any(UUID.class), any(UserUpdateRequest.class)))
+        .willReturn(userResponse);
+
+    // when & then
+    mockMvc.perform(MockMvcRequestBuilders.multipart(HttpMethod.PATCH, "/api/users")
+            .file(createMockImage(filename))
+            .with(csrf()))
+        .andDo(print())
+        .andExpect(status().isOk())
+        .andExpect(jsonPath("$.name").value(oldName))
+        .andExpect(
+            jsonPath("$.profilePictureUrl[0].url").value(
+                userResponse.getProfilePictureUrl().get(0).getUrl()))
+        .andExpect(jsonPath("$.profilePictureUrl[0].filename").value(filename));
+  }
+
+  @Test
+  void successUpdateUserInfoWithFileIsNull() throws Exception {
+    // given
+    String updateName = "NewName";
+    String oldFilename = "profileImage.jpg";
+
+    UserResponse userResponse = UserResponse.builder()
+        .id(userId)
+        .name(updateName)
+        .profilePictureUrl(List.of(new FileDto("https://image.url", oldFilename)))
+        .build();
+
+    given(userService.updateUser(any(UUID.class), any(UserUpdateRequest.class)))
+        .willReturn(userResponse);
+
+    // when & then
+    mockMvc.perform(MockMvcRequestBuilders.multipart(HttpMethod.PATCH, "/api/users")
+            .part(new MockPart("name", updateName.getBytes()))
+            .with(csrf()))
+        .andDo(print())
+        .andExpect(status().isOk())
+        .andExpect(jsonPath("$.name").value(updateName))
+        .andExpect(
+            jsonPath("$.profilePictureUrl[0].url").value(
+                userResponse.getProfilePictureUrl().get(0).getUrl()))
+        .andExpect(jsonPath("$.profilePictureUrl[0].filename").value(oldFilename));
+  }
+
+  @Test
+  void successUpdateUserInfoWithNameAndFileIsNull() throws Exception {
+    // given
+    String oldName = "oldName";
+    String oldFilename = "profileImage.jpg";
+
+    UserResponse userResponse = UserResponse.builder()
+        .id(userId)
+        .name(oldName)
+        .profilePictureUrl(List.of(new FileDto("https://image.url", oldFilename)))
+        .build();
+
+    given(userService.updateUser(any(UUID.class), any(UserUpdateRequest.class)))
+        .willReturn(userResponse);
+
+    // when & then
+    mockMvc.perform(MockMvcRequestBuilders.multipart(HttpMethod.PATCH, "/api/users")
+            .with(csrf()))
+        .andDo(print())
+        .andExpect(status().isOk())
+        .andExpect(jsonPath("$.name").value(oldName))
+        .andExpect(
+            jsonPath("$.profilePictureUrl[0].url").value(
+                userResponse.getProfilePictureUrl().get(0).getUrl()))
+        .andExpect(jsonPath("$.profilePictureUrl[0].filename").value(oldFilename));
+  }
+
+  @Test
+  void failUpdateUserInfoWithNameIsEmptyString() throws Exception {
+    // given
+    String emptyName = "";
+
+    // when & then
+    mockMvc.perform(MockMvcRequestBuilders.multipart(HttpMethod.PATCH, "/api/users")
+            .part(new MockPart("name", emptyName.getBytes()))
+            .with(csrf()))
+        .andDo(print())
+        .andExpect(status().isBadRequest())
+        .andExpect(jsonPath("$.fieldErrors[0].field").value("name"))
+        .andExpect(
+            jsonPath("$.fieldErrors[0].message").value(
+                "이름의 시작, 끝, 전체를 공백으로 입력할 수 없습니다."));
+
+  }
+
+  @Test
+  void failUpdateUserInfoWithNameStartsWithSpace() throws Exception {
+    // given
+    String invalidName = " 이름";
+
+    // when & then
+    mockMvc.perform(MockMvcRequestBuilders.multipart(HttpMethod.PATCH, "/api/users")
+            .part(new MockPart("name", invalidName.getBytes()))
+            .with(csrf()))
+        .andDo(print())
+        .andExpect(status().isBadRequest())
+        .andExpect(jsonPath("$.fieldErrors[0].field").value("name"))
+        .andExpect(
+            jsonPath("$.fieldErrors[0].message").value(
+                "이름의 시작, 끝, 전체를 공백으로 입력할 수 없습니다."));
+
+  }
+
+  @Test
+  void failUpdateUserInfoWithNameEndsWithSpace() throws Exception {
+    // given
+    String invalidName = "이름 ";
+
+    // when & then
+    mockMvc.perform(MockMvcRequestBuilders.multipart(HttpMethod.PATCH, "/api/users")
+            .part(new MockPart("name", invalidName.getBytes()))
+            .with(csrf()))
+        .andDo(print())
+        .andExpect(status().isBadRequest())
+        .andExpect(jsonPath("$.fieldErrors[0].field").value("name"))
+        .andExpect(
+            jsonPath("$.fieldErrors[0].message").value(
+                "이름의 시작, 끝, 전체를 공백으로 입력할 수 없습니다."));
+
+  }
+
+  @Test
+  void failUpdateUserInfoWithNameIsOnlySpace() throws Exception {
+    // given
+    String invalidName = "   ";
+
+    // when & then
+    mockMvc.perform(MockMvcRequestBuilders.multipart(HttpMethod.PATCH, "/api/users")
+            .part(new MockPart("name", invalidName.getBytes()))
+            .with(csrf()))
+        .andDo(print())
+        .andExpect(status().isBadRequest())
+        .andExpect(jsonPath("$.fieldErrors[0].field").value("name"))
+        .andExpect(
+            jsonPath("$.fieldErrors[0].message").value(
+                "이름의 시작, 끝, 전체를 공백으로 입력할 수 없습니다."));
+
+  }
+
+  @Test
+  void failUpdateUserInfoWithNameIsOver10() throws Exception {
+    // given
+    String invalidName = "12345678910";
+
+    // when & then
+    mockMvc.perform(MockMvcRequestBuilders.multipart(HttpMethod.PATCH, "/api/users")
+            .part(new MockPart("name", invalidName.getBytes()))
+            .with(csrf()))
+        .andDo(print())
+        .andExpect(status().isBadRequest())
+        .andExpect(jsonPath("$.fieldErrors[0].field").value("name"))
+        .andExpect(
+            jsonPath("$.fieldErrors[0].message").value(
+                "이름은 10자 이하여야 합니다."));
+
+  }
+
+  @Test
+  void failUpdateUserWithInvalidFile() throws Exception {
+    mockMvc.perform(
+            MockMvcRequestBuilders.multipart(HttpMethod.PATCH, "/api/users")
+                .file(new MockMultipartFile("profileImages", "invalid-file.txt", "text/txt",
+                    "invalid-file".getBytes()))
+                .with(csrf()))
+        .andExpect(status().isBadRequest())
+        .andDo(print())
+        .andExpect(jsonPath("$.fieldErrors[0].field").value("profileImages"))
+        .andExpect(
+            jsonPath("$.fieldErrors[0].message").value(
+                "유효한 파일이 아닙니다."));
+  }
+
+  @Test
+  void failUpdateUserWithFileSizeIsOver2() throws Exception {
+    mockMvc.perform(
+            MockMvcRequestBuilders.multipart(HttpMethod.PATCH, "/api/users")
+                .file(createMockImage("profileImage1.jpg"))
+                .file(createMockImage("profileImage2.jpg"))
+                .with(csrf()))
+        .andExpect(status().isBadRequest())
+        .andDo(print())
+        .andExpect(jsonPath("$.fieldErrors[0].field").value("profileImages"))
+        .andExpect(
+            jsonPath("$.fieldErrors[0].message").value("프로필 이미지는 1장만 업데이트 가능합니다."));
+  }
 }

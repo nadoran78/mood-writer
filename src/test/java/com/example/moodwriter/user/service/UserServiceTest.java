@@ -6,7 +6,9 @@ import static org.junit.jupiter.api.Assertions.assertNotNull;
 import static org.junit.jupiter.api.Assertions.assertNull;
 import static org.junit.jupiter.api.Assertions.assertThrows;
 import static org.mockito.ArgumentMatchers.any;
+import static org.mockito.ArgumentMatchers.anyList;
 import static org.mockito.BDDMockito.given;
+import static org.mockito.Mockito.never;
 import static org.mockito.Mockito.spy;
 import static org.mockito.Mockito.verify;
 
@@ -21,8 +23,10 @@ import com.example.moodwriter.user.dao.UserRepository;
 import com.example.moodwriter.user.dto.UserLoginRequest;
 import com.example.moodwriter.user.dto.UserRegisterRequest;
 import com.example.moodwriter.user.dto.UserResponse;
+import com.example.moodwriter.user.dto.UserUpdateRequest;
 import com.example.moodwriter.user.entity.User;
 import com.example.moodwriter.user.exception.UserException;
+import java.util.ArrayList;
 import java.util.Collections;
 import java.util.List;
 import java.util.Optional;
@@ -35,6 +39,7 @@ import org.mockito.Mock;
 import org.mockito.junit.jupiter.MockitoExtension;
 import org.springframework.mock.web.MockMultipartFile;
 import org.springframework.security.crypto.password.PasswordEncoder;
+import org.springframework.web.multipart.MultipartFile;
 
 @ExtendWith(MockitoExtension.class)
 class UserServiceTest {
@@ -269,6 +274,88 @@ class UserServiceTest {
         () -> userService.getUserById(userId));
 
     assertEquals(ErrorCode.NOT_FOUND_USER, userException.getErrorCode());
+  }
+
+  @Test
+  void successUpdateUser() {
+    // given
+    UUID userId = UUID.randomUUID();
+    String newName = "UpdatedName";
+
+    List<MultipartFile> profileImages = new ArrayList<>();
+    profileImages.add(new MockMultipartFile("image.jpg", "image.jpg",
+        "image/jpeg", "image content".getBytes()));
+
+    User user = User.builder()
+        .name("oldName")
+        .profilePictureUrl(Collections.emptyList())
+        .build();
+
+    UserUpdateRequest request = UserUpdateRequest.builder()
+        .name(newName)
+        .profileImages(profileImages)
+        .build();
+
+    given(userRepository.findById(userId)).willReturn(Optional.of(user));
+
+    List<FileDto> uploadedFiles = Collections.singletonList(
+        new FileDto("url-to-uploaded-image", "image1.jpg"));
+    given(s3FileService.uploadManyFiles(anyList(), any(FilePath.class))).willReturn(
+        uploadedFiles);
+
+    // when
+    UserResponse response = userService.updateUser(userId, request);
+
+    // then
+    assertEquals(newName, response.getName());
+    assertEquals(uploadedFiles.get(0).getUrl(),
+        response.getProfilePictureUrl().get(0).getUrl());
+    assertEquals(uploadedFiles.get(0).getFilename(),
+        response.getProfilePictureUrl().get(0).getFilename());
+
+    verify(s3FileService).uploadManyFiles(anyList(), any(FilePath.class));
+    verify(s3FileService).deleteManyFile(anyList());
+  }
+
+  @Test
+  void updateUser_userNotFound() {
+    // given
+    UUID userId = UUID.randomUUID();
+    UserUpdateRequest request = UserUpdateRequest.builder()
+        .name("UpdatedName")
+        .build();
+
+    given(userRepository.findById(userId)).willReturn(Optional.empty());
+
+    // when & then
+    UserException userException = assertThrows(UserException.class,
+        () -> userService.updateUser(userId, request));
+
+    assertEquals(ErrorCode.NOT_FOUND_USER, userException.getErrorCode());
+  }
+
+  @Test
+  void successUpdateUserWhenNameAndProfileImagesAreNull() {
+    // given
+    UUID userId = UUID.randomUUID();
+
+    User user = User.builder()
+        .name("oldName")
+        .profilePictureUrl(Collections.emptyList())
+        .build();
+
+    UserUpdateRequest request = UserUpdateRequest.builder().build();
+
+    given(userRepository.findById(userId)).willReturn(Optional.of(user));
+
+    // when
+    UserResponse response = userService.updateUser(userId, request);
+
+    // then
+    assertEquals("oldName", response.getName());
+    assertEquals(Collections.emptyList(), response.getProfilePictureUrl());
+    verify(s3FileService, never()).uploadManyFiles(anyList(), any(FilePath.class));
+    verify(s3FileService, never()).deleteManyFile(anyList());
   }
 
 }
