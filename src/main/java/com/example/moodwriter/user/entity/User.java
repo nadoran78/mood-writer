@@ -12,6 +12,7 @@ import jakarta.persistence.EnumType;
 import jakarta.persistence.Enumerated;
 import jakarta.persistence.Id;
 import jakarta.persistence.Table;
+import java.time.LocalDateTime;
 import java.util.List;
 import java.util.UUID;
 import lombok.AccessLevel;
@@ -47,13 +48,23 @@ public class User extends BaseEntity {
   @Enumerated(value = EnumType.STRING)
   private Role role;
 
+  @Column(name = "is_deleted")
+  private boolean isDeleted;
+
+  @Column(name = "deleted_at")
+  private LocalDateTime deletedAt;
+
   @Builder
-  public User(String email, String passwordHash, String name, List<FileDto> profilePictureUrl, Role role) {
+  public User(String email, String passwordHash, String name,
+      List<FileDto> profilePictureUrl, Role role, boolean isDeleted,
+      LocalDateTime deletedAt) {
     this.email = email;
     this.passwordHash = passwordHash;
     this.name = name;
     this.profilePictureUrl = profilePictureUrl;
     this.role = role;
+    this.isDeleted = isDeleted;
+    this.deletedAt = deletedAt;
   }
 
   public static User from(UserRegisterRequest request, String passwordHash,
