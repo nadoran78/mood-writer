@@ -10,6 +10,7 @@ import com.example.moodwriter.user.dao.UserRepository;
 import com.example.moodwriter.user.dto.UserLoginRequest;
 import com.example.moodwriter.user.dto.UserRegisterRequest;
 import com.example.moodwriter.user.dto.UserResponse;
+import com.example.moodwriter.user.dto.UserUpdateRequest;
 import com.example.moodwriter.user.entity.User;
 import com.example.moodwriter.user.exception.UserException;
 import java.util.List;
@@ -51,6 +52,7 @@ public class UserService {
     return UserResponse.fromEntity(savedUser);
   }
 
+  @Transactional
   public TokenResponse login(UserLoginRequest request) {
     User user = userRepository.findByEmail(request.getEmail())
         .orElseThrow(() -> new UserException(ErrorCode.NOT_FOUND_USER));
@@ -67,6 +69,28 @@ public class UserService {
   public UserResponse getUserById(UUID userId) {
     User user = userRepository.findById(userId)
         .orElseThrow(() -> new UserException(ErrorCode.NOT_FOUND_USER));
+
+    return UserResponse.fromEntity(user);
+  }
+
+  @Transactional
+  public UserResponse updateUser(UUID userId, UserUpdateRequest request) {
+    User user = userRepository.findById(userId)
+        .orElseThrow(() -> new UserException(ErrorCode.NOT_FOUND_USER));
+
+    if (request.getName() != null) {
+      user.updateName(request.getName());
+    }
+
+    if (request.getProfileImages() != null && !request.getProfileImages().isEmpty()) {
+      List<FileDto> oldImages = user.getProfilePictureUrl();
+      List<FileDto> fileDtoList = s3FileService.uploadManyFiles(request.getProfileImages(),
+          FilePath.PROFILE);
+
+      user.updateProfileImage(fileDtoList);
+
+      s3FileService.deleteManyFile(oldImages);
+    }
 
     return UserResponse.fromEntity(user);
   }

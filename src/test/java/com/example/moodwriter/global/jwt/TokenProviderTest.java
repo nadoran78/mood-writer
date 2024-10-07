@@ -210,6 +210,7 @@ class TokenProviderTest {
 
     User user = User.builder()
         .email(this.testMail)
+        .role(Role.ROLE_USER)
         .build();
     UserDetails userDetails = new CustomUserDetails(user);
 
