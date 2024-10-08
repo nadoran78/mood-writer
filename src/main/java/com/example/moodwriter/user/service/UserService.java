@@ -32,7 +32,10 @@ public class UserService {
 
   @Transactional
   public UserResponse registerUser(UserRegisterRequest request) {
-    if (userRepository.existsByEmail(request.getEmail())) {
+    User existingUser = userRepository.findByEmail(request.getEmail())
+        .orElse(null);
+
+    if (existingUser != null && !existingUser.isDeleted()) {
       throw new UserException(ErrorCode.ALREADY_REGISTERED_USER);
     }
 
@@ -44,6 +47,12 @@ public class UserService {
     } else {
       profilePictureUrl = s3FileService.uploadManyFiles(request.getProfileImages(),
           FilePath.PROFILE);
+    }
+
+    // 탈퇴한 회원 재가입
+    if (existingUser != null && existingUser.isDeleted()) {
+      existingUser.reactivate(request, encryptedPassword, profilePictureUrl);
+      return UserResponse.fromEntity(existingUser);
     }
 
     User user = User.from(request, encryptedPassword, profilePictureUrl);

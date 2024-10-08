@@ -75,6 +75,7 @@ public class User extends BaseEntity {
         .name(request.getName())
         .profilePictureUrl(profilePictureUrl)
         .role(Role.ROLE_USER)
+        .isDeleted(false)
         .build();
   }
 
@@ -89,5 +90,14 @@ public class User extends BaseEntity {
   public void deactivateUser(LocalDateTime deletedAt) {
     this.isDeleted = true;
     this.deletedAt = deletedAt;
+  }
+
+  public void reactivate(UserRegisterRequest request, String encryptedPassword,
+      List<FileDto> profilePictureUrl) {
+    this.passwordHash = encryptedPassword;
+    this.name = request.getName();
+    this.profilePictureUrl = profilePictureUrl;
+    this.role = Role.ROLE_USER;
+    this.isDeleted = false;
   }
 }
