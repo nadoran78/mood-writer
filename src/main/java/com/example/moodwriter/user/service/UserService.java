@@ -119,8 +119,5 @@ public class UserService {
     }
 
     user.deactivateUser(LocalDateTime.now());
-
-    String accessToken = tokenProvider.resolveTokenFromRequest(authorizationHeader);
-    tokenProvider.addBlackList(accessToken, user.getEmail());
   }
 }
