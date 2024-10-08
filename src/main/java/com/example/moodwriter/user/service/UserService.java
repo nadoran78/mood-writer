@@ -13,6 +13,7 @@ import com.example.moodwriter.user.dto.UserResponse;
 import com.example.moodwriter.user.dto.UserUpdateRequest;
 import com.example.moodwriter.user.entity.User;
 import com.example.moodwriter.user.exception.UserException;
+import java.time.LocalDateTime;
 import java.util.List;
 import java.util.UUID;
 import lombok.RequiredArgsConstructor;
@@ -93,5 +94,20 @@ public class UserService {
     }
 
     return UserResponse.fromEntity(user);
+  }
+
+  @Transactional
+  public void deleteUser(UUID userId, String authorizationHeader) {
+    User user = userRepository.findById(userId)
+        .orElseThrow(() -> new UserException(ErrorCode.NOT_FOUND_USER));
+
+    if (user.isDeleted()) {
+      throw new UserException(ErrorCode.ALREADY_DEACTIVATED_USER);
+    }
+
+    user.deactivateUser(LocalDateTime.now());
+
+    String accessToken = tokenProvider.resolveTokenFromRequest(authorizationHeader);
+    tokenProvider.addBlackList(accessToken, user.getEmail());
   }
 }

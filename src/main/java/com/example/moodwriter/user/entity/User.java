@@ -85,4 +85,9 @@ public class User extends BaseEntity {
   public void updateProfileImage(List<FileDto> images) {
     this.profilePictureUrl = images;
   }
+
+  public void deactivateUser(LocalDateTime deletedAt) {
+    this.isDeleted = true;
+    this.deletedAt = deletedAt;
+  }
 }
