@@ -29,8 +29,12 @@ public class JwtAuthenticationFilter extends OncePerRequestFilter {
     String token = tokenProvider.resolveTokenFromRequest(request.getHeader(TOKEN_HEADER));
 
     if (tokenProvider.validateToken(token) && !tokenProvider.isAccessTokenDenied(token)) {
-      Authentication authentication = tokenProvider.getAuthentication(token);
-      SecurityContextHolder.getContext().setAuthentication(authentication);
+      if (tokenProvider.checkUserIsDeletedByToken(token)) {
+        request.setAttribute("deactivatedUser", true);
+      } else {
+        Authentication authentication = tokenProvider.getAuthentication(token);
+        SecurityContextHolder.getContext().setAuthentication(authentication);
+      }
     } else {
       log.info("토큰 유효성 검증 실패");
     }

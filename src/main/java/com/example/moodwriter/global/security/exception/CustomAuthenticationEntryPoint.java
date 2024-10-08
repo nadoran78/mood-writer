@@ -21,7 +21,12 @@ public class CustomAuthenticationEntryPoint implements AuthenticationEntryPoint 
   @Override
   public void commence(HttpServletRequest request, HttpServletResponse response,
       AuthenticationException authException) throws IOException {
-    ErrorCode errorCode = ErrorCode.NEED_TO_SIGN_IN;
+    ErrorCode errorCode;
+    if (Boolean.TRUE.equals(request.getAttribute("deactivatedUser"))) {
+      errorCode = ErrorCode.ALREADY_DEACTIVATED_USER;
+    } else {
+      errorCode = ErrorCode.NEED_TO_SIGN_IN;
+    }
 
     response.setContentType(MediaType.APPLICATION_JSON_VALUE);
     response.setCharacterEncoding("UTF-8");
