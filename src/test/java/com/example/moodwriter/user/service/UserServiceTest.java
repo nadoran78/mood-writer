@@ -2,6 +2,7 @@ package com.example.moodwriter.user.service;
 
 
 import static org.junit.jupiter.api.Assertions.assertEquals;
+import static org.junit.jupiter.api.Assertions.assertFalse;
 import static org.junit.jupiter.api.Assertions.assertNotNull;
 import static org.junit.jupiter.api.Assertions.assertNull;
 import static org.junit.jupiter.api.Assertions.assertThrows;
@@ -76,7 +77,7 @@ class UserServiceTest {
         .profilePictureUrl(null)
         .build();
 
-    given(userRepository.existsByEmail(request.getEmail())).willReturn(false);
+    given(userRepository.findByEmail(request.getEmail())).willReturn(Optional.empty());
     given(passwordEncoder.encode(request.getPassword())).willReturn("encryptedPassword");
     given(userRepository.save(any(User.class))).willReturn(user);
 
@@ -122,7 +123,7 @@ class UserServiceTest {
         .profilePictureUrl(uploadedFiles)
         .build();
 
-    given(userRepository.existsByEmail(request.getEmail())).willReturn(false);
+    given(userRepository.findByEmail(request.getEmail())).willReturn(Optional.empty());
     given(passwordEncoder.encode(request.getPassword())).willReturn("encryptedPassword");
     given(s3FileService.uploadManyFiles(request.getProfileImages(),
         FilePath.PROFILE)).willReturn(uploadedFiles);
@@ -156,12 +157,51 @@ class UserServiceTest {
         .name("하하하")
         .build();
 
-    given(userRepository.existsByEmail(request.getEmail())).willReturn(true);
+    User user = User.builder()
+        .isDeleted(false)
+        .build();
+
+    given(userRepository.findByEmail(request.getEmail())).willReturn(Optional.of(user));
 
     // when & then
-    assertThrows(UserException.class, () -> userService.registerUser(request));
-    verify(userRepository).existsByEmail(request.getEmail());
+    UserException userException = assertThrows(UserException.class,
+        () -> userService.registerUser(request));
+    assertEquals(ErrorCode.ALREADY_REGISTERED_USER, userException.getErrorCode());
+    verify(userRepository).findByEmail(request.getEmail());
 
+  }
+
+  @Test
+  void shouldReactivateUserWhenUserIsDeleted() {
+    // given
+    String email = "user@example.com";
+    String password = "Password123!";
+    String encryptedPassword = "encryptedPassword";
+
+    UserRegisterRequest request = UserRegisterRequest.builder()
+        .email(email)
+        .password(password)
+        .name("하하하")
+        .build();
+
+    User existingUser = User.builder()
+        .email(email)
+        .name("Old Name")
+        .isDeleted(true)
+        .build();
+
+    given(userRepository.findByEmail(request.getEmail())).willReturn(Optional.of(existingUser));
+    given(passwordEncoder.encode(request.getPassword())).willReturn(encryptedPassword);
+
+    // when
+    UserResponse response = userService.registerUser(request);
+
+    // then
+    assertEquals(request.getName(), existingUser.getName());
+    assertEquals(encryptedPassword, existingUser.getPasswordHash());
+    assertFalse(existingUser.isDeleted());
+    assertEquals(email, response.getEmail());
+    assertEquals(request.getName(), response.getName());
   }
 
   @Test
