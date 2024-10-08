@@ -215,6 +215,7 @@ class UserServiceTest {
     User user = User.builder()
         .email(request.getEmail())
         .passwordHash("encodedPassword") // 이미 암호화된 비밀번호
+        .isDeleted(false)
         .role(Role.ROLE_USER)
         .build();
 
@@ -265,6 +266,7 @@ class UserServiceTest {
         .email(request.getEmail())
         .passwordHash("encodedPassword") // 이미 암호화된 비밀번호
         .role(Role.ROLE_USER)
+        .isDeleted(false)
         .build();
 
     given(userRepository.findByEmail(request.getEmail())).willReturn(Optional.of(user));
@@ -275,6 +277,29 @@ class UserServiceTest {
     UserException userException = assertThrows(UserException.class,
         () -> userService.login(request));
     assertEquals(ErrorCode.INCORRECT_PASSWORD, userException.getErrorCode());
+  }
+
+  @Test
+  void shouldThrowUserExceptionWhenAlreadyDeactivatedUserTryToLogin() {
+    // given
+    UserLoginRequest request = UserLoginRequest.builder()
+        .email("test@example.com")
+        .password("password")
+        .build();
+
+    User user = User.builder()
+        .email(request.getEmail())
+        .passwordHash("encodedPassword") // 이미 암호화된 비밀번호
+        .role(Role.ROLE_USER)
+        .isDeleted(true)
+        .build();
+
+    given(userRepository.findByEmail(request.getEmail())).willReturn(Optional.of(user));
+
+    // when & then
+    UserException userException = assertThrows(UserException.class,
+        () -> userService.login(request));
+    assertEquals(ErrorCode.ALREADY_DEACTIVATED_USER, userException.getErrorCode());
   }
 
   @Test
