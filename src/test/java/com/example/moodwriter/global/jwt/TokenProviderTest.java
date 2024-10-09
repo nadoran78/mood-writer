@@ -23,6 +23,7 @@ import io.jsonwebtoken.Claims;
 import io.jsonwebtoken.Jwts;
 import io.jsonwebtoken.SignatureAlgorithm;
 import java.nio.charset.StandardCharsets;
+import java.time.LocalDateTime;
 import java.util.Base64;
 import java.util.Date;
 import java.util.List;
@@ -76,14 +77,22 @@ class TokenProviderTest {
 
     // then
     ArgumentCaptor<String> argumentCaptor = ArgumentCaptor.forClass(String.class);
+    ArgumentCaptor<Long> longArgumentCaptor = ArgumentCaptor.forClass(Long.class);
     verify(redisTemplate.opsForValue()).set(argumentCaptor.capture(),
-        argumentCaptor.capture());
+        argumentCaptor.capture(), longArgumentCaptor.capture(), eq(TimeUnit.SECONDS));
 
     assertNotNull(tokenResponse.getAccessToken());
     assertNotNull(tokenResponse.getRefreshToken());
 
     assertEquals("refreshToken: " + testMail, argumentCaptor.getAllValues().get(0));
     assertEquals(tokenResponse.getRefreshToken(), argumentCaptor.getAllValues().get(1));
+
+    long refreshTokenExpireTime = 1000L * 60 * 60 * 24 * 30;
+    long refreshTokenExpireTimeBefore10seconds = refreshTokenExpireTime - 1000L * 10;
+    long captureTime = longArgumentCaptor.getValue() * 1000L;
+
+    assertTrue(captureTime <= refreshTokenExpireTime
+        && captureTime > refreshTokenExpireTimeBefore10seconds);
   }
 
   @Test
