@@ -477,4 +477,22 @@ class UserServiceTest {
     assertEquals(ErrorCode.ALREADY_DEACTIVATED_USER, userException.getErrorCode());
   }
 
+  @Test
+  void successLogout() {
+    // given
+    String email = "test@example.com";
+    String accessToken = "Bearer access-token";
+    String resolvedAccessToken = accessToken.replace("Bearer ", "");
+
+    given(tokenProvider.resolveTokenFromRequest(accessToken)).willReturn(resolvedAccessToken);
+
+    // when
+    userService.logout(email, accessToken);
+
+    // then
+    verify(tokenProvider).resolveTokenFromRequest(accessToken);
+    verify(tokenProvider).addBlackList(resolvedAccessToken, email);
+    verify(tokenProvider).deleteRefreshToken(email);
+  }
+
 }
