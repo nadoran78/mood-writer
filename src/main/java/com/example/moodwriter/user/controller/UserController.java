@@ -3,6 +3,7 @@ package com.example.moodwriter.user.controller;
 import com.example.moodwriter.global.jwt.dto.TokenResponse;
 import com.example.moodwriter.global.security.dto.CustomUserDetails;
 import com.example.moodwriter.user.dto.LogoutResponse;
+import com.example.moodwriter.user.dto.TokenReissueRequest;
 import com.example.moodwriter.user.dto.UserLoginRequest;
 import com.example.moodwriter.user.dto.UserRegisterRequest;
 import com.example.moodwriter.user.dto.UserResponse;
@@ -74,5 +75,15 @@ public class UserController {
       @RequestHeader("Authorization") String accessToken) {
     userService.logout(userDetails.getUsername(), accessToken);
     return ResponseEntity.ok(new LogoutResponse("성공"));
+  }
+
+  @PostMapping("/reissue-token")
+  public ResponseEntity<TokenResponse> reissueToken(
+      @AuthenticationPrincipal CustomUserDetails userDetails,
+      @RequestHeader("Authorization") String accessToken,
+      @RequestBody @Valid TokenReissueRequest request) {
+    TokenResponse response = userService.reissueToken(userDetails.getUsername(),
+        accessToken, request);
+    return ResponseEntity.ok(response);
   }
 }
