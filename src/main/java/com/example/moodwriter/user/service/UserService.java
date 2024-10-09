@@ -110,7 +110,7 @@ public class UserService {
   }
 
   @Transactional
-  public void deleteUser(UUID userId, String authorizationHeader) {
+  public void deleteUser(UUID userId) {
     User user = userRepository.findById(userId)
         .orElseThrow(() -> new UserException(ErrorCode.NOT_FOUND_USER));
 

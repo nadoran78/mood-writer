@@ -64,7 +64,7 @@ public class UserController {
   public ResponseEntity<Void> deleteUser(
       @AuthenticationPrincipal CustomUserDetails userDetails,
       @RequestHeader("Authorization") String authorizationHeader) {
-    userService.deleteUser(userDetails.getId(), authorizationHeader);
+    userService.deleteUser(userDetails.getId());
     return ResponseEntity.noContent().build();
   }
 }
