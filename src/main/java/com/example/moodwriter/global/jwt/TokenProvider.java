@@ -3,6 +3,7 @@ package com.example.moodwriter.global.jwt;
 import com.example.moodwriter.global.exception.CustomException;
 import com.example.moodwriter.global.exception.code.ErrorCode;
 import com.example.moodwriter.global.jwt.dto.TokenResponse;
+import com.example.moodwriter.global.security.dto.CustomUserDetails;
 import com.example.moodwriter.global.security.service.CustomUserDetailService;
 import io.jsonwebtoken.Claims;
 import io.jsonwebtoken.ExpiredJwtException;
@@ -105,6 +106,16 @@ public class TokenProvider {
         .accessToken(accessToken)
         .refreshToken(refreshToken)
         .build();
+  }
+
+  public boolean checkUserIsDeletedByToken(String token) {
+    Claims claims = Jwts.parser().setSigningKey(secretKey).parseClaimsJws(token)
+        .getBody();
+
+    CustomUserDetails userDetails = (CustomUserDetails) customUserDetailService.loadUserByUsername(
+        claims.getSubject());
+
+    return userDetails.isDeleted();
   }
 
   public boolean validateToken(String token) {

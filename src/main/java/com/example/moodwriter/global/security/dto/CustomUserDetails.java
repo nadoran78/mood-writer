@@ -15,11 +15,13 @@ public class CustomUserDetails implements UserDetails {
   private final UUID id;
   private final String username;
   private final String role;
+  private final boolean isDeleted;
 
   public CustomUserDetails(User user) {
     this.id = user.getId();
     this.username = user.getEmail();
     this.role = user.getRole().toString();
+    this.isDeleted = user.isDeleted();
   }
 
 

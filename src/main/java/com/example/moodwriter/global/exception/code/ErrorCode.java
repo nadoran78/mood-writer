@@ -15,6 +15,7 @@ public enum ErrorCode {
   ALREADY_REGISTERED_USER(HttpStatus.BAD_REQUEST, "이미 가입한 회원입니다."),
   NOT_FOUND_USER(HttpStatus.NOT_FOUND, "입력한 이메일에 해당하는 회원이 존재하지 않습니다."),
   INCORRECT_PASSWORD(HttpStatus.BAD_REQUEST, "비밀번호가 일치하지 않습니다."),
+  ALREADY_DEACTIVATED_USER(HttpStatus.FORBIDDEN, "이미 탈퇴한 회원입니다."),
 
   FAIL_TO_UPLOAD_FILE(HttpStatus.INTERNAL_SERVER_ERROR, "파일 업로드에 실패했습니다."),
   JSON_PARSE_ERROR(HttpStatus.INTERNAL_SERVER_ERROR, "JSON 데이터 변환에 실패했습니다."),
@@ -23,7 +24,7 @@ public enum ErrorCode {
   NOT_FOUND_REFRESH_TOKEN(HttpStatus.NOT_FOUND, "저장된 리프레쉬 토큰이 없습니다."),
   UNMATCHED_SAVED_REFRESH_TOKEN(HttpStatus.FORBIDDEN, "저장된 리프레쉬 토큰과 일치하지 않습니다."),
   NEED_TO_SIGN_IN(HttpStatus.UNAUTHORIZED, "로그인이 필요합니다."),
-  ACCESS_DENIED(HttpStatus.FORBIDDEN, "접근이 제한되었습니다."),
+  ACCESS_DENIED(HttpStatus.FORBIDDEN, "접근 권한이 없습니다."),
 
 
 

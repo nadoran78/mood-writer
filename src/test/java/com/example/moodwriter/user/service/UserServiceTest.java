@@ -2,9 +2,11 @@ package com.example.moodwriter.user.service;
 
 
 import static org.junit.jupiter.api.Assertions.assertEquals;
+import static org.junit.jupiter.api.Assertions.assertFalse;
 import static org.junit.jupiter.api.Assertions.assertNotNull;
 import static org.junit.jupiter.api.Assertions.assertNull;
 import static org.junit.jupiter.api.Assertions.assertThrows;
+import static org.junit.jupiter.api.Assertions.assertTrue;
 import static org.mockito.ArgumentMatchers.any;
 import static org.mockito.ArgumentMatchers.anyList;
 import static org.mockito.BDDMockito.given;
@@ -26,6 +28,7 @@ import com.example.moodwriter.user.dto.UserResponse;
 import com.example.moodwriter.user.dto.UserUpdateRequest;
 import com.example.moodwriter.user.entity.User;
 import com.example.moodwriter.user.exception.UserException;
+import java.time.LocalDateTime;
 import java.util.ArrayList;
 import java.util.Collections;
 import java.util.List;
@@ -76,7 +79,7 @@ class UserServiceTest {
         .profilePictureUrl(null)
         .build();
 
-    given(userRepository.existsByEmail(request.getEmail())).willReturn(false);
+    given(userRepository.findByEmail(request.getEmail())).willReturn(Optional.empty());
     given(passwordEncoder.encode(request.getPassword())).willReturn("encryptedPassword");
     given(userRepository.save(any(User.class))).willReturn(user);
 
@@ -122,7 +125,7 @@ class UserServiceTest {
         .profilePictureUrl(uploadedFiles)
         .build();
 
-    given(userRepository.existsByEmail(request.getEmail())).willReturn(false);
+    given(userRepository.findByEmail(request.getEmail())).willReturn(Optional.empty());
     given(passwordEncoder.encode(request.getPassword())).willReturn("encryptedPassword");
     given(s3FileService.uploadManyFiles(request.getProfileImages(),
         FilePath.PROFILE)).willReturn(uploadedFiles);
@@ -156,12 +159,52 @@ class UserServiceTest {
         .name("하하하")
         .build();
 
-    given(userRepository.existsByEmail(request.getEmail())).willReturn(true);
+    User user = User.builder()
+        .isDeleted(false)
+        .build();
+
+    given(userRepository.findByEmail(request.getEmail())).willReturn(Optional.of(user));
 
     // when & then
-    assertThrows(UserException.class, () -> userService.registerUser(request));
-    verify(userRepository).existsByEmail(request.getEmail());
+    UserException userException = assertThrows(UserException.class,
+        () -> userService.registerUser(request));
+    assertEquals(ErrorCode.ALREADY_REGISTERED_USER, userException.getErrorCode());
+    verify(userRepository).findByEmail(request.getEmail());
 
+  }
+
+  @Test
+  void shouldReactivateUserWhenUserIsDeleted() {
+    // given
+    String email = "user@example.com";
+    String password = "Password123!";
+    String encryptedPassword = "encryptedPassword";
+
+    UserRegisterRequest request = UserRegisterRequest.builder()
+        .email(email)
+        .password(password)
+        .name("하하하")
+        .build();
+
+    User existingUser = User.builder()
+        .email(email)
+        .name("Old Name")
+        .isDeleted(true)
+        .build();
+
+    given(userRepository.findByEmail(request.getEmail())).willReturn(
+        Optional.of(existingUser));
+    given(passwordEncoder.encode(request.getPassword())).willReturn(encryptedPassword);
+
+    // when
+    UserResponse response = userService.registerUser(request);
+
+    // then
+    assertEquals(request.getName(), existingUser.getName());
+    assertEquals(encryptedPassword, existingUser.getPasswordHash());
+    assertFalse(existingUser.isDeleted());
+    assertEquals(email, response.getEmail());
+    assertEquals(request.getName(), response.getName());
   }
 
   @Test
@@ -175,6 +218,7 @@ class UserServiceTest {
     User user = User.builder()
         .email(request.getEmail())
         .passwordHash("encodedPassword") // 이미 암호화된 비밀번호
+        .isDeleted(false)
         .role(Role.ROLE_USER)
         .build();
 
@@ -225,6 +269,7 @@ class UserServiceTest {
         .email(request.getEmail())
         .passwordHash("encodedPassword") // 이미 암호화된 비밀번호
         .role(Role.ROLE_USER)
+        .isDeleted(false)
         .build();
 
     given(userRepository.findByEmail(request.getEmail())).willReturn(Optional.of(user));
@@ -235,6 +280,29 @@ class UserServiceTest {
     UserException userException = assertThrows(UserException.class,
         () -> userService.login(request));
     assertEquals(ErrorCode.INCORRECT_PASSWORD, userException.getErrorCode());
+  }
+
+  @Test
+  void shouldThrowUserExceptionWhenAlreadyDeactivatedUserTryToLogin() {
+    // given
+    UserLoginRequest request = UserLoginRequest.builder()
+        .email("test@example.com")
+        .password("password")
+        .build();
+
+    User user = User.builder()
+        .email(request.getEmail())
+        .passwordHash("encodedPassword") // 이미 암호화된 비밀번호
+        .role(Role.ROLE_USER)
+        .isDeleted(true)
+        .build();
+
+    given(userRepository.findByEmail(request.getEmail())).willReturn(Optional.of(user));
+
+    // when & then
+    UserException userException = assertThrows(UserException.class,
+        () -> userService.login(request));
+    assertEquals(ErrorCode.ALREADY_DEACTIVATED_USER, userException.getErrorCode());
   }
 
   @Test
@@ -356,6 +424,57 @@ class UserServiceTest {
     assertEquals(Collections.emptyList(), response.getProfilePictureUrl());
     verify(s3FileService, never()).uploadManyFiles(anyList(), any(FilePath.class));
     verify(s3FileService, never()).deleteManyFile(anyList());
+  }
+
+  @Test
+  void successWithdrawUser() {
+    // given
+    UUID userId = UUID.randomUUID();
+    User user = spy(User.builder()
+        .isDeleted(false)
+        .build());
+
+    given(userRepository.findById(userId)).willReturn(Optional.of(user));
+
+    // when
+    userService.withdrawUser(userId);
+
+    // then
+    verify(user).deactivateUser(any(LocalDateTime.class));
+
+    assertTrue(user.isDeleted());
+    assertNotNull(user.getDeletedAt());
+  }
+
+  @Test
+  void withdrawUserShouldThrowUserExceptionWhenUserIsNotExist() {
+    // given
+    UUID userId = UUID.randomUUID();
+
+    given(userRepository.findById(userId)).willReturn(Optional.empty());
+
+    // when & then
+    UserException userException = assertThrows(UserException.class,
+        () -> userService.withdrawUser(userId));
+
+    assertEquals(ErrorCode.NOT_FOUND_USER, userException.getErrorCode());
+  }
+
+  @Test
+  void withdrawUserShouldThrowUserExceptionWhenUserIsAlreadyDeactivated() {
+    // given
+    UUID userId = UUID.randomUUID();
+    User user = spy(User.builder()
+        .isDeleted(true)
+        .build());
+
+    given(userRepository.findById(userId)).willReturn(Optional.of(user));
+
+    // when & then
+    UserException userException = assertThrows(UserException.class,
+        () -> userService.withdrawUser(userId));
+
+    assertEquals(ErrorCode.ALREADY_DEACTIVATED_USER, userException.getErrorCode());
   }
 
 }

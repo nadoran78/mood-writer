@@ -13,6 +13,7 @@ import com.example.moodwriter.user.dto.UserResponse;
 import com.example.moodwriter.user.dto.UserUpdateRequest;
 import com.example.moodwriter.user.entity.User;
 import com.example.moodwriter.user.exception.UserException;
+import java.time.LocalDateTime;
 import java.util.List;
 import java.util.UUID;
 import lombok.RequiredArgsConstructor;
@@ -31,7 +32,10 @@ public class UserService {
 
   @Transactional
   public UserResponse registerUser(UserRegisterRequest request) {
-    if (userRepository.existsByEmail(request.getEmail())) {
+    User existingUser = userRepository.findByEmail(request.getEmail())
+        .orElse(null);
+
+    if (existingUser != null && !existingUser.isDeleted()) {
       throw new UserException(ErrorCode.ALREADY_REGISTERED_USER);
     }
 
@@ -45,6 +49,12 @@ public class UserService {
           FilePath.PROFILE);
     }
 
+    // 탈퇴한 회원 재가입
+    if (existingUser != null && existingUser.isDeleted()) {
+      existingUser.reactivate(request, encryptedPassword, profilePictureUrl);
+      return UserResponse.fromEntity(existingUser);
+    }
+
     User user = User.from(request, encryptedPassword, profilePictureUrl);
 
     User savedUser = userRepository.save(user);
@@ -56,6 +66,10 @@ public class UserService {
   public TokenResponse login(UserLoginRequest request) {
     User user = userRepository.findByEmail(request.getEmail())
         .orElseThrow(() -> new UserException(ErrorCode.NOT_FOUND_USER));
+
+    if (user.isDeleted()) {
+      throw new UserException(ErrorCode.ALREADY_DEACTIVATED_USER);
+    }
 
     if (!passwordEncoder.matches(request.getPassword(), user.getPasswordHash())) {
       throw new UserException(ErrorCode.INCORRECT_PASSWORD);
@@ -93,5 +107,17 @@ public class UserService {
     }
 
     return UserResponse.fromEntity(user);
+  }
+
+  @Transactional
+  public void withdrawUser(UUID userId) {
+    User user = userRepository.findById(userId)
+        .orElseThrow(() -> new UserException(ErrorCode.NOT_FOUND_USER));
+
+    if (user.isDeleted()) {
+      throw new UserException(ErrorCode.ALREADY_DEACTIVATED_USER);
+    }
+
+    user.deactivateUser(LocalDateTime.now());
   }
 }

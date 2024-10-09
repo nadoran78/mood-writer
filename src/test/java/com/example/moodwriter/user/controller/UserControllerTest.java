@@ -3,8 +3,10 @@ package com.example.moodwriter.user.controller;
 import static org.mockito.ArgumentMatchers.any;
 import static org.mockito.BDDMockito.given;
 import static org.mockito.Mockito.mock;
+import static org.mockito.Mockito.verify;
 import static org.mockito.Mockito.when;
 import static org.springframework.security.test.web.servlet.request.SecurityMockMvcRequestPostProcessors.csrf;
+import static org.springframework.test.web.servlet.request.MockMvcRequestBuilders.delete;
 import static org.springframework.test.web.servlet.request.MockMvcRequestBuilders.get;
 import static org.springframework.test.web.servlet.request.MockMvcRequestBuilders.post;
 import static org.springframework.test.web.servlet.result.MockMvcResultHandlers.print;
@@ -601,5 +603,13 @@ class UserControllerTest {
         .andExpect(jsonPath("$.fieldErrors[0].field").value("profileImages"))
         .andExpect(
             jsonPath("$.fieldErrors[0].message").value("프로필 이미지는 1장만 업데이트 가능합니다."));
+  }
+
+  @Test
+  void successWithdrawUser() throws Exception {
+    mockMvc.perform(delete("/api/users"))
+        .andExpect(status().isNoContent());
+
+    verify(userService).withdrawUser(userId);
   }
 }
