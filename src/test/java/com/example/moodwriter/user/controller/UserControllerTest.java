@@ -62,6 +62,8 @@ class UserControllerTest {
 
   private final UUID userId = UUID.randomUUID();
 
+  private final String email = "test@example.com";
+
   @BeforeEach
   void setup() {
     User user = mock(User.class);
@@ -69,6 +71,7 @@ class UserControllerTest {
 
     when(user.getId()).thenReturn(userId);
     when(userDetails.getId()).thenReturn(userId);
+    when(userDetails.getUsername()).thenReturn(email);
 
     SecurityContext context = SecurityContextHolder.getContext();
     context.setAuthentication(
@@ -611,5 +614,21 @@ class UserControllerTest {
         .andExpect(status().isNoContent());
 
     verify(userService).withdrawUser(userId);
+  }
+
+  @Test
+  void successLogout() throws Exception {
+    // given
+    String accessToken = "Bearer access-token";
+
+    // when & then
+    mockMvc.perform(post("/api/users/logout")
+            .contentType(MediaType.APPLICATION_JSON)
+            .header("Authorization", accessToken))
+        .andExpect(status().isOk())
+        .andExpect(jsonPath("$.message").value("성공"))
+        .andDo(print());
+
+    verify(userService).logout(email, accessToken);
   }
 }

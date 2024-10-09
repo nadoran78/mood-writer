@@ -2,6 +2,7 @@ package com.example.moodwriter.user.controller;
 
 import com.example.moodwriter.global.jwt.dto.TokenResponse;
 import com.example.moodwriter.global.security.dto.CustomUserDetails;
+import com.example.moodwriter.user.dto.LogoutResponse;
 import com.example.moodwriter.user.dto.UserLoginRequest;
 import com.example.moodwriter.user.dto.UserRegisterRequest;
 import com.example.moodwriter.user.dto.UserResponse;
@@ -65,5 +66,13 @@ public class UserController {
       @AuthenticationPrincipal CustomUserDetails userDetails) {
     userService.withdrawUser(userDetails.getId());
     return ResponseEntity.noContent().build();
+  }
+
+  @PostMapping("/logout")
+  public ResponseEntity<LogoutResponse> logout(
+      @AuthenticationPrincipal CustomUserDetails userDetails,
+      @RequestHeader("Authorization") String accessToken) {
+    userService.logout(userDetails.getUsername(), accessToken);
+    return ResponseEntity.ok(new LogoutResponse("성공"));
   }
 }
