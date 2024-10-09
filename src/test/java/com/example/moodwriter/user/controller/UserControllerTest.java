@@ -1,6 +1,7 @@
 package com.example.moodwriter.user.controller;
 
 import static org.mockito.ArgumentMatchers.any;
+import static org.mockito.ArgumentMatchers.anyString;
 import static org.mockito.BDDMockito.given;
 import static org.mockito.Mockito.mock;
 import static org.mockito.Mockito.verify;
@@ -18,6 +19,7 @@ import com.example.moodwriter.global.jwt.JwtAuthenticationToken;
 import com.example.moodwriter.global.jwt.dto.TokenResponse;
 import com.example.moodwriter.global.security.dto.CustomUserDetails;
 import com.example.moodwriter.global.security.filter.JwtAuthenticationFilter;
+import com.example.moodwriter.user.dto.TokenReissueRequest;
 import com.example.moodwriter.user.dto.UserLoginRequest;
 import com.example.moodwriter.user.dto.UserRegisterRequest;
 import com.example.moodwriter.user.dto.UserResponse;
@@ -631,4 +633,69 @@ class UserControllerTest {
 
     verify(userService).logout(email, accessToken);
   }
+
+  @Test
+  void successReissueToken() throws Exception {
+    // given
+    String accessToken = "Bearer access-token";
+    TokenReissueRequest request = new TokenReissueRequest("refresh-token");
+    TokenResponse response = TokenResponse.builder()
+        .email(email)
+        .accessToken("new-access-token")
+        .refreshToken("refresh-token")
+        .build();
+
+    given(userService.reissueToken(anyString(), anyString(),
+        any(TokenReissueRequest.class))).willReturn(response);
+
+    // when & then
+    mockMvc.perform(post("/api/users/reissue-token")
+            .contentType(MediaType.APPLICATION_JSON)
+            .content(objectMapper.writeValueAsString(request))
+            .header("Authorization", accessToken))
+        .andExpect(jsonPath("$.email").value(response.getEmail()))
+        .andExpect(jsonPath("$.accessToken").value(response.getAccessToken()))
+        .andExpect(jsonPath("$.refreshToken").value(response.getRefreshToken()));
+  }
+
+  @Test
+  void reissueTokenShouldThrowCustomExceptionWhenRefreshTokenIsNull() throws Exception {
+    // given
+    String accessToken = "Bearer access-token";
+    TokenReissueRequest request = new TokenReissueRequest(null);
+
+    // when & then
+    mockMvc.perform(post("/api/users/reissue-token")
+            .contentType(MediaType.APPLICATION_JSON)
+            .content(objectMapper.writeValueAsString(request))
+            .header("Authorization", accessToken))
+        .andDo(print())
+        .andExpect(jsonPath("$.errorCode").value("VALIDATION_ERROR"))
+        .andExpect(jsonPath("$.message").value("입력값이 유효하지 않습니다."))
+        .andExpect(jsonPath("$.path").value("/api/users/reissue-token"))
+        .andExpect(jsonPath("$.fieldErrors[0].field").value("refreshToken"))
+        .andExpect(jsonPath("$.fieldErrors[0].message").value("리프레쉬 토큰을 필수값입니다."));
+
+  }
+
+  @Test
+  void reissueTokenShouldThrowCustomExceptionWhenRefreshTokenIsEmpty() throws Exception {
+    // given
+    String accessToken = "Bearer access-token";
+    TokenReissueRequest request = new TokenReissueRequest("");
+
+    // when & then
+    mockMvc.perform(post("/api/users/reissue-token")
+            .contentType(MediaType.APPLICATION_JSON)
+            .content(objectMapper.writeValueAsString(request))
+            .header("Authorization", accessToken))
+        .andDo(print())
+        .andExpect(jsonPath("$.errorCode").value("VALIDATION_ERROR"))
+        .andExpect(jsonPath("$.message").value("입력값이 유효하지 않습니다."))
+        .andExpect(jsonPath("$.path").value("/api/users/reissue-token"))
+        .andExpect(jsonPath("$.fieldErrors[0].field").value("refreshToken"))
+        .andExpect(jsonPath("$.fieldErrors[0].message").value("리프레쉬 토큰을 필수값입니다."));
+
+  }
+
 }
