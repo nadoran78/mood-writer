@@ -120,4 +120,11 @@ public class UserService {
 
     user.deactivateUser(LocalDateTime.now());
   }
+
+  @Transactional
+  public void logout(String email, String accessToken) {
+    String resolvedAccessToken = tokenProvider.resolveTokenFromRequest(accessToken);
+    tokenProvider.addBlackList(resolvedAccessToken, email);
+    tokenProvider.deleteRefreshToken(email);
+  }
 }
