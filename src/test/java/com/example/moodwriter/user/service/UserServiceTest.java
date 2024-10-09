@@ -6,6 +6,7 @@ import static org.junit.jupiter.api.Assertions.assertFalse;
 import static org.junit.jupiter.api.Assertions.assertNotNull;
 import static org.junit.jupiter.api.Assertions.assertNull;
 import static org.junit.jupiter.api.Assertions.assertThrows;
+import static org.junit.jupiter.api.Assertions.assertTrue;
 import static org.mockito.ArgumentMatchers.any;
 import static org.mockito.ArgumentMatchers.anyList;
 import static org.mockito.BDDMockito.given;
@@ -27,6 +28,7 @@ import com.example.moodwriter.user.dto.UserResponse;
 import com.example.moodwriter.user.dto.UserUpdateRequest;
 import com.example.moodwriter.user.entity.User;
 import com.example.moodwriter.user.exception.UserException;
+import java.time.LocalDateTime;
 import java.util.ArrayList;
 import java.util.Collections;
 import java.util.List;
@@ -190,7 +192,8 @@ class UserServiceTest {
         .isDeleted(true)
         .build();
 
-    given(userRepository.findByEmail(request.getEmail())).willReturn(Optional.of(existingUser));
+    given(userRepository.findByEmail(request.getEmail())).willReturn(
+        Optional.of(existingUser));
     given(passwordEncoder.encode(request.getPassword())).willReturn(encryptedPassword);
 
     // when
@@ -421,6 +424,57 @@ class UserServiceTest {
     assertEquals(Collections.emptyList(), response.getProfilePictureUrl());
     verify(s3FileService, never()).uploadManyFiles(anyList(), any(FilePath.class));
     verify(s3FileService, never()).deleteManyFile(anyList());
+  }
+
+  @Test
+  void successWithdrawUser() {
+    // given
+    UUID userId = UUID.randomUUID();
+    User user = spy(User.builder()
+        .isDeleted(false)
+        .build());
+
+    given(userRepository.findById(userId)).willReturn(Optional.of(user));
+
+    // when
+    userService.withdrawUser(userId);
+
+    // then
+    verify(user).deactivateUser(any(LocalDateTime.class));
+
+    assertTrue(user.isDeleted());
+    assertNotNull(user.getDeletedAt());
+  }
+
+  @Test
+  void withdrawUserShouldThrowUserExceptionWhenUserIsNotExist() {
+    // given
+    UUID userId = UUID.randomUUID();
+
+    given(userRepository.findById(userId)).willReturn(Optional.empty());
+
+    // when & then
+    UserException userException = assertThrows(UserException.class,
+        () -> userService.withdrawUser(userId));
+
+    assertEquals(ErrorCode.NOT_FOUND_USER, userException.getErrorCode());
+  }
+
+  @Test
+  void withdrawUserShouldThrowUserExceptionWhenUserIsAlreadyDeactivated() {
+    // given
+    UUID userId = UUID.randomUUID();
+    User user = spy(User.builder()
+        .isDeleted(true)
+        .build());
+
+    given(userRepository.findById(userId)).willReturn(Optional.of(user));
+
+    // when & then
+    UserException userException = assertThrows(UserException.class,
+        () -> userService.withdrawUser(userId));
+
+    assertEquals(ErrorCode.ALREADY_DEACTIVATED_USER, userException.getErrorCode());
   }
 
 }

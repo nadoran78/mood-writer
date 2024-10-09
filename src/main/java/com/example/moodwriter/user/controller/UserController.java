@@ -62,8 +62,7 @@ public class UserController {
 
   @DeleteMapping
   public ResponseEntity<Void> withdrawUser(
-      @AuthenticationPrincipal CustomUserDetails userDetails,
-      @RequestHeader("Authorization") String authorizationHeader) {
+      @AuthenticationPrincipal CustomUserDetails userDetails) {
     userService.withdrawUser(userDetails.getId());
     return ResponseEntity.noContent().build();
   }
