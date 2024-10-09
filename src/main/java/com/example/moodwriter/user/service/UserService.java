@@ -7,6 +7,7 @@ import com.example.moodwriter.global.jwt.TokenProvider;
 import com.example.moodwriter.global.jwt.dto.TokenResponse;
 import com.example.moodwriter.global.service.S3FileService;
 import com.example.moodwriter.user.dao.UserRepository;
+import com.example.moodwriter.user.dto.TokenReissueRequest;
 import com.example.moodwriter.user.dto.UserLoginRequest;
 import com.example.moodwriter.user.dto.UserRegisterRequest;
 import com.example.moodwriter.user.dto.UserResponse;
@@ -98,7 +99,8 @@ public class UserService {
 
     if (request.getProfileImages() != null && !request.getProfileImages().isEmpty()) {
       List<FileDto> oldImages = user.getProfilePictureUrl();
-      List<FileDto> fileDtoList = s3FileService.uploadManyFiles(request.getProfileImages(),
+      List<FileDto> fileDtoList = s3FileService.uploadManyFiles(
+          request.getProfileImages(),
           FilePath.PROFILE);
 
       user.updateProfileImage(fileDtoList);
@@ -121,10 +123,18 @@ public class UserService {
     user.deactivateUser(LocalDateTime.now());
   }
 
-  @Transactional
   public void logout(String email, String accessToken) {
     String resolvedAccessToken = tokenProvider.resolveTokenFromRequest(accessToken);
     tokenProvider.addBlackList(resolvedAccessToken, email);
     tokenProvider.deleteRefreshToken(email);
+  }
+
+  public TokenResponse reissueToken(String email, String oldAccessToken,
+      TokenReissueRequest request) {
+    String resolvedOldAccessToken = tokenProvider.resolveTokenFromRequest(oldAccessToken);
+    TokenResponse tokenResponse = tokenProvider.regenerateAccessToken(
+        request.getRefreshToken());
+    tokenProvider.addBlackList(resolvedOldAccessToken, email);
+    return tokenResponse;
   }
 }
