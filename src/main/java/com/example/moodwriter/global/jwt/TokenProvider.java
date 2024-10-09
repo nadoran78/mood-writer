@@ -61,7 +61,10 @@ public class TokenProvider {
       redisTemplate.delete(KEY_REFRESH_TOKEN + email);
     }
 
-    redisTemplate.opsForValue().set(KEY_REFRESH_TOKEN + email, refreshToken);
+    long expirationSeconds = getTokenExpireTime(refreshToken);
+    redisTemplate.opsForValue()
+        .set(KEY_REFRESH_TOKEN + email, refreshToken, expirationSeconds,
+            TimeUnit.SECONDS);
 
     return TokenResponse.builder()
         .email(email)
