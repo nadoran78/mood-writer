@@ -42,6 +42,7 @@ public class SecurityConfig {
             .requestMatchers(HttpMethod.GET, "/api/users").hasRole(Role.ROLE_USER.getRole())
             .requestMatchers(HttpMethod.PATCH, "/api/users").hasRole(Role.ROLE_USER.getRole())
             .requestMatchers(HttpMethod.DELETE, "/api/users").hasRole(Role.ROLE_USER.getRole())
+            .requestMatchers("/api/users/logout").hasRole(Role.ROLE_USER.getRole())
             .requestMatchers("/api/users/register").permitAll()
             .requestMatchers("/api/users/login").permitAll()
             .anyRequest().authenticated())
