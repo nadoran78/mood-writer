@@ -8,6 +8,7 @@ import lombok.RequiredArgsConstructor;
 public enum FilePath {
 
   PROFILE("profile"),
+  DIARY("diary")
   ;
 
   private final String path;
