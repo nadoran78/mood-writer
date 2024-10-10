@@ -16,10 +16,9 @@ public class DiaryImageService {
 
   private final S3FileService s3FileService;
 
-  public DiaryImageUploadResponse uploadDiaryImages(UUID diaryId,
-      List<MultipartFile> diaryImages) {
+  public DiaryImageUploadResponse uploadDiaryImages(List<MultipartFile> diaryImages) {
     List<FileDto> fileDtoList = s3FileService.uploadManyFiles(diaryImages, FilePath.DIARY);
-    return DiaryImageUploadResponse.of(fileDtoList, diaryId);
+    return DiaryImageUploadResponse.of(fileDtoList);
   }
 
 }
