@@ -39,13 +39,18 @@ public class SecurityConfig {
             SessionCreationPolicy.STATELESS))
 
         .authorizeHttpRequests(request -> request
-            .requestMatchers(HttpMethod.GET, "/api/users").hasRole(Role.ROLE_USER.getRole())
-            .requestMatchers(HttpMethod.PATCH, "/api/users").hasRole(Role.ROLE_USER.getRole())
-            .requestMatchers(HttpMethod.DELETE, "/api/users").hasRole(Role.ROLE_USER.getRole())
+            .requestMatchers(HttpMethod.GET, "/api/users")
+            .hasRole(Role.ROLE_USER.getRole())
+            .requestMatchers(HttpMethod.PATCH, "/api/users")
+            .hasRole(Role.ROLE_USER.getRole())
+            .requestMatchers(HttpMethod.DELETE, "/api/users")
+            .hasRole(Role.ROLE_USER.getRole())
             .requestMatchers("/api/users/logout").hasRole(Role.ROLE_USER.getRole())
             .requestMatchers("/api/users/reissue-token").hasRole(Role.ROLE_USER.getRole())
             .requestMatchers("/api/users/register").permitAll()
             .requestMatchers("/api/users/login").permitAll()
+
+            .requestMatchers(HttpMethod.POST, "/api/diaries/images").hasRole(Role.ROLE_USER.getRole())
             .anyRequest().authenticated())
 
         .exceptionHandling(exception -> {
