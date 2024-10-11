@@ -5,7 +5,6 @@ import com.example.moodwriter.global.constant.FilePath;
 import com.example.moodwriter.global.dto.FileDto;
 import com.example.moodwriter.global.service.S3FileService;
 import java.util.List;
-import java.util.UUID;
 import lombok.RequiredArgsConstructor;
 import org.springframework.stereotype.Service;
 import org.springframework.web.multipart.MultipartFile;
