@@ -4,7 +4,8 @@ import static org.junit.jupiter.api.Assertions.assertEquals;
 import static org.mockito.BDDMockito.given;
 import static org.mockito.Mockito.mock;
 
-import com.example.moodwriter.diary.dto.DiaryImageUploadResponse;
+import com.example.moodwriter.domain.diary.dto.DiaryImageUploadResponse;
+import com.example.moodwriter.domain.diary.service.DiaryImageService;
 import com.example.moodwriter.global.constant.FilePath;
 import com.example.moodwriter.global.dto.FileDto;
 import com.example.moodwriter.global.service.S3FileService;

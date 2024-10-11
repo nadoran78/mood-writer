@@ -1,10 +1,10 @@
-package com.example.moodwriter.user.entity;
+package com.example.moodwriter.domain.user.entity;
 
 import com.example.moodwriter.global.constant.Role;
 import com.example.moodwriter.global.dto.FileDto;
 import com.example.moodwriter.global.entity.BaseEntity;
-import com.example.moodwriter.user.dto.UserRegisterRequest;
-import com.example.moodwriter.user.entity.converter.FileDtoStringConverter;
+import com.example.moodwriter.domain.user.dto.UserRegisterRequest;
+import com.example.moodwriter.domain.user.entity.converter.FileDtoStringConverter;
 import jakarta.persistence.Column;
 import jakarta.persistence.Convert;
 import jakarta.persistence.Entity;

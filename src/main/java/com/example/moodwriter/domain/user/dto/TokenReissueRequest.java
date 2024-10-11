@@ -1,4 +1,4 @@
-package com.example.moodwriter.user.dto;
+package com.example.moodwriter.domain.user.dto;
 
 import jakarta.validation.constraints.NotBlank;
 import lombok.AllArgsConstructor;

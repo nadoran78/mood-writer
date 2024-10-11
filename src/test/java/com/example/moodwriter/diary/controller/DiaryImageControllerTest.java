@@ -7,8 +7,9 @@ import static org.springframework.test.web.servlet.result.MockMvcResultHandlers.
 import static org.springframework.test.web.servlet.result.MockMvcResultMatchers.jsonPath;
 import static org.springframework.test.web.servlet.result.MockMvcResultMatchers.status;
 
-import com.example.moodwriter.diary.dto.DiaryImageUploadResponse;
-import com.example.moodwriter.diary.service.DiaryImageService;
+import com.example.moodwriter.domain.diary.controller.DiaryImageController;
+import com.example.moodwriter.domain.diary.dto.DiaryImageUploadResponse;
+import com.example.moodwriter.domain.diary.service.DiaryImageService;
 import com.example.moodwriter.global.security.filter.JwtAuthenticationFilter;
 import com.fasterxml.jackson.databind.ObjectMapper;
 import java.util.ArrayList;

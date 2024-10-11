@@ -1,4 +1,4 @@
-package com.example.moodwriter.user.dto;
+package com.example.moodwriter.domain.user.dto;
 
 import lombok.AllArgsConstructor;
 import lombok.Getter;

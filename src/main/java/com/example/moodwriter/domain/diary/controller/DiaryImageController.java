@@ -1,7 +1,7 @@
-package com.example.moodwriter.diary.controller;
+package com.example.moodwriter.domain.diary.controller;
 
-import com.example.moodwriter.diary.dto.DiaryImageUploadResponse;
-import com.example.moodwriter.diary.service.DiaryImageService;
+import com.example.moodwriter.domain.diary.dto.DiaryImageUploadResponse;
+import com.example.moodwriter.domain.diary.service.DiaryImageService;
 import com.example.moodwriter.global.constant.FileType;
 import com.example.moodwriter.global.validation.annotation.ValidFile;
 import jakarta.validation.constraints.Size;

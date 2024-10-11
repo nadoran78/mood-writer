@@ -18,7 +18,7 @@ import com.example.moodwriter.global.exception.code.ErrorCode;
 import com.example.moodwriter.global.jwt.dto.TokenResponse;
 import com.example.moodwriter.global.security.dto.CustomUserDetails;
 import com.example.moodwriter.global.security.service.CustomUserDetailService;
-import com.example.moodwriter.user.entity.User;
+import com.example.moodwriter.domain.user.entity.User;
 import io.jsonwebtoken.Claims;
 import io.jsonwebtoken.Jwts;
 import io.jsonwebtoken.SignatureAlgorithm;

@@ -1,4 +1,4 @@
-package com.example.moodwriter.user.entity.converter;
+package com.example.moodwriter.domain.user.entity.converter;
 
 import com.example.moodwriter.global.dto.FileDto;
 import com.example.moodwriter.global.exception.CustomException;

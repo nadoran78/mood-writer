@@ -14,18 +14,19 @@ import static org.springframework.test.web.servlet.result.MockMvcResultHandlers.
 import static org.springframework.test.web.servlet.result.MockMvcResultMatchers.jsonPath;
 import static org.springframework.test.web.servlet.result.MockMvcResultMatchers.status;
 
+import com.example.moodwriter.domain.user.controller.UserController;
 import com.example.moodwriter.global.dto.FileDto;
 import com.example.moodwriter.global.jwt.JwtAuthenticationToken;
 import com.example.moodwriter.global.jwt.dto.TokenResponse;
 import com.example.moodwriter.global.security.dto.CustomUserDetails;
 import com.example.moodwriter.global.security.filter.JwtAuthenticationFilter;
-import com.example.moodwriter.user.dto.TokenReissueRequest;
-import com.example.moodwriter.user.dto.UserLoginRequest;
-import com.example.moodwriter.user.dto.UserRegisterRequest;
-import com.example.moodwriter.user.dto.UserResponse;
-import com.example.moodwriter.user.dto.UserUpdateRequest;
-import com.example.moodwriter.user.entity.User;
-import com.example.moodwriter.user.service.UserService;
+import com.example.moodwriter.domain.user.dto.TokenReissueRequest;
+import com.example.moodwriter.domain.user.dto.UserLoginRequest;
+import com.example.moodwriter.domain.user.dto.UserRegisterRequest;
+import com.example.moodwriter.domain.user.dto.UserResponse;
+import com.example.moodwriter.domain.user.dto.UserUpdateRequest;
+import com.example.moodwriter.domain.user.entity.User;
+import com.example.moodwriter.domain.user.service.UserService;
 import com.fasterxml.jackson.databind.ObjectMapper;
 import java.time.LocalDateTime;
 import java.util.List;

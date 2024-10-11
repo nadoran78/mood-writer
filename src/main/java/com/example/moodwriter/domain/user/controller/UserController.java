@@ -1,14 +1,14 @@
-package com.example.moodwriter.user.controller;
+package com.example.moodwriter.domain.user.controller;
 
+import com.example.moodwriter.domain.user.dto.LogoutResponse;
+import com.example.moodwriter.domain.user.dto.TokenReissueRequest;
+import com.example.moodwriter.domain.user.dto.UserLoginRequest;
+import com.example.moodwriter.domain.user.dto.UserRegisterRequest;
+import com.example.moodwriter.domain.user.dto.UserResponse;
+import com.example.moodwriter.domain.user.dto.UserUpdateRequest;
+import com.example.moodwriter.domain.user.service.UserService;
 import com.example.moodwriter.global.jwt.dto.TokenResponse;
 import com.example.moodwriter.global.security.dto.CustomUserDetails;
-import com.example.moodwriter.user.dto.LogoutResponse;
-import com.example.moodwriter.user.dto.TokenReissueRequest;
-import com.example.moodwriter.user.dto.UserLoginRequest;
-import com.example.moodwriter.user.dto.UserRegisterRequest;
-import com.example.moodwriter.user.dto.UserResponse;
-import com.example.moodwriter.user.dto.UserUpdateRequest;
-import com.example.moodwriter.user.service.UserService;
 import jakarta.validation.Valid;
 import lombok.RequiredArgsConstructor;
 import org.springframework.http.HttpStatus;

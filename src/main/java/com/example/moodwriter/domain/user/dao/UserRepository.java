@@ -1,6 +1,6 @@
-package com.example.moodwriter.user.dao;
+package com.example.moodwriter.domain.user.dao;
 
-import com.example.moodwriter.user.entity.User;
+import com.example.moodwriter.domain.user.entity.User;
 import java.util.Optional;
 import java.util.UUID;
 import org.springframework.data.jpa.repository.JpaRepository;

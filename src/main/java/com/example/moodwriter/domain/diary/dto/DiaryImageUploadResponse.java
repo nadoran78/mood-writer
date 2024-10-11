@@ -1,4 +1,4 @@
-package com.example.moodwriter.diary.dto;
+package com.example.moodwriter.domain.diary.dto;
 
 import com.example.moodwriter.global.dto.FileDto;
 import java.util.List;

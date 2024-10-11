@@ -1,4 +1,4 @@
-package com.example.moodwriter.user.dto;
+package com.example.moodwriter.domain.user.dto;
 
 import com.example.moodwriter.global.constant.FileType;
 import com.example.moodwriter.global.constant.RegexPattern;
