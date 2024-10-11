@@ -58,7 +58,6 @@ public class ErrorResponse {
     for (ParameterValidationResult error : parameterErrors) {
       this.parameterErrors.add(new ParameterValidationError(
           error.getMethodParameter().getParameterName(),
-          error.getArgument(),
           error.getResolvableErrors().stream()
               .map(MessageSourceResolvable::getDefaultMessage).collect(Collectors.toList())
       ));
@@ -71,7 +70,6 @@ public class ErrorResponse {
   private static class ParameterValidationError {
 
     private final String parameter;
-    private final Object value;
     private final List<String> messages;
   }
 
