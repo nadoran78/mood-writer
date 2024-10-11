@@ -119,4 +119,11 @@ class DiaryImageControllerTest {
         .andExpect(jsonPath("$.parameterErrors[0].messages[0]").value(
             "유효한 파일이 아닙니다."));
   }
+
+  @Test
+  void uploadImages_shouldReturnBadRequest_whenUploadNoFile() throws Exception {
+    mockMvc.perform(multipart("/api/diaries/images"))
+        .andExpect(status().isBadRequest())
+        .andDo(print());
+  }
 }
