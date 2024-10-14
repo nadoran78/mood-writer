@@ -26,6 +26,8 @@ public enum ErrorCode {
   NEED_TO_SIGN_IN(HttpStatus.UNAUTHORIZED, "로그인이 필요합니다."),
   ACCESS_DENIED(HttpStatus.FORBIDDEN, "접근 권한이 없습니다."),
 
+  NOT_FOUND_DIARY(HttpStatus.NOT_FOUND, "해당하는 일기가 존재하지 않습니다."),
+
 
 
   ;
