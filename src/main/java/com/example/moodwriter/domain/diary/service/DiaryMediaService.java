@@ -2,6 +2,7 @@ package com.example.moodwriter.domain.diary.service;
 
 import com.example.moodwriter.domain.diary.dao.DiaryMediaRepository;
 import com.example.moodwriter.domain.diary.dao.DiaryRepository;
+import com.example.moodwriter.domain.diary.dto.DiaryImageDeleteRequest;
 import com.example.moodwriter.domain.diary.dto.DiaryImageUploadResponse;
 import com.example.moodwriter.domain.diary.entity.Diary;
 import com.example.moodwriter.domain.diary.entity.DiaryMedia;
@@ -18,6 +19,7 @@ import java.util.UUID;
 import lombok.RequiredArgsConstructor;
 import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Transactional;
+import org.springframework.util.StringUtils;
 import org.springframework.web.multipart.MultipartFile;
 
 @Service
@@ -48,6 +50,28 @@ public class DiaryMediaService {
     }
 
     return DiaryImageUploadResponse.of(fileDtoList);
+  }
+
+  @Transactional
+  public void deleteDiaryImage(UUID diaryId, UUID userId, DiaryImageDeleteRequest request) {
+
+    for (String imageUrl : request.getImageUrls()) {
+      String filename = StringUtils.getFilename(imageUrl);
+
+      DiaryMedia diaryMedia = diaryMediaRepository.findByFileName(filename)
+          .orElseThrow(() -> new DiaryException(ErrorCode.NOT_FOUND_DIARY_MEDIA));
+
+      if (!diaryMedia.getUser().getId().equals(userId)) {
+        throw new DiaryException(ErrorCode.FORBIDDEN_DELETE_MEDIA);
+      }
+
+      if (!diaryMedia.getDiary().getId().equals(diaryId)) {
+        throw new DiaryException(ErrorCode.CONFLICT_DIARY_MEDIA);
+      }
+
+      s3FileService.deleteFile(filename);
+      diaryMediaRepository.delete(diaryMedia);
+    }
   }
 
 }
