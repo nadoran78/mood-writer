@@ -48,7 +48,7 @@ public class S3FileService {
 
       String objectUrl = amazonS3Client.getUrl(bucketName, filename).toString();
 
-      return new FileDto(objectUrl, filename);
+      return new FileDto(objectUrl, filename, multipartFile.getContentType());
 
     } catch (IOException e) {
       throw new CustomException(ErrorCode.FAIL_TO_UPLOAD_FILE);
