@@ -1,7 +1,7 @@
 package com.example.moodwriter.global.security.service;
 
 import com.example.moodwriter.global.security.dto.CustomUserDetails;
-import com.example.moodwriter.user.dao.UserRepository;
+import com.example.moodwriter.domain.user.dao.UserRepository;
 import lombok.RequiredArgsConstructor;
 import org.springframework.security.core.userdetails.UserDetails;
 import org.springframework.security.core.userdetails.UserDetailsService;

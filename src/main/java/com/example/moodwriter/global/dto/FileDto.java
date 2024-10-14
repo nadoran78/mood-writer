@@ -14,4 +14,6 @@ public class FileDto {
   private String url;
 
   private String filename;
+
+  private String fileType;
 }

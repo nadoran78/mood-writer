@@ -14,6 +14,7 @@ import static org.mockito.Mockito.never;
 import static org.mockito.Mockito.spy;
 import static org.mockito.Mockito.verify;
 
+import com.example.moodwriter.domain.user.service.UserService;
 import com.example.moodwriter.global.constant.FilePath;
 import com.example.moodwriter.global.constant.Role;
 import com.example.moodwriter.global.dto.FileDto;
@@ -21,14 +22,14 @@ import com.example.moodwriter.global.exception.code.ErrorCode;
 import com.example.moodwriter.global.jwt.TokenProvider;
 import com.example.moodwriter.global.jwt.dto.TokenResponse;
 import com.example.moodwriter.global.service.S3FileService;
-import com.example.moodwriter.user.dao.UserRepository;
-import com.example.moodwriter.user.dto.TokenReissueRequest;
-import com.example.moodwriter.user.dto.UserLoginRequest;
-import com.example.moodwriter.user.dto.UserRegisterRequest;
-import com.example.moodwriter.user.dto.UserResponse;
-import com.example.moodwriter.user.dto.UserUpdateRequest;
-import com.example.moodwriter.user.entity.User;
-import com.example.moodwriter.user.exception.UserException;
+import com.example.moodwriter.domain.user.dao.UserRepository;
+import com.example.moodwriter.domain.user.dto.TokenReissueRequest;
+import com.example.moodwriter.domain.user.dto.UserLoginRequest;
+import com.example.moodwriter.domain.user.dto.UserRegisterRequest;
+import com.example.moodwriter.domain.user.dto.UserResponse;
+import com.example.moodwriter.domain.user.dto.UserUpdateRequest;
+import com.example.moodwriter.domain.user.entity.User;
+import com.example.moodwriter.domain.user.exception.UserException;
 import java.time.LocalDateTime;
 import java.util.ArrayList;
 import java.util.Collections;
@@ -117,7 +118,7 @@ class UserServiceTest {
         .build();
 
     List<FileDto> uploadedFiles = List.of(
-        new FileDto("profile.jpg", "url-to-profile.jpg"));
+        new FileDto("profile.jpg", "url-to-profile.jpg", "image/jpeg"));
 
     User user = User.builder()
         .email(request.getEmail())
@@ -314,7 +315,7 @@ class UserServiceTest {
     User user = spy(User.builder()
         .email("test@example.com")
         .name("John Doe")
-        .profilePictureUrl(List.of(new FileDto("url", "filename")))
+        .profilePictureUrl(List.of(new FileDto("url", "filename", "image/jpeg")))
         .build());
 
     given(userRepository.findById(userId)).willReturn(Optional.of(user));
@@ -368,7 +369,7 @@ class UserServiceTest {
     given(userRepository.findById(userId)).willReturn(Optional.of(user));
 
     List<FileDto> uploadedFiles = Collections.singletonList(
-        new FileDto("url-to-uploaded-image", "image1.jpg"));
+        new FileDto("url-to-uploaded-image", "image1.jpg", "image/jpeg"));
     given(s3FileService.uploadManyFiles(anyList(), any(FilePath.class))).willReturn(
         uploadedFiles);
 

@@ -14,18 +14,19 @@ import static org.springframework.test.web.servlet.result.MockMvcResultHandlers.
 import static org.springframework.test.web.servlet.result.MockMvcResultMatchers.jsonPath;
 import static org.springframework.test.web.servlet.result.MockMvcResultMatchers.status;
 
+import com.example.moodwriter.domain.user.controller.UserController;
 import com.example.moodwriter.global.dto.FileDto;
 import com.example.moodwriter.global.jwt.JwtAuthenticationToken;
 import com.example.moodwriter.global.jwt.dto.TokenResponse;
 import com.example.moodwriter.global.security.dto.CustomUserDetails;
 import com.example.moodwriter.global.security.filter.JwtAuthenticationFilter;
-import com.example.moodwriter.user.dto.TokenReissueRequest;
-import com.example.moodwriter.user.dto.UserLoginRequest;
-import com.example.moodwriter.user.dto.UserRegisterRequest;
-import com.example.moodwriter.user.dto.UserResponse;
-import com.example.moodwriter.user.dto.UserUpdateRequest;
-import com.example.moodwriter.user.entity.User;
-import com.example.moodwriter.user.service.UserService;
+import com.example.moodwriter.domain.user.dto.TokenReissueRequest;
+import com.example.moodwriter.domain.user.dto.UserLoginRequest;
+import com.example.moodwriter.domain.user.dto.UserRegisterRequest;
+import com.example.moodwriter.domain.user.dto.UserResponse;
+import com.example.moodwriter.domain.user.dto.UserUpdateRequest;
+import com.example.moodwriter.domain.user.entity.User;
+import com.example.moodwriter.domain.user.service.UserService;
 import com.fasterxml.jackson.databind.ObjectMapper;
 import java.time.LocalDateTime;
 import java.util.List;
@@ -84,7 +85,7 @@ class UserControllerTest {
   void successRegisterUser() throws Exception {
     // given
     List<FileDto> profileImages = List.of(
-        new FileDto("https://example.com/file1.jpg", "file1.jpg"));
+        new FileDto("https://example.com/file1.jpg", "file1.jpg", "image/jpeg"));
 
     UserResponse response = UserResponse.builder()
         .id(UUID.randomUUID())
@@ -145,8 +146,8 @@ class UserControllerTest {
   void failRegisterUserWithImageFileOver2() throws Exception {
     // given
     List<FileDto> profileImages = List.of(
-        new FileDto("https://example.com/file1.jpg", "file1.jpg"),
-        new FileDto("https://example.com/file2.jpg", "file2.jpg")
+        new FileDto("https://example.com/file1.jpg", "file1.jpg", "image/jpeg"),
+        new FileDto("https://example.com/file2.jpg", "file2.jpg", "image/jpeg")
     );
 
     UserResponse response = UserResponse.builder()
@@ -388,7 +389,7 @@ class UserControllerTest {
     UserResponse userResponse = UserResponse.builder()
         .id(userId)
         .name(updateName)
-        .profilePictureUrl(List.of(new FileDto("https://image.url", filename)))
+        .profilePictureUrl(List.of(new FileDto("https://image.url", filename, "image/jpeg")))
         .build();
 
     given(userService.updateUser(any(UUID.class), any(UserUpdateRequest.class)))
@@ -417,7 +418,7 @@ class UserControllerTest {
     UserResponse userResponse = UserResponse.builder()
         .id(userId)
         .name(oldName)
-        .profilePictureUrl(List.of(new FileDto("https://image.url", filename)))
+        .profilePictureUrl(List.of(new FileDto("https://image.url", filename, "image/jpeg")))
         .build();
 
     given(userService.updateUser(any(UUID.class), any(UserUpdateRequest.class)))
@@ -445,7 +446,7 @@ class UserControllerTest {
     UserResponse userResponse = UserResponse.builder()
         .id(userId)
         .name(updateName)
-        .profilePictureUrl(List.of(new FileDto("https://image.url", oldFilename)))
+        .profilePictureUrl(List.of(new FileDto("https://image.url", oldFilename, "image/jpeg")))
         .build();
 
     given(userService.updateUser(any(UUID.class), any(UserUpdateRequest.class)))
@@ -473,7 +474,7 @@ class UserControllerTest {
     UserResponse userResponse = UserResponse.builder()
         .id(userId)
         .name(oldName)
-        .profilePictureUrl(List.of(new FileDto("https://image.url", oldFilename)))
+        .profilePictureUrl(List.of(new FileDto("https://image.url", oldFilename, "image/jpeg")))
         .build();
 
     given(userService.updateUser(any(UUID.class), any(UserUpdateRequest.class)))
