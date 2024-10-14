@@ -26,7 +26,7 @@ public class DiaryMediaController {
 
   private final DiaryMediaService diaryMediaService;
 
-  @PostMapping("/images/{diary_id}")
+  @PostMapping("/images/{diaryId}")
   public ResponseEntity<DiaryImageUploadResponse> uploadImages(
       @PathVariable UUID diaryId,
       @AuthenticationPrincipal CustomUserDetails userDetails,

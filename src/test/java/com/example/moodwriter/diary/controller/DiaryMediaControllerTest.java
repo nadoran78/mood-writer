@@ -1,19 +1,25 @@
 package com.example.moodwriter.diary.controller;
 
 import static org.mockito.BDDMockito.given;
+import static org.mockito.Mockito.mock;
+import static org.mockito.Mockito.when;
 import static org.springframework.test.web.servlet.request.MockMvcRequestBuilders.multipart;
-import static org.springframework.test.web.servlet.request.MockMvcRequestBuilders.post;
 import static org.springframework.test.web.servlet.result.MockMvcResultHandlers.print;
 import static org.springframework.test.web.servlet.result.MockMvcResultMatchers.jsonPath;
 import static org.springframework.test.web.servlet.result.MockMvcResultMatchers.status;
 
-import com.example.moodwriter.domain.diary.controller.DiaryImageController;
+import com.example.moodwriter.domain.diary.controller.DiaryMediaController;
 import com.example.moodwriter.domain.diary.dto.DiaryImageUploadResponse;
-import com.example.moodwriter.domain.diary.service.DiaryImageService;
+import com.example.moodwriter.domain.diary.service.DiaryMediaService;
+import com.example.moodwriter.domain.user.entity.User;
+import com.example.moodwriter.global.jwt.JwtAuthenticationToken;
+import com.example.moodwriter.global.security.dto.CustomUserDetails;
 import com.example.moodwriter.global.security.filter.JwtAuthenticationFilter;
 import com.fasterxml.jackson.databind.ObjectMapper;
 import java.util.ArrayList;
 import java.util.List;
+import java.util.UUID;
+import org.junit.jupiter.api.BeforeEach;
 import org.junit.jupiter.api.Test;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.boot.test.autoconfigure.web.servlet.AutoConfigureMockMvc;
@@ -23,14 +29,16 @@ import org.springframework.context.annotation.ComponentScan;
 import org.springframework.context.annotation.FilterType;
 import org.springframework.http.MediaType;
 import org.springframework.mock.web.MockMultipartFile;
+import org.springframework.security.core.context.SecurityContext;
+import org.springframework.security.core.context.SecurityContextHolder;
 import org.springframework.test.web.servlet.MockMvc;
 import org.springframework.test.web.servlet.request.MockMultipartHttpServletRequestBuilder;
 
-@WebMvcTest(controllers = DiaryImageController.class,
+@WebMvcTest(controllers = DiaryMediaController.class,
     excludeFilters = {@ComponentScan.Filter(type = FilterType.ASSIGNABLE_TYPE,
         classes = JwtAuthenticationFilter.class)})
 @AutoConfigureMockMvc(addFilters = false)
-class DiaryImageControllerTest {
+class DiaryMediaControllerTest {
 
   @Autowired
   private MockMvc mockMvc;
@@ -39,11 +47,28 @@ class DiaryImageControllerTest {
   private ObjectMapper objectMapper;
 
   @MockBean
-  private DiaryImageService diaryImageService;
+  private DiaryMediaService diaryMediaService;
+
+  private final UUID userId = UUID.randomUUID();
+
+  @BeforeEach
+  void setup() {
+    User user = mock(User.class);
+    CustomUserDetails userDetails = mock(CustomUserDetails.class);
+
+    when(user.getId()).thenReturn(userId);
+    when(userDetails.getId()).thenReturn(userId);
+
+    SecurityContext context = SecurityContextHolder.getContext();
+    context.setAuthentication(
+        new JwtAuthenticationToken(userDetails, "", null));
+  }
 
   @Test
   void successUploadImages() throws Exception {
     // given
+    UUID diaryId = UUID.randomUUID();
+
     MockMultipartFile imageFile1 = createMockImage("image1.jpg");
     MockMultipartFile imageFile2 = createMockImage("image2.jpg");
 
@@ -53,11 +78,11 @@ class DiaryImageControllerTest {
         .message("이미지가 성공적으로 업로드되었습니다.")
         .build();
 
-    given(diaryImageService.uploadDiaryImages(List.of(imageFile1, imageFile2)))
-        .willReturn(response);
+    given(diaryMediaService.uploadDiaryImages(diaryId, userId,
+        List.of(imageFile1, imageFile2))).willReturn(response);
 
     // when & then
-    mockMvc.perform(multipart("/api/diaries/images")
+    mockMvc.perform(multipart("/api/diaries/images/" + diaryId)
             .file(imageFile1)
             .file(imageFile2))
         .andExpect(status().isCreated())
@@ -77,6 +102,8 @@ class DiaryImageControllerTest {
   void uploadImages_shouldReturnBadRequest_whenMoreThanMaxFileUploaded()
       throws Exception {
     // given
+    UUID diaryId = UUID.randomUUID();
+
     List<MockMultipartFile> mockMultipartFileList = new ArrayList<>();
 
     for (int i = 1; i <= 6; i++) {
@@ -85,7 +112,7 @@ class DiaryImageControllerTest {
 
     // when & then
     MockMultipartHttpServletRequestBuilder multipartRequest = multipart(
-        "/api/diaries/images");
+        "/api/diaries/images/" + diaryId);
     for (MockMultipartFile multipartFile : mockMultipartFileList) {
       multipartRequest.file(multipartFile);
     }
@@ -95,7 +122,7 @@ class DiaryImageControllerTest {
         .andDo(print())
         .andExpect(jsonPath("$.errorCode").value("VALIDATION_ERROR"))
         .andExpect(jsonPath("$.message").value("입력값이 유효하지 않습니다."))
-        .andExpect(jsonPath("$.path").value("/api/diaries/images"))
+        .andExpect(jsonPath("$.path").value("/api/diaries/images/" + diaryId))
         .andExpect(jsonPath("$.parameterErrors[0].parameter").value("imageFiles"))
         .andExpect(jsonPath("$.parameterErrors[0].messages[0]").value(
             "한 번에 업로드할 수 있는 파일의 수는 최대 5개입니다."));
@@ -105,17 +132,19 @@ class DiaryImageControllerTest {
   void uploadImages_shouldReturnBadRequest_whenInvalidFileUploaded()
       throws Exception {
     // given
+    UUID diaryId = UUID.randomUUID();
+
     MockMultipartFile invalidFile = new MockMultipartFile("images",
         "invalid-file.txt", "text/txt", "invalid-file".getBytes());
 
     // when & then
-    mockMvc.perform(multipart("/api/diaries/images")
+    mockMvc.perform(multipart("/api/diaries/images/" + diaryId)
             .file(invalidFile))
         .andExpect(status().isBadRequest())
         .andDo(print())
         .andExpect(jsonPath("$.errorCode").value("VALIDATION_ERROR"))
         .andExpect(jsonPath("$.message").value("입력값이 유효하지 않습니다."))
-        .andExpect(jsonPath("$.path").value("/api/diaries/images"))
+        .andExpect(jsonPath("$.path").value("/api/diaries/images/" + diaryId))
         .andExpect(jsonPath("$.parameterErrors[0].parameter").value("imageFiles"))
         .andExpect(jsonPath("$.parameterErrors[0].messages[0]").value(
             "유효한 파일이 아닙니다."));
@@ -123,7 +152,9 @@ class DiaryImageControllerTest {
 
   @Test
   void uploadImages_shouldReturnBadRequest_whenUploadNoFile() throws Exception {
-    mockMvc.perform(multipart("/api/diaries/images"))
+    UUID diaryId = UUID.randomUUID();
+
+    mockMvc.perform(multipart("/api/diaries/images/" + diaryId))
         .andExpect(status().isBadRequest())
         .andDo(print());
   }
