@@ -118,7 +118,7 @@ class UserServiceTest {
         .build();
 
     List<FileDto> uploadedFiles = List.of(
-        new FileDto("profile.jpg", "url-to-profile.jpg"));
+        new FileDto("profile.jpg", "url-to-profile.jpg", "image/jpeg"));
 
     User user = User.builder()
         .email(request.getEmail())
@@ -315,7 +315,7 @@ class UserServiceTest {
     User user = spy(User.builder()
         .email("test@example.com")
         .name("John Doe")
-        .profilePictureUrl(List.of(new FileDto("url", "filename")))
+        .profilePictureUrl(List.of(new FileDto("url", "filename", "image/jpeg")))
         .build());
 
     given(userRepository.findById(userId)).willReturn(Optional.of(user));
@@ -369,7 +369,7 @@ class UserServiceTest {
     given(userRepository.findById(userId)).willReturn(Optional.of(user));
 
     List<FileDto> uploadedFiles = Collections.singletonList(
-        new FileDto("url-to-uploaded-image", "image1.jpg"));
+        new FileDto("url-to-uploaded-image", "image1.jpg", "image/jpeg"));
     given(s3FileService.uploadManyFiles(anyList(), any(FilePath.class))).willReturn(
         uploadedFiles);
 

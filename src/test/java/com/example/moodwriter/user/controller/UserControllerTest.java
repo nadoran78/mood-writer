@@ -85,7 +85,7 @@ class UserControllerTest {
   void successRegisterUser() throws Exception {
     // given
     List<FileDto> profileImages = List.of(
-        new FileDto("https://example.com/file1.jpg", "file1.jpg"));
+        new FileDto("https://example.com/file1.jpg", "file1.jpg", "image/jpeg"));
 
     UserResponse response = UserResponse.builder()
         .id(UUID.randomUUID())
@@ -146,8 +146,8 @@ class UserControllerTest {
   void failRegisterUserWithImageFileOver2() throws Exception {
     // given
     List<FileDto> profileImages = List.of(
-        new FileDto("https://example.com/file1.jpg", "file1.jpg"),
-        new FileDto("https://example.com/file2.jpg", "file2.jpg")
+        new FileDto("https://example.com/file1.jpg", "file1.jpg", "image/jpeg"),
+        new FileDto("https://example.com/file2.jpg", "file2.jpg", "image/jpeg")
     );
 
     UserResponse response = UserResponse.builder()
@@ -389,7 +389,7 @@ class UserControllerTest {
     UserResponse userResponse = UserResponse.builder()
         .id(userId)
         .name(updateName)
-        .profilePictureUrl(List.of(new FileDto("https://image.url", filename)))
+        .profilePictureUrl(List.of(new FileDto("https://image.url", filename, "image/jpeg")))
         .build();
 
     given(userService.updateUser(any(UUID.class), any(UserUpdateRequest.class)))
@@ -418,7 +418,7 @@ class UserControllerTest {
     UserResponse userResponse = UserResponse.builder()
         .id(userId)
         .name(oldName)
-        .profilePictureUrl(List.of(new FileDto("https://image.url", filename)))
+        .profilePictureUrl(List.of(new FileDto("https://image.url", filename, "image/jpeg")))
         .build();
 
     given(userService.updateUser(any(UUID.class), any(UserUpdateRequest.class)))
@@ -446,7 +446,7 @@ class UserControllerTest {
     UserResponse userResponse = UserResponse.builder()
         .id(userId)
         .name(updateName)
-        .profilePictureUrl(List.of(new FileDto("https://image.url", oldFilename)))
+        .profilePictureUrl(List.of(new FileDto("https://image.url", oldFilename, "image/jpeg")))
         .build();
 
     given(userService.updateUser(any(UUID.class), any(UserUpdateRequest.class)))
@@ -474,7 +474,7 @@ class UserControllerTest {
     UserResponse userResponse = UserResponse.builder()
         .id(userId)
         .name(oldName)
-        .profilePictureUrl(List.of(new FileDto("https://image.url", oldFilename)))
+        .profilePictureUrl(List.of(new FileDto("https://image.url", oldFilename, "image/jpeg")))
         .build();
 
     given(userService.updateUser(any(UUID.class), any(UserUpdateRequest.class)))

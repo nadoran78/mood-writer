@@ -22,15 +22,17 @@ class FileDtoStringConverterTest {
   @BeforeEach
   void setUp() {
     fileDtoList = new ArrayList<>();
-    fileDtoList.add(new FileDto("https://example.com/file1.jpg", "file1.jpg"));
-    fileDtoList.add(new FileDto("https://example.com/file2.jpg", "file2.jpg"));
+    fileDtoList.add(
+        new FileDto("https://example.com/file1.jpg", "file1.jpg", "image/jpeg"));
+    fileDtoList.add(
+        new FileDto("https://example.com/file2.jpg", "file2.jpg", "image/jpeg"));
   }
 
   @Test
   void successConvertToDatabaseColumn() {
     String expectedJson =
-        "[{\"url\":\"https://example.com/file1.jpg\",\"filename\":\"file1.jpg\"},"
-            + "{\"url\":\"https://example.com/file2.jpg\",\"filename\":\"file2.jpg\"}]";
+        "[{\"url\":\"https://example.com/file1.jpg\",\"filename\":\"file1.jpg\",\"fileType\":\"image/jpeg\"},"
+            + "{\"url\":\"https://example.com/file2.jpg\",\"filename\":\"file2.jpg\",\"fileType\":\"image/jpeg\"}]";
 
     String jsonResult = fileDtoStringConverter.convertToDatabaseColumn(fileDtoList);
 
@@ -49,8 +51,9 @@ class FileDtoStringConverterTest {
   @Test
   void successConvertToEntityAttribute() {
     // given
-    String dbData = "[{\"url\":\"https://example.com/file1.jpg\",\"filename\":\"file1.jpg\"},"
-        + "{\"url\":\"https://example.com/file2.jpg\",\"filename\":\"file2.jpg\"}]";
+    String dbData =
+        "[{\"url\":\"https://example.com/file1.jpg\",\"filename\":\"file1.jpg\"},"
+            + "{\"url\":\"https://example.com/file2.jpg\",\"filename\":\"file2.jpg\"}]";
 
     // when
     List<FileDto> result = fileDtoStringConverter.convertToEntityAttribute(dbData);
