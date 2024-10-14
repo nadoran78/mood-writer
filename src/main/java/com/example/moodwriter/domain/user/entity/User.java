@@ -41,7 +41,7 @@ public class User extends BaseEntity {
   @Column(nullable = false)
   private String name;
 
-  @Column(name = "profile_picture_url")
+  @Column(name = "profile_picture_url", columnDefinition = "TEXT")
   @Convert(converter = FileDtoStringConverter.class)
   private List<FileDto> profilePictureUrl;
 
