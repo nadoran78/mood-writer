@@ -50,7 +50,8 @@ public class SecurityConfig {
             .requestMatchers("/api/users/register").permitAll()
             .requestMatchers("/api/users/login").permitAll()
 
-            .requestMatchers(HttpMethod.POST, "/api/diaries/images").hasRole(Role.ROLE_USER.getRole())
+            .requestMatchers(HttpMethod.POST, "/api/diaries/{diaryId}/images").hasRole(Role.ROLE_USER.getRole())
+            .requestMatchers(HttpMethod.DELETE, "/api/diaries/{diaryId}/images").hasRole(Role.ROLE_USER.getRole())
             .anyRequest().authenticated())
 
         .exceptionHandling(exception -> {
