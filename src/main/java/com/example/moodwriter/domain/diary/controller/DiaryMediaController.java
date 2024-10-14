@@ -26,7 +26,7 @@ public class DiaryMediaController {
 
   private final DiaryMediaService diaryMediaService;
 
-  @PostMapping("/images/{diaryId}")
+  @PostMapping("/{diaryId}/images")
   public ResponseEntity<DiaryImageUploadResponse> uploadImages(
       @PathVariable UUID diaryId,
       @AuthenticationPrincipal CustomUserDetails userDetails,
@@ -37,4 +37,6 @@ public class DiaryMediaController {
         userDetails.getId(), imageFiles);
     return ResponseEntity.status(HttpStatus.CREATED).body(response);
   }
+
+
 }

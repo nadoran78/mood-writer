@@ -82,7 +82,7 @@ class DiaryMediaControllerTest {
         List.of(imageFile1, imageFile2))).willReturn(response);
 
     // when & then
-    mockMvc.perform(multipart("/api/diaries/images/" + diaryId)
+    mockMvc.perform(multipart("/api/diaries/" + diaryId + "/images")
             .file(imageFile1)
             .file(imageFile2))
         .andExpect(status().isCreated())
@@ -112,7 +112,7 @@ class DiaryMediaControllerTest {
 
     // when & then
     MockMultipartHttpServletRequestBuilder multipartRequest = multipart(
-        "/api/diaries/images/" + diaryId);
+        "/api/diaries/" + diaryId + "/images");
     for (MockMultipartFile multipartFile : mockMultipartFileList) {
       multipartRequest.file(multipartFile);
     }
@@ -122,7 +122,7 @@ class DiaryMediaControllerTest {
         .andDo(print())
         .andExpect(jsonPath("$.errorCode").value("VALIDATION_ERROR"))
         .andExpect(jsonPath("$.message").value("입력값이 유효하지 않습니다."))
-        .andExpect(jsonPath("$.path").value("/api/diaries/images/" + diaryId))
+        .andExpect(jsonPath("$.path").value("/api/diaries/" + diaryId + "/images"))
         .andExpect(jsonPath("$.parameterErrors[0].parameter").value("imageFiles"))
         .andExpect(jsonPath("$.parameterErrors[0].messages[0]").value(
             "한 번에 업로드할 수 있는 파일의 수는 최대 5개입니다."));
@@ -138,13 +138,13 @@ class DiaryMediaControllerTest {
         "invalid-file.txt", "text/txt", "invalid-file".getBytes());
 
     // when & then
-    mockMvc.perform(multipart("/api/diaries/images/" + diaryId)
+    mockMvc.perform(multipart("/api/diaries/" + diaryId + "/images")
             .file(invalidFile))
         .andExpect(status().isBadRequest())
         .andDo(print())
         .andExpect(jsonPath("$.errorCode").value("VALIDATION_ERROR"))
         .andExpect(jsonPath("$.message").value("입력값이 유효하지 않습니다."))
-        .andExpect(jsonPath("$.path").value("/api/diaries/images/" + diaryId))
+        .andExpect(jsonPath("$.path").value("/api/diaries/" + diaryId + "/images"))
         .andExpect(jsonPath("$.parameterErrors[0].parameter").value("imageFiles"))
         .andExpect(jsonPath("$.parameterErrors[0].messages[0]").value(
             "유효한 파일이 아닙니다."));
@@ -154,7 +154,7 @@ class DiaryMediaControllerTest {
   void uploadImages_shouldReturnBadRequest_whenUploadNoFile() throws Exception {
     UUID diaryId = UUID.randomUUID();
 
-    mockMvc.perform(multipart("/api/diaries/images/" + diaryId))
+    mockMvc.perform(multipart("/api/diaries/" + diaryId + "/images"))
         .andExpect(status().isBadRequest())
         .andDo(print());
   }
