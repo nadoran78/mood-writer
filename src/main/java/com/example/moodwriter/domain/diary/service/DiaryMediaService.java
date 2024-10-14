@@ -56,7 +56,7 @@ public class DiaryMediaService {
   public void deleteDiaryImage(UUID diaryId, UUID userId, DiaryImageDeleteRequest request) {
 
     for (String imageUrl : request.getImageUrls()) {
-      String filename = StringUtils.getFilename(imageUrl);
+      String filename = "DIARY/" + StringUtils.getFilename(imageUrl);
 
       DiaryMedia diaryMedia = diaryMediaRepository.findByFileName(filename)
           .orElseThrow(() -> new DiaryException(ErrorCode.NOT_FOUND_DIARY_MEDIA));
