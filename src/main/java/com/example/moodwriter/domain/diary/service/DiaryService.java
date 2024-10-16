@@ -10,7 +10,6 @@ import com.example.moodwriter.domain.user.dao.UserRepository;
 import com.example.moodwriter.domain.user.entity.User;
 import com.example.moodwriter.domain.user.exception.UserException;
 import com.example.moodwriter.global.exception.code.ErrorCode;
-import java.util.Optional;
 import java.util.UUID;
 import lombok.RequiredArgsConstructor;
 import org.springframework.stereotype.Service;

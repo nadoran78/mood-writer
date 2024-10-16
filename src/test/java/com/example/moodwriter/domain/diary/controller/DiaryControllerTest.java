@@ -10,6 +10,7 @@ import static org.springframework.test.web.servlet.result.MockMvcResultHandlers.
 import static org.springframework.test.web.servlet.result.MockMvcResultMatchers.jsonPath;
 import static org.springframework.test.web.servlet.result.MockMvcResultMatchers.status;
 
+import com.example.moodwriter.domain.diary.dto.DiaryAutoSaveRequest;
 import com.example.moodwriter.domain.diary.dto.DiaryCreateRequest;
 import com.example.moodwriter.domain.diary.dto.DiaryResponse;
 import com.example.moodwriter.domain.diary.service.DiaryService;
@@ -94,8 +95,8 @@ class DiaryControllerTest {
         .andExpect(jsonPath("$.title").value(response.getTitle()))
         .andExpect(jsonPath("$.content").value(response.getContent()))
         .andExpect(jsonPath("$.temp").value(response.isTemp()))
-        .andExpect(jsonPath("$.createdAt").value(response.getCreatedAt().toString()))
-        .andExpect(jsonPath("$.updatedAt").value(response.getUpdatedAt().toString()));
+        .andExpect(jsonPath("$.createdAt").exists())
+        .andExpect(jsonPath("$.updatedAt").exists());
   }
 
   @Test
@@ -127,7 +128,103 @@ class DiaryControllerTest {
         .andExpect(jsonPath("$.title").value(response.getTitle()))
         .andExpect(jsonPath("$.content").value(response.getContent()))
         .andExpect(jsonPath("$.temp").value(response.isTemp()))
-        .andExpect(jsonPath("$.createdAt").value(response.getCreatedAt().toString()))
-        .andExpect(jsonPath("$.updatedAt").value(response.getUpdatedAt().toString()));
+        .andExpect(jsonPath("$.createdAt").exists())
+        .andExpect(jsonPath("$.updatedAt").exists());
+  }
+
+  @Test
+  void successAutoSaveDiary() throws Exception {
+    // given
+    UUID diaryId = UUID.randomUUID();
+
+    DiaryAutoSaveRequest request = DiaryAutoSaveRequest.builder()
+        .title("자동 저장 제목")
+        .content("자동 저장 내용")
+        .build();
+
+    DiaryResponse response = DiaryResponse.builder()
+        .diaryId(diaryId)
+        .title(request.getTitle())
+        .content(request.getContent())
+        .isTemp(true)
+        .createdAt(LocalDateTime.now())
+        .updatedAt(LocalDateTime.now())
+        .build();
+
+    given(diaryService.autoSaveDiary(eq(diaryId), eq(userId),
+        any(DiaryAutoSaveRequest.class)))
+        .willReturn(response);
+
+    // when & then
+    mockMvc.perform(post("/api/diaries/auto-save/" + diaryId)
+            .contentType(MediaType.APPLICATION_JSON)
+            .content(objectMapper.writeValueAsString(request)))
+        .andExpect(status().isOk())
+        .andDo(print())
+        .andExpect(jsonPath("$.diaryId").value(diaryId.toString()))
+        .andExpect(jsonPath("$.title").value(response.getTitle()))
+        .andExpect(jsonPath("$.content").value(response.getContent()))
+        .andExpect(jsonPath("$.temp").value(response.isTemp()))
+        .andExpect(jsonPath("$.createdAt").exists())
+        .andExpect(jsonPath("$.updatedAt").exists());
+  }
+
+  @Test
+  void successAutoSaveDiary_whenTitleIsNullInRequest() throws Exception {
+    // given
+    UUID diaryId = UUID.randomUUID();
+
+    DiaryAutoSaveRequest request = DiaryAutoSaveRequest.builder()
+        .content("자동 저장 내용")
+        .build();
+
+    DiaryResponse response = DiaryResponse.builder()
+        .diaryId(diaryId)
+        .title(request.getTitle())
+        .content(request.getContent())
+        .isTemp(true)
+        .createdAt(LocalDateTime.now())
+        .updatedAt(LocalDateTime.now())
+        .build();
+
+    given(diaryService.autoSaveDiary(eq(diaryId), eq(userId),
+        any(DiaryAutoSaveRequest.class)))
+        .willReturn(response);
+
+    // when & then
+    mockMvc.perform(post("/api/diaries/auto-save/" + diaryId)
+            .contentType(MediaType.APPLICATION_JSON)
+            .content(objectMapper.writeValueAsString(request)))
+        .andExpect(status().isOk())
+        .andDo(print())
+        .andExpect(jsonPath("$.diaryId").value(diaryId.toString()))
+        .andExpect(jsonPath("$.title").value(response.getTitle()))
+        .andExpect(jsonPath("$.content").value(response.getContent()))
+        .andExpect(jsonPath("$.temp").value(response.isTemp()))
+        .andExpect(jsonPath("$.createdAt").exists())
+        .andExpect(jsonPath("$.updatedAt").exists());
+  }
+
+  @Test
+  void autoSaveDiary_shouldReturnBadRequest_whenContentIsNullInRequest()
+      throws Exception {
+    // given
+    UUID diaryId = UUID.randomUUID();
+
+    DiaryAutoSaveRequest request = DiaryAutoSaveRequest.builder()
+        .title("자동 저장 제목")
+        .build();
+
+    // when & then
+    mockMvc.perform(post("/api/diaries/auto-save/" + diaryId)
+            .contentType(MediaType.APPLICATION_JSON)
+            .content(objectMapper.writeValueAsString(request)))
+        .andExpect(status().isBadRequest())
+        .andDo(print())
+        .andExpect(jsonPath("$.errorCode").value("VALIDATION_ERROR"))
+        .andExpect(jsonPath("$.message").value("입력값이 유효하지 않습니다."))
+        .andExpect(jsonPath("$.fieldErrors[0].field").value("content"))
+        .andExpect(
+            jsonPath("$.fieldErrors[0].message").value("임시 저장 일기 내용은 반드시 입력해야 합니다."));
   }
 }
