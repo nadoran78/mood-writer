@@ -6,6 +6,7 @@ import static org.mockito.BDDMockito.given;
 import static org.mockito.Mockito.mock;
 import static org.mockito.Mockito.when;
 import static org.springframework.test.web.servlet.request.MockMvcRequestBuilders.post;
+import static org.springframework.test.web.servlet.request.MockMvcRequestBuilders.put;
 import static org.springframework.test.web.servlet.result.MockMvcResultHandlers.print;
 import static org.springframework.test.web.servlet.result.MockMvcResultMatchers.jsonPath;
 import static org.springframework.test.web.servlet.result.MockMvcResultMatchers.status;
@@ -156,7 +157,7 @@ class DiaryControllerTest {
         .willReturn(response);
 
     // when & then
-    mockMvc.perform(post("/api/diaries/auto-save/" + diaryId)
+    mockMvc.perform(put("/api/diaries/auto-save/" + diaryId)
             .contentType(MediaType.APPLICATION_JSON)
             .content(objectMapper.writeValueAsString(request)))
         .andExpect(status().isOk())
@@ -192,7 +193,7 @@ class DiaryControllerTest {
         .willReturn(response);
 
     // when & then
-    mockMvc.perform(post("/api/diaries/auto-save/" + diaryId)
+    mockMvc.perform(put("/api/diaries/auto-save/" + diaryId)
             .contentType(MediaType.APPLICATION_JSON)
             .content(objectMapper.writeValueAsString(request)))
         .andExpect(status().isOk())
@@ -216,7 +217,7 @@ class DiaryControllerTest {
         .build();
 
     // when & then
-    mockMvc.perform(post("/api/diaries/auto-save/" + diaryId)
+    mockMvc.perform(put("/api/diaries/auto-save/" + diaryId)
             .contentType(MediaType.APPLICATION_JSON)
             .content(objectMapper.writeValueAsString(request)))
         .andExpect(status().isBadRequest())
