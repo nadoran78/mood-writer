@@ -13,7 +13,7 @@ public enum ErrorCode {
   VALIDATION_ERROR(HttpStatus.BAD_REQUEST, "입력값이 유효하지 않습니다."),
 
   ALREADY_REGISTERED_USER(HttpStatus.BAD_REQUEST, "이미 가입한 회원입니다."),
-  NOT_FOUND_USER(HttpStatus.NOT_FOUND, "입력한 이메일에 해당하는 회원이 존재하지 않습니다."),
+  NOT_FOUND_USER(HttpStatus.NOT_FOUND, "해당하는 회원이 존재하지 않습니다."),
   INCORRECT_PASSWORD(HttpStatus.BAD_REQUEST, "비밀번호가 일치하지 않습니다."),
   ALREADY_DEACTIVATED_USER(HttpStatus.FORBIDDEN, "이미 탈퇴한 회원입니다."),
 

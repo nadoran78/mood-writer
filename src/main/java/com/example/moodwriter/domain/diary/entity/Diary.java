@@ -1,5 +1,6 @@
 package com.example.moodwriter.domain.diary.entity;
 
+import com.example.moodwriter.domain.diary.dto.DiaryCreateRequest;
 import com.example.moodwriter.domain.user.entity.User;
 import com.example.moodwriter.global.entity.BaseEntity;
 import jakarta.persistence.Column;
@@ -55,5 +56,15 @@ public class Diary extends BaseEntity {
     this.isTemp = isTemp;
     this.isDeleted = isDeleted;
     this.deletedAt = deletedAt;
+  }
+
+  public static Diary from(User user, DiaryCreateRequest request) {
+    return Diary.builder()
+        .user(user)
+        .title(request.getTitle())
+        .content(request.getContent())
+        .isTemp(true)
+        .isDeleted(false)
+        .build();
   }
 }
