@@ -29,7 +29,7 @@ public enum ErrorCode {
   NOT_FOUND_DIARY(HttpStatus.NOT_FOUND, "해당하는 일기가 존재하지 않습니다."),
   NOT_FOUND_DIARY_MEDIA(HttpStatus.NOT_FOUND, "해당하는 파일이 존재하지 않습니다."),
   FORBIDDEN_DELETE_MEDIA(HttpStatus.FORBIDDEN, "해당 미디어 파일을 삭제할 권한이 없습니다."),
-  CONFLICT_DIARY_MEDIA(HttpStatus.CONFLICT, "삭제하려는 파일이 연결된 일기와 현재 장업 중인 일기가 일치하지 않습니다."),
+  CONFLICT_DIARY_MEDIA(HttpStatus.CONFLICT, "삭제하려는 파일이 연결된 일기와 현재 작업 중인 일기가 일치하지 않습니다."),
 
 
   ;
