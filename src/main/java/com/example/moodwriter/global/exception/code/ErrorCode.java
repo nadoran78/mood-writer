@@ -32,7 +32,7 @@ public enum ErrorCode {
   FORBIDDEN_AUTO_SAVE_DIARY(HttpStatus.FORBIDDEN, "일기를 임시 저장할 권한이 없습니다."),
   CONFLICT_DIARY_MEDIA(HttpStatus.CONFLICT, "삭제하려는 파일이 연결된 일기와 현재 작업 중인 일기가 일치하지 않습니다."),
   ALREADY_DELETED_DIARY(HttpStatus.FORBIDDEN, "삭제된 일기입니다."),
-  CONFLICT_DIARY_STATE(HttpStatus.CONFLICT, "일기는 이미 임시 저장 상태가 아닙니다."),
+  CONFLICT_DIARY_STATE(HttpStatus.CONFLICT, "일기는 임시 저장 가능 상태가 아닙니다."),
 
 
   ;
