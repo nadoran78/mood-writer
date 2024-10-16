@@ -1,14 +1,19 @@
 package com.example.moodwriter.diary.controller;
 
+import static org.junit.jupiter.api.Assertions.assertEquals;
+import static org.mockito.ArgumentMatchers.eq;
 import static org.mockito.BDDMockito.given;
 import static org.mockito.Mockito.mock;
+import static org.mockito.Mockito.verify;
 import static org.mockito.Mockito.when;
+import static org.springframework.test.web.servlet.request.MockMvcRequestBuilders.delete;
 import static org.springframework.test.web.servlet.request.MockMvcRequestBuilders.multipart;
 import static org.springframework.test.web.servlet.result.MockMvcResultHandlers.print;
 import static org.springframework.test.web.servlet.result.MockMvcResultMatchers.jsonPath;
 import static org.springframework.test.web.servlet.result.MockMvcResultMatchers.status;
 
 import com.example.moodwriter.domain.diary.controller.DiaryMediaController;
+import com.example.moodwriter.domain.diary.dto.DiaryImageDeleteRequest;
 import com.example.moodwriter.domain.diary.dto.DiaryImageUploadResponse;
 import com.example.moodwriter.domain.diary.service.DiaryMediaService;
 import com.example.moodwriter.domain.user.entity.User;
@@ -21,6 +26,7 @@ import java.util.List;
 import java.util.UUID;
 import org.junit.jupiter.api.BeforeEach;
 import org.junit.jupiter.api.Test;
+import org.mockito.ArgumentCaptor;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.boot.test.autoconfigure.web.servlet.AutoConfigureMockMvc;
 import org.springframework.boot.test.autoconfigure.web.servlet.WebMvcTest;
@@ -82,7 +88,7 @@ class DiaryMediaControllerTest {
         List.of(imageFile1, imageFile2))).willReturn(response);
 
     // when & then
-    mockMvc.perform(multipart("/api/diaries/images/" + diaryId)
+    mockMvc.perform(multipart("/api/diaries/" + diaryId + "/images")
             .file(imageFile1)
             .file(imageFile2))
         .andExpect(status().isCreated())
@@ -112,7 +118,7 @@ class DiaryMediaControllerTest {
 
     // when & then
     MockMultipartHttpServletRequestBuilder multipartRequest = multipart(
-        "/api/diaries/images/" + diaryId);
+        "/api/diaries/" + diaryId + "/images");
     for (MockMultipartFile multipartFile : mockMultipartFileList) {
       multipartRequest.file(multipartFile);
     }
@@ -122,7 +128,7 @@ class DiaryMediaControllerTest {
         .andDo(print())
         .andExpect(jsonPath("$.errorCode").value("VALIDATION_ERROR"))
         .andExpect(jsonPath("$.message").value("입력값이 유효하지 않습니다."))
-        .andExpect(jsonPath("$.path").value("/api/diaries/images/" + diaryId))
+        .andExpect(jsonPath("$.path").value("/api/diaries/" + diaryId + "/images"))
         .andExpect(jsonPath("$.parameterErrors[0].parameter").value("imageFiles"))
         .andExpect(jsonPath("$.parameterErrors[0].messages[0]").value(
             "한 번에 업로드할 수 있는 파일의 수는 최대 5개입니다."));
@@ -138,13 +144,13 @@ class DiaryMediaControllerTest {
         "invalid-file.txt", "text/txt", "invalid-file".getBytes());
 
     // when & then
-    mockMvc.perform(multipart("/api/diaries/images/" + diaryId)
+    mockMvc.perform(multipart("/api/diaries/" + diaryId + "/images")
             .file(invalidFile))
         .andExpect(status().isBadRequest())
         .andDo(print())
         .andExpect(jsonPath("$.errorCode").value("VALIDATION_ERROR"))
         .andExpect(jsonPath("$.message").value("입력값이 유효하지 않습니다."))
-        .andExpect(jsonPath("$.path").value("/api/diaries/images/" + diaryId))
+        .andExpect(jsonPath("$.path").value("/api/diaries/" + diaryId + "/images"))
         .andExpect(jsonPath("$.parameterErrors[0].parameter").value("imageFiles"))
         .andExpect(jsonPath("$.parameterErrors[0].messages[0]").value(
             "유효한 파일이 아닙니다."));
@@ -154,8 +160,75 @@ class DiaryMediaControllerTest {
   void uploadImages_shouldReturnBadRequest_whenUploadNoFile() throws Exception {
     UUID diaryId = UUID.randomUUID();
 
-    mockMvc.perform(multipart("/api/diaries/images/" + diaryId))
+    mockMvc.perform(multipart("/api/diaries/" + diaryId + "/images"))
         .andExpect(status().isBadRequest())
         .andDo(print());
+  }
+
+  @Test
+  void successDeleteImage() throws Exception {
+    // given
+    UUID diaryId = UUID.randomUUID();
+
+    DiaryImageDeleteRequest request = new DiaryImageDeleteRequest(
+        List.of("https://example.com/image1.jpg", "https://example.com/image2.jpg"));
+
+    // when & then
+    mockMvc.perform(delete("/api/diaries/" + diaryId + "/images")
+            .contentType(MediaType.APPLICATION_JSON)
+            .content(objectMapper.writeValueAsString(request)))
+        .andExpect(status().isNoContent());
+
+    ArgumentCaptor<DiaryImageDeleteRequest> argumentCaptor = ArgumentCaptor.forClass(
+        DiaryImageDeleteRequest.class);
+    verify(diaryMediaService).deleteDiaryImage(eq(diaryId), eq(userId),
+        argumentCaptor.capture());
+
+    assertEquals(request.getImageUrls().get(0),
+        argumentCaptor.getValue().getImageUrls().get(0));
+    assertEquals(request.getImageUrls().get(1),
+        argumentCaptor.getValue().getImageUrls().get(1));
+  }
+
+  @Test
+  void deleteImage_shouldReturnBadRequest_whenImageUrlListIsEmpty()
+      throws Exception {
+    // given
+    UUID diaryId = UUID.randomUUID();
+
+    DiaryImageDeleteRequest request = new DiaryImageDeleteRequest(new ArrayList<>());
+
+    // when & then
+    mockMvc.perform(delete("/api/diaries/" + diaryId + "/images")
+            .contentType(MediaType.APPLICATION_JSON)
+            .content(objectMapper.writeValueAsString(request)))
+        .andExpect(status().isBadRequest())
+        .andDo(print())
+        .andExpect(jsonPath("$.errorCode").value("VALIDATION_ERROR"))
+        .andExpect(jsonPath("$.message").value("입력값이 유효하지 않습니다."))
+        .andExpect(jsonPath("$.fieldErrors[0].field").value("imageUrls"))
+        .andExpect(
+            jsonPath("$.fieldErrors[0].message").value("이미지 URL 목록은 비어 있을 수 없습니다."));
+  }
+
+  @Test
+  void deleteImage_shouldReturnBadRequest_whenImageUrlListIsNull()
+      throws Exception {
+    // given
+    UUID diaryId = UUID.randomUUID();
+
+    DiaryImageDeleteRequest request = new DiaryImageDeleteRequest(null);
+
+    // when & then
+    mockMvc.perform(delete("/api/diaries/" + diaryId + "/images")
+            .contentType(MediaType.APPLICATION_JSON)
+            .content(objectMapper.writeValueAsString(request)))
+        .andExpect(status().isBadRequest())
+        .andDo(print())
+        .andExpect(jsonPath("$.errorCode").value("VALIDATION_ERROR"))
+        .andExpect(jsonPath("$.message").value("입력값이 유효하지 않습니다."))
+        .andExpect(jsonPath("$.fieldErrors[0].field").value("imageUrls"))
+        .andExpect(
+            jsonPath("$.fieldErrors[0].message").value("이미지 URL 목록은 비어 있을 수 없습니다."));
   }
 }

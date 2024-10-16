@@ -9,6 +9,7 @@ import static org.mockito.Mockito.verify;
 
 import com.example.moodwriter.domain.diary.dao.DiaryMediaRepository;
 import com.example.moodwriter.domain.diary.dao.DiaryRepository;
+import com.example.moodwriter.domain.diary.dto.DiaryImageDeleteRequest;
 import com.example.moodwriter.domain.diary.dto.DiaryImageUploadResponse;
 import com.example.moodwriter.domain.diary.entity.Diary;
 import com.example.moodwriter.domain.diary.entity.DiaryMedia;
@@ -135,5 +136,121 @@ class DiaryMediaServiceTest {
             diaryId, userId, List.of(mockImage1, mockImage2)));
 
     assertEquals(ErrorCode.NOT_FOUND_DIARY, diaryException.getErrorCode());
+  }
+
+  @Test
+  void successDeleteDiaryImage() {
+    // given
+    UUID userId = UUID.randomUUID();
+    UUID diaryId = UUID.randomUUID();
+
+    DiaryImageDeleteRequest request = new DiaryImageDeleteRequest(
+        List.of("https://example.com/image1.jpg", "https://example.com/image2.jpg"));
+
+    User user = mock(User.class);
+    Diary diary = mock(Diary.class);
+    DiaryMedia diaryMedia = DiaryMedia.builder()
+        .user(user)
+        .diary(diary)
+        .build();
+
+    String filename1 = "DIARY/image1.jpg";
+    String filename2 = "DIARY/image2.jpg";
+
+    given(user.getId()).willReturn(userId);
+    given(diary.getId()).willReturn(diaryId);
+    given(diaryMediaRepository.findByFileName(filename1)).willReturn(
+        Optional.of(diaryMedia));
+    given(diaryMediaRepository.findByFileName(filename2)).willReturn(
+        Optional.of(diaryMedia));
+
+    // when
+    diaryMediaService.deleteDiaryImage(diaryId, userId, request);
+
+    // then
+    verify(s3FileService, times(1)).deleteFile(filename1);
+    verify(s3FileService, times(1)).deleteFile(filename2);
+    verify(diaryMediaRepository, times(2)).delete(diaryMedia);
+  }
+
+  @Test
+  void deleteDiaryImage_shouldReturnDiaryException_whenDiaryMediaIsNotExist() {
+    // given
+    UUID userId = UUID.randomUUID();
+    UUID diaryId = UUID.randomUUID();
+
+    DiaryImageDeleteRequest request = new DiaryImageDeleteRequest(
+        List.of("https://example.com/image1.jpg", "https://example.com/image2.jpg"));
+
+    String filename1 = "DIARY/image1.jpg";
+
+    given(diaryMediaRepository.findByFileName(filename1)).willReturn(Optional.empty());
+
+    // when & then
+    DiaryException diaryException = assertThrows(DiaryException.class,
+        () -> diaryMediaService.deleteDiaryImage(diaryId, userId, request));
+
+    assertEquals(ErrorCode.NOT_FOUND_DIARY_MEDIA, diaryException.getErrorCode());
+  }
+
+  @Test
+  void deleteDiaryImage_shouldReturnDiaryException_whenUserIsNotMatched() {
+    // given
+    UUID userId = UUID.randomUUID();
+    UUID diaryId = UUID.randomUUID();
+
+    DiaryImageDeleteRequest request = new DiaryImageDeleteRequest(
+        List.of("https://example.com/image1.jpg", "https://example.com/image2.jpg"));
+
+    User user = mock(User.class);
+    Diary diary = mock(Diary.class);
+    DiaryMedia diaryMedia = DiaryMedia.builder()
+        .user(user)
+        .diary(diary)
+        .build();
+
+    String filename1 = "DIARY/image1.jpg";
+    UUID unmatchedUserId = UUID.randomUUID();
+
+    given(user.getId()).willReturn(unmatchedUserId);
+    given(diaryMediaRepository.findByFileName(filename1)).willReturn(
+        Optional.of(diaryMedia));
+
+    // when & then
+    DiaryException diaryException = assertThrows(DiaryException.class,
+        () -> diaryMediaService.deleteDiaryImage(diaryId, userId, request));
+
+    assertEquals(ErrorCode.FORBIDDEN_DELETE_MEDIA, diaryException.getErrorCode());
+  }
+
+  @Test
+  void deleteDiaryImage_shouldReturnDiaryException_whenDiaryIsNotMatched() {
+    // given
+    UUID userId = UUID.randomUUID();
+    UUID diaryId = UUID.randomUUID();
+
+    DiaryImageDeleteRequest request = new DiaryImageDeleteRequest(
+        List.of("https://example.com/image1.jpg", "https://example.com/image2.jpg"));
+
+    User user = mock(User.class);
+    Diary diary = mock(Diary.class);
+    DiaryMedia diaryMedia = DiaryMedia.builder()
+        .user(user)
+        .diary(diary)
+        .build();
+
+    String filename1 = "DIARY/image1.jpg";
+    UUID unmatchedDiaryId = UUID.randomUUID();
+
+    given(user.getId()).willReturn(userId);
+    given(diary.getId()).willReturn(unmatchedDiaryId);
+    given(diaryMediaRepository.findByFileName(filename1)).willReturn(
+        Optional.of(diaryMedia));
+
+    // when & then
+    DiaryException diaryException = assertThrows(DiaryException.class,
+        () -> diaryMediaService.deleteDiaryImage(diaryId, userId, request));
+
+    assertEquals(ErrorCode.CONFLICT_DIARY_MEDIA, diaryException.getErrorCode());
   }
 }

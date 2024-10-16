@@ -28,14 +28,16 @@ CREATE TABLE diaries (
 ) ENGINE=InnoDB DEFAULT CHARSET=utf8mb4;
 
 CREATE TABLE diary_media (
-                         id BINARY(16) NOT NULL,
+                         id BIGINT NOT NULL AUTO_INCREMENT,
                          user_id BINARY(16) NOT NULL,
                          diary_id BINARY(16) NOT NULL,
                          file_url VARCHAR(255) NOT NULL,
                          file_type VARCHAR(50) NOT NULL,
+                         file_name VARCHAR(50) NOT NULL,
                          created_at DATETIME,
                          updated_at DATETIME,
                          PRIMARY KEY (id),
                          FOREIGN KEY (user_id) REFERENCES users(id), -- users 테이블의 id와 외래키 설정
-                         FOREIGN KEY (diary_id) REFERENCES diaries(id) -- diaries 테이블의 id와 외래키 설정
+                         FOREIGN KEY (diary_id) REFERENCES diaries(id), -- diaries 테이블의 id와 외래키 설정
+                         INDEX idx_file_name_prefix (file_name(16))
 ) ENGINE=InnoDB DEFAULT CHARSET=utf8mb4;
