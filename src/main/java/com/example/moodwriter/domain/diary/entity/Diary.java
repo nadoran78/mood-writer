@@ -1,5 +1,6 @@
 package com.example.moodwriter.domain.diary.entity;
 
+import com.example.moodwriter.domain.diary.dto.DiaryAutoSaveRequest;
 import com.example.moodwriter.domain.diary.dto.DiaryCreateRequest;
 import com.example.moodwriter.domain.user.entity.User;
 import com.example.moodwriter.global.entity.BaseEntity;
@@ -66,5 +67,10 @@ public class Diary extends BaseEntity {
         .isTemp(true)
         .isDeleted(false)
         .build();
+  }
+
+  public void autoSave(DiaryAutoSaveRequest request) {
+    this.title = request.getTitle();
+    this.content = request.getContent();
   }
 }
