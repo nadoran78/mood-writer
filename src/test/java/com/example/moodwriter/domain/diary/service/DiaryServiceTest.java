@@ -164,7 +164,7 @@ class DiaryServiceTest {
     DiaryException diaryException = assertThrows(DiaryException.class,
         () -> diaryService.autoSaveDiary(diaryId, userId, request));
 
-    assertEquals(ErrorCode.FORBIDDEN_AUTO_SAVE_DIARY, diaryException.getErrorCode());
+    assertEquals(ErrorCode.FORBIDDEN_ACCESS_DIARY, diaryException.getErrorCode());
   }
 
   @Test

@@ -2,6 +2,7 @@ package com.example.moodwriter.domain.diary.controller;
 
 import com.example.moodwriter.domain.diary.dto.DiaryAutoSaveRequest;
 import com.example.moodwriter.domain.diary.dto.DiaryCreateRequest;
+import com.example.moodwriter.domain.diary.dto.DiaryFinalSaveRequest;
 import com.example.moodwriter.domain.diary.dto.DiaryResponse;
 import com.example.moodwriter.domain.diary.service.DiaryService;
 import com.example.moodwriter.global.security.dto.CustomUserDetails;
@@ -39,6 +40,16 @@ public class DiaryController {
       @AuthenticationPrincipal CustomUserDetails userDetails,
       @RequestBody @Valid DiaryAutoSaveRequest request) {
     DiaryResponse response = diaryService.autoSaveDiary(diaryId, userDetails.getId(),
+        request);
+    return ResponseEntity.ok(response);
+  }
+
+  @PutMapping("/{diaryId}")
+  public ResponseEntity<DiaryResponse> finalSaveDiary(
+      @PathVariable UUID diaryId,
+      @AuthenticationPrincipal CustomUserDetails userDetails,
+      @RequestBody @Valid DiaryFinalSaveRequest request) {
+    DiaryResponse response = diaryService.finalSaveDiary(diaryId, userDetails.getId(),
         request);
     return ResponseEntity.ok(response);
   }
