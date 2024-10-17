@@ -13,12 +13,14 @@ import static org.springframework.test.web.servlet.result.MockMvcResultMatchers.
 
 import com.example.moodwriter.domain.diary.dto.DiaryAutoSaveRequest;
 import com.example.moodwriter.domain.diary.dto.DiaryCreateRequest;
+import com.example.moodwriter.domain.diary.dto.DiaryFinalSaveRequest;
 import com.example.moodwriter.domain.diary.dto.DiaryResponse;
 import com.example.moodwriter.domain.diary.service.DiaryService;
 import com.example.moodwriter.domain.user.entity.User;
 import com.example.moodwriter.global.jwt.JwtAuthenticationToken;
 import com.example.moodwriter.global.security.dto.CustomUserDetails;
 import com.example.moodwriter.global.security.filter.JwtAuthenticationFilter;
+import com.fasterxml.jackson.core.JsonProcessingException;
 import com.fasterxml.jackson.databind.ObjectMapper;
 import java.time.LocalDateTime;
 import java.util.UUID;
@@ -227,5 +229,87 @@ class DiaryControllerTest {
         .andExpect(jsonPath("$.fieldErrors[0].field").value("content"))
         .andExpect(
             jsonPath("$.fieldErrors[0].message").value("임시 저장 일기 내용은 반드시 입력해야 합니다."));
+  }
+
+  @Test
+  void successFinalSaveDiary() throws Exception {
+    // given
+    UUID diaryId = UUID.randomUUID();
+
+    DiaryFinalSaveRequest request = DiaryFinalSaveRequest.builder()
+        .title("최종 저장 제목")
+        .content("최종 저장 내용")
+        .build();
+
+    DiaryResponse response = DiaryResponse.builder()
+        .diaryId(diaryId)
+        .title(request.getTitle())
+        .content(request.getContent())
+        .isTemp(true)
+        .createdAt(LocalDateTime.now())
+        .updatedAt(LocalDateTime.now())
+        .build();
+
+    given(diaryService.finalSaveDiary(eq(diaryId), eq(userId),
+        any(DiaryFinalSaveRequest.class))).willReturn(response);
+
+    // when & then
+    mockMvc.perform(put("/api/diaries/" + diaryId)
+        .contentType(MediaType.APPLICATION_JSON)
+        .content(objectMapper.writeValueAsString(request)))
+        .andExpect(status().isOk())
+        .andDo(print())
+        .andExpect(jsonPath("$.diaryId").value(diaryId.toString()))
+        .andExpect(jsonPath("$.title").value(response.getTitle()))
+        .andExpect(jsonPath("$.content").value(response.getContent()))
+        .andExpect(jsonPath("$.temp").value(response.isTemp()))
+        .andExpect(jsonPath("$.createdAt").exists())
+        .andExpect(jsonPath("$.updatedAt").exists());
+  }
+
+  @Test
+  void finalSaveDiary_shouldReturnBadRequest_whenContentIsNullInRequest()
+      throws Exception {
+    // given
+    UUID diaryId = UUID.randomUUID();
+
+    DiaryFinalSaveRequest request = DiaryFinalSaveRequest.builder()
+        .title("최종 저장 제목")
+        .build();
+
+    // when & then
+    mockMvc.perform(put("/api/diaries/" + diaryId)
+            .contentType(MediaType.APPLICATION_JSON)
+            .content(objectMapper.writeValueAsString(request)))
+        .andExpect(status().isBadRequest())
+        .andDo(print())
+        .andExpect(jsonPath("$.errorCode").value("VALIDATION_ERROR"))
+        .andExpect(jsonPath("$.message").value("입력값이 유효하지 않습니다."))
+        .andExpect(jsonPath("$.fieldErrors[0].field").value("content"))
+        .andExpect(
+            jsonPath("$.fieldErrors[0].message").value("내용을 입력해주세요."));
+  }
+
+  @Test
+  void finalSaveDiary_shouldReturnBadRequest_whenTitleIsNullInRequest()
+      throws Exception {
+    // given
+    UUID diaryId = UUID.randomUUID();
+
+    DiaryFinalSaveRequest request = DiaryFinalSaveRequest.builder()
+        .content("최종 저장 내용")
+        .build();
+
+    // when & then
+    mockMvc.perform(put("/api/diaries/" + diaryId)
+            .contentType(MediaType.APPLICATION_JSON)
+            .content(objectMapper.writeValueAsString(request)))
+        .andExpect(status().isBadRequest())
+        .andDo(print())
+        .andExpect(jsonPath("$.errorCode").value("VALIDATION_ERROR"))
+        .andExpect(jsonPath("$.message").value("입력값이 유효하지 않습니다."))
+        .andExpect(jsonPath("$.fieldErrors[0].field").value("title"))
+        .andExpect(
+            jsonPath("$.fieldErrors[0].message").value("제목을 입력해주세요."));
   }
 }
