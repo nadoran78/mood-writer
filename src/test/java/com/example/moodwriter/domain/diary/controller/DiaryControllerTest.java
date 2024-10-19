@@ -20,7 +20,6 @@ import com.example.moodwriter.domain.user.entity.User;
 import com.example.moodwriter.global.jwt.JwtAuthenticationToken;
 import com.example.moodwriter.global.security.dto.CustomUserDetails;
 import com.example.moodwriter.global.security.filter.JwtAuthenticationFilter;
-import com.fasterxml.jackson.core.JsonProcessingException;
 import com.fasterxml.jackson.databind.ObjectMapper;
 import java.time.LocalDateTime;
 import java.util.UUID;
