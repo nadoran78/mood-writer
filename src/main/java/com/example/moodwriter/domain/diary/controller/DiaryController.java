@@ -12,6 +12,7 @@ import lombok.RequiredArgsConstructor;
 import org.springframework.http.HttpStatus;
 import org.springframework.http.ResponseEntity;
 import org.springframework.security.core.annotation.AuthenticationPrincipal;
+import org.springframework.web.bind.annotation.PatchMapping;
 import org.springframework.web.bind.annotation.PathVariable;
 import org.springframework.web.bind.annotation.PostMapping;
 import org.springframework.web.bind.annotation.PutMapping;
@@ -53,5 +54,15 @@ public class DiaryController {
         request);
     return ResponseEntity.ok(response);
   }
+
+  @PatchMapping("/{diaryId}")
+  public ResponseEntity<DiaryResponse> startEditingDiary(
+      @PathVariable UUID diaryId,
+      @AuthenticationPrincipal CustomUserDetails userDetails) {
+    DiaryResponse response = diaryService.startEditingDiary(diaryId, userDetails.getId());
+    return ResponseEntity.ok(response);
+  }
+
+  // TODO: 10/19/24 위에 다이어리 수정 메서드 test 시작(API 테스트, 테스트 코드)
 
 }
