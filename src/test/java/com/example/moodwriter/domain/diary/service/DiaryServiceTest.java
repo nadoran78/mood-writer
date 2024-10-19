@@ -11,6 +11,7 @@ import static org.mockito.Mockito.verify;
 import com.example.moodwriter.domain.diary.dao.DiaryRepository;
 import com.example.moodwriter.domain.diary.dto.DiaryAutoSaveRequest;
 import com.example.moodwriter.domain.diary.dto.DiaryCreateRequest;
+import com.example.moodwriter.domain.diary.dto.DiaryFinalSaveRequest;
 import com.example.moodwriter.domain.diary.dto.DiaryResponse;
 import com.example.moodwriter.domain.diary.entity.Diary;
 import com.example.moodwriter.domain.diary.exception.DiaryException;
@@ -144,7 +145,7 @@ class DiaryServiceTest {
   }
 
   @Test
-  void autoSaveDiary_shouldReturnDiaryException_whenUserIsNotMatch() {
+  void autoSaveDiary_shouldReturnUserException_whenUserIsNotMatch() {
     // given
     UUID diaryId = mock(UUID.class);
     UUID userId = UUID.randomUUID();
@@ -161,10 +162,10 @@ class DiaryServiceTest {
     given(diaryRepository.findById(diaryId)).willReturn(Optional.of(diary));
 
     // when & then
-    DiaryException diaryException = assertThrows(DiaryException.class,
+    UserException userException = assertThrows(UserException.class,
         () -> diaryService.autoSaveDiary(diaryId, userId, request));
 
-    assertEquals(ErrorCode.FORBIDDEN_AUTO_SAVE_DIARY, diaryException.getErrorCode());
+    assertEquals(ErrorCode.FORBIDDEN_ACCESS_DIARY, userException.getErrorCode());
   }
 
   @Test
@@ -216,4 +217,131 @@ class DiaryServiceTest {
     assertEquals(ErrorCode.CONFLICT_DIARY_STATE, diaryException.getErrorCode());
   }
 
+  @Test
+  void successFinalSaveDiary() {
+    // given
+    UUID diaryId = UUID.randomUUID();
+    UUID userId = UUID.randomUUID();
+
+    DiaryFinalSaveRequest request = DiaryFinalSaveRequest.builder()
+        .title("최종 저장 제목")
+        .content("최종 저장 내용")
+        .build();
+
+    User user = mock(User.class);
+    given(user.getId()).willReturn(userId);
+
+    LocalDateTime now = LocalDateTime.now();
+    Diary diary = spy(Diary.builder()
+        .user(user)
+        .isTemp(true)
+        .isDeleted(false)
+        .build());
+    given(diary.getId()).willReturn(diaryId);
+    given(diary.getCreatedAt()).willReturn(now);
+    given(diary.getUpdatedAt()).willReturn(now);
+
+    given(diaryRepository.findById(diaryId)).willReturn(Optional.of(diary));
+    given(diaryRepository.save(diary)).will(returnsFirstArg());
+
+    // when
+    DiaryResponse response = diaryService.finalSaveDiary(diaryId, userId, request);
+
+    // then
+    assertEquals(diaryId, response.getDiaryId());
+    assertEquals(request.getTitle(), response.getTitle());
+    assertEquals(request.getContent(), response.getContent());
+    assertFalse(response.isTemp());
+    assertEquals(now, response.getCreatedAt());
+    assertEquals(now, response.getUpdatedAt());
+  }
+
+  @Test
+  void finalSaveDiary_shouldReturnDiaryException_whenDiaryIsNotExist() {
+    // given
+    UUID diaryId = mock(UUID.class);
+    UUID userId = mock(UUID.class);
+    DiaryFinalSaveRequest request = mock(DiaryFinalSaveRequest.class);
+
+    given(diaryRepository.findById(diaryId)).willReturn(Optional.empty());
+
+    // when & then
+    DiaryException diaryException = assertThrows(DiaryException.class,
+        () -> diaryService.finalSaveDiary(diaryId, userId, request));
+
+    assertEquals(ErrorCode.NOT_FOUND_DIARY, diaryException.getErrorCode());
+  }
+
+  @Test
+  void finalSaveDiary_shouldReturnUserException_whenUserIsNotMatch() {
+    // given
+    UUID diaryId = mock(UUID.class);
+    UUID userId = UUID.randomUUID();
+    DiaryFinalSaveRequest request = mock(DiaryFinalSaveRequest.class);
+
+    User user = mock(User.class);
+    UUID invalidUserId = UUID.randomUUID();
+    given(user.getId()).willReturn(invalidUserId);
+
+    Diary diary = Diary.builder()
+        .user(user)
+        .build();
+
+    given(diaryRepository.findById(diaryId)).willReturn(Optional.of(diary));
+
+    // when & then
+    UserException userException = assertThrows(UserException.class,
+        () -> diaryService.finalSaveDiary(diaryId, userId, request));
+
+    assertEquals(ErrorCode.FORBIDDEN_ACCESS_DIARY, userException.getErrorCode());
+  }
+
+  @Test
+  void finalSaveDiary_shouldReturnDiaryException_whenDiaryIsDeleted() {
+    // given
+    UUID diaryId = mock(UUID.class);
+    UUID userId = UUID.randomUUID();
+    DiaryFinalSaveRequest request = mock(DiaryFinalSaveRequest.class);
+
+    User user = mock(User.class);
+    given(user.getId()).willReturn(userId);
+
+    Diary diary = Diary.builder()
+        .user(user)
+        .isDeleted(true)
+        .build();
+
+    given(diaryRepository.findById(diaryId)).willReturn(Optional.of(diary));
+
+    // when & then
+    DiaryException diaryException = assertThrows(DiaryException.class,
+        () -> diaryService.finalSaveDiary(diaryId, userId, request));
+
+    assertEquals(ErrorCode.ALREADY_DELETED_DIARY, diaryException.getErrorCode());
+  }
+
+  @Test
+  void finalSaveDiary_shouldReturnDiaryException_whenDiaryIsNotTemp() {
+    // given
+    UUID diaryId = mock(UUID.class);
+    UUID userId = UUID.randomUUID();
+    DiaryFinalSaveRequest request = mock(DiaryFinalSaveRequest.class);
+
+    User user = mock(User.class);
+    given(user.getId()).willReturn(userId);
+
+    Diary diary = Diary.builder()
+        .user(user)
+        .isDeleted(false)
+        .isTemp(false)
+        .build();
+
+    given(diaryRepository.findById(diaryId)).willReturn(Optional.of(diary));
+
+    // when & then
+    DiaryException diaryException = assertThrows(DiaryException.class,
+        () -> diaryService.finalSaveDiary(diaryId, userId, request));
+
+    assertEquals(ErrorCode.CONFLICT_DIARY_STATE, diaryException.getErrorCode());
+  }
 }

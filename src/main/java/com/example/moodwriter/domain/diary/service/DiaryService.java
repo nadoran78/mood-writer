@@ -3,6 +3,7 @@ package com.example.moodwriter.domain.diary.service;
 import com.example.moodwriter.domain.diary.dao.DiaryRepository;
 import com.example.moodwriter.domain.diary.dto.DiaryAutoSaveRequest;
 import com.example.moodwriter.domain.diary.dto.DiaryCreateRequest;
+import com.example.moodwriter.domain.diary.dto.DiaryFinalSaveRequest;
 import com.example.moodwriter.domain.diary.dto.DiaryResponse;
 import com.example.moodwriter.domain.diary.entity.Diary;
 import com.example.moodwriter.domain.diary.exception.DiaryException;
@@ -35,12 +36,35 @@ public class DiaryService {
   }
 
   @Transactional
-  public DiaryResponse autoSaveDiary(UUID diaryId, UUID userId, DiaryAutoSaveRequest request) {
+  public DiaryResponse autoSaveDiary(UUID diaryId, UUID userId,
+      DiaryAutoSaveRequest request) {
+    Diary diary = checkValidAndTempDiary(diaryId, userId);
+
+    diary.autoSave(request);
+
+    Diary savedDiary = diaryRepository.save(diary);
+
+    return DiaryResponse.fromEntity(savedDiary);
+  }
+
+  @Transactional
+  public DiaryResponse finalSaveDiary(UUID diaryId, UUID userId,
+      DiaryFinalSaveRequest request) {
+    Diary diary = checkValidAndTempDiary(diaryId, userId);
+
+    diary.finalSave(request);
+
+    Diary savedDiary = diaryRepository.save(diary);
+
+    return DiaryResponse.fromEntity(savedDiary);
+  }
+
+  private Diary checkValidAndTempDiary(UUID diaryId, UUID userId) {
     Diary diary = diaryRepository.findById(diaryId)
         .orElseThrow(() -> new DiaryException(ErrorCode.NOT_FOUND_DIARY));
 
     if (!diary.getUser().getId().equals(userId)) {
-      throw new DiaryException(ErrorCode.FORBIDDEN_AUTO_SAVE_DIARY);
+      throw new UserException(ErrorCode.FORBIDDEN_ACCESS_DIARY);
     }
 
     if (diary.isDeleted()) {
@@ -51,11 +75,7 @@ public class DiaryService {
       throw new DiaryException(ErrorCode.CONFLICT_DIARY_STATE);
     }
 
-    diary.autoSave(request);
-
-    Diary savedDiary = diaryRepository.save(diary);
-
-    return DiaryResponse.fromEntity(savedDiary);
+    return diary;
   }
 
 }
