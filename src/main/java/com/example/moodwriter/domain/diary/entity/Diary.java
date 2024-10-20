@@ -80,4 +80,8 @@ public class Diary extends BaseEntity {
     this.content = request.getContent();
     this.isTemp = false;
   }
+
+  public void startEditing() {
+    this.isTemp = true;
+  }
 }
