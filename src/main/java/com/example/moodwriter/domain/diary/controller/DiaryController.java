@@ -63,6 +63,4 @@ public class DiaryController {
     return ResponseEntity.ok(response);
   }
 
-  // TODO: 10/19/24 위에 다이어리 수정 메서드 test 시작(API 테스트, 테스트 코드)
-
 }
