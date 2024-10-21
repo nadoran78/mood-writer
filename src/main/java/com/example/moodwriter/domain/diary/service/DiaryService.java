@@ -81,6 +81,15 @@ public class DiaryService {
     return DiaryResponse.fromEntity(diary);
   }
 
+  @Transactional
+  public void deleteDiary(UUID diaryId, UUID userId) {
+    Diary diary = getCheckedValidDiary(diaryId, userId);
+
+    diary.deactivate();
+
+    diaryRepository.save(diary);
+  }
+
   private Diary checkValidAndTempDiary(UUID diaryId, UUID userId) {
     Diary diary = getCheckedValidDiary(diaryId, userId);
 

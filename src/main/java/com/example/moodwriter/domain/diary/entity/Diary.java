@@ -84,4 +84,9 @@ public class Diary extends BaseEntity {
   public void startEditing() {
     this.isTemp = true;
   }
+
+  public void deactivate() {
+    this.isDeleted = true;
+    this.deletedAt = LocalDateTime.now();
+  }
 }
