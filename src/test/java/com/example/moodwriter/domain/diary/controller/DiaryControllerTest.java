@@ -367,6 +367,6 @@ class DiaryControllerTest {
         .andExpect(jsonPath("$.content").value(response.getContent()))
         .andExpect(jsonPath("$.temp").value(response.isTemp()))
         .andExpect(jsonPath("$.createdAt").exists())
-        .andExpect(jsonPath("$.updatedAt").exists());;
+        .andExpect(jsonPath("$.updatedAt").exists());
   }
 }
