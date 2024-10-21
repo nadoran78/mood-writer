@@ -564,4 +564,127 @@ class DiaryServiceTest {
 
     assertEquals(ErrorCode.ALREADY_DELETED_DIARY, diaryException.getErrorCode());
   }
+
+  @Test
+  void successDeleteDiary() {
+    // given
+    UUID diaryId = UUID.randomUUID();
+    UUID userId = UUID.randomUUID();
+
+    User user = mock(User.class);
+    given(user.getId()).willReturn(userId);
+
+    Diary diary = Diary.builder()
+        .user(user)
+        .title("제목")
+        .content("내용")
+        .isTemp(false)
+        .isDeleted(false)
+        .build();
+
+    given(diaryRepository.findById(diaryId)).willReturn(Optional.of(diary));
+
+    // when
+    diaryService.deleteDiary(diaryId, userId);
+
+    // then
+    assertTrue(diary.isDeleted());
+    assertNotNull(diary.getDeletedAt());
+
+    verify(diaryRepository).save(diary);
+  }
+
+  @Test
+  void deleteDiary_shouldReturnDiaryException_whenDiaryIsNotExist() {
+    // given
+    UUID diaryId = UUID.randomUUID();
+    UUID userId = UUID.randomUUID();
+
+    given(diaryRepository.findById(diaryId)).willReturn(Optional.empty());
+
+    // when & then
+    DiaryException diaryException = assertThrows(DiaryException.class,
+        () -> diaryService.deleteDiary(diaryId, userId));
+
+    assertEquals(ErrorCode.NOT_FOUND_DIARY, diaryException.getErrorCode());
+  }
+
+  @Test
+  void deleteDiary_shouldReturnUserException_whenUserIsNotMatched() {
+    // given
+    UUID diaryId = UUID.randomUUID();
+    UUID userId = UUID.randomUUID();
+
+    User user = mock(User.class);
+    UUID anotherUserId = UUID.randomUUID();
+    given(user.getId()).willReturn(anotherUserId);
+
+    Diary diary = Diary.builder()
+        .user(user)
+        .title("제목")
+        .content("내용")
+        .isTemp(false)
+        .isDeleted(false)
+        .build();
+
+    given(diaryRepository.findById(diaryId)).willReturn(Optional.of(diary));
+
+    // when & then
+    UserException userException = assertThrows(UserException.class,
+        () -> diaryService.deleteDiary(diaryId, userId));
+
+    assertEquals(ErrorCode.FORBIDDEN_ACCESS_DIARY, userException.getErrorCode());
+  }
+
+  @Test
+  void deleteDiary_shouldReturnDiaryException_whenDiaryIsAlreadyDeleted() {
+    // given
+    UUID diaryId = UUID.randomUUID();
+    UUID userId = UUID.randomUUID();
+
+    User user = mock(User.class);
+    given(user.getId()).willReturn(userId);
+
+    Diary diary = spy(Diary.builder()
+        .user(user)
+        .title("제목")
+        .content("내용")
+        .isTemp(false)
+        .isDeleted(true)
+        .build());
+
+    given(diaryRepository.findById(diaryId)).willReturn(Optional.of(diary));
+
+    // when & then
+    DiaryException diaryException = assertThrows(DiaryException.class,
+        () -> diaryService.deleteDiary(diaryId, userId));
+
+    assertEquals(ErrorCode.ALREADY_DELETED_DIARY, diaryException.getErrorCode());
+  }
+
+  @Test
+  void deleteDiary_shouldReturnDiaryException_whenDiaryIsTemp() {
+    // given
+    UUID diaryId = UUID.randomUUID();
+    UUID userId = UUID.randomUUID();
+
+    User user = mock(User.class);
+    given(user.getId()).willReturn(userId);
+
+    Diary diary = Diary.builder()
+        .user(user)
+        .title("제목")
+        .content("내용")
+        .isTemp(true)
+        .isDeleted(false)
+        .build();
+
+    given(diaryRepository.findById(diaryId)).willReturn(Optional.of(diary));
+
+    // when & then
+    DiaryException diaryException = assertThrows(DiaryException.class,
+        () -> diaryService.deleteDiary(diaryId, userId));
+
+    assertEquals(ErrorCode.CONFLICT_DIARY_STATE, diaryException.getErrorCode());
+  }
 }
