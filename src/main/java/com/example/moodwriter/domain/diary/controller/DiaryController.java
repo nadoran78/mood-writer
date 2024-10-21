@@ -76,8 +76,8 @@ public class DiaryController {
   @DeleteMapping("/{diaryId}")
   public ResponseEntity<Void> deleteDiary(
       @PathVariable UUID diaryId,
-      @AuthenticationPrincipal UUID userId) {
-    diaryService.deleteDiary(diaryId, userId);
+      @AuthenticationPrincipal CustomUserDetails userDetails) {
+    diaryService.deleteDiary(diaryId, userDetails.getId());
     return ResponseEntity.noContent().build();
   }
 
