@@ -61,11 +61,7 @@ public class DiaryService {
 
   @Transactional
   public DiaryResponse startEditingDiary(UUID diaryId, UUID userId) {
-    Diary diary = getCheckedValidDiary(diaryId, userId);
-
-    if (diary.isTemp()) {
-      throw new DiaryException(ErrorCode.CONFLICT_DIARY_STATE);
-    }
+    Diary diary = checkValidAndNotTempDiary(diaryId, userId);
 
     diary.startEditing();
 
@@ -81,10 +77,29 @@ public class DiaryService {
     return DiaryResponse.fromEntity(diary);
   }
 
+  @Transactional
+  public void deleteDiary(UUID diaryId, UUID userId) {
+    Diary diary = checkValidAndNotTempDiary(diaryId, userId);
+
+    diary.deactivate();
+
+    diaryRepository.save(diary);
+  }
+
   private Diary checkValidAndTempDiary(UUID diaryId, UUID userId) {
     Diary diary = getCheckedValidDiary(diaryId, userId);
 
     if (!diary.isTemp()) {
+      throw new DiaryException(ErrorCode.CONFLICT_DIARY_STATE);
+    }
+
+    return diary;
+  }
+
+  private Diary checkValidAndNotTempDiary(UUID diaryId, UUID userId) {
+    Diary diary = getCheckedValidDiary(diaryId, userId);
+
+    if (diary.isTemp()) {
       throw new DiaryException(ErrorCode.CONFLICT_DIARY_STATE);
     }
 
