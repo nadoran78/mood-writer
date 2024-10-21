@@ -5,6 +5,7 @@ import static org.mockito.ArgumentMatchers.eq;
 import static org.mockito.BDDMockito.given;
 import static org.mockito.Mockito.mock;
 import static org.mockito.Mockito.when;
+import static org.springframework.test.web.servlet.request.MockMvcRequestBuilders.get;
 import static org.springframework.test.web.servlet.request.MockMvcRequestBuilders.patch;
 import static org.springframework.test.web.servlet.request.MockMvcRequestBuilders.post;
 import static org.springframework.test.web.servlet.request.MockMvcRequestBuilders.put;
@@ -331,6 +332,34 @@ class DiaryControllerTest {
 
     // when & then
     mockMvc.perform(patch("/api/diaries/" + diaryId))
+        .andExpect(status().isOk())
+        .andDo(print())
+        .andExpect(jsonPath("$.diaryId").value(diaryId.toString()))
+        .andExpect(jsonPath("$.title").value(response.getTitle()))
+        .andExpect(jsonPath("$.content").value(response.getContent()))
+        .andExpect(jsonPath("$.temp").value(response.isTemp()))
+        .andExpect(jsonPath("$.createdAt").exists())
+        .andExpect(jsonPath("$.updatedAt").exists());
+  }
+
+  @Test
+  void successGetDiary() throws Exception {
+    // given
+    UUID diaryId = UUID.randomUUID();
+
+    DiaryResponse response = DiaryResponse.builder()
+        .diaryId(diaryId)
+        .title("제목")
+        .content("내용")
+        .isTemp(true)
+        .createdAt(LocalDateTime.now())
+        .updatedAt(LocalDateTime.now())
+        .build();
+
+    given(diaryService.getDiary(diaryId, userId)).willReturn(response);
+
+    // when & then
+    mockMvc.perform(get("/api/diaries/" + diaryId))
         .andExpect(status().isOk())
         .andDo(print())
         .andExpect(jsonPath("$.diaryId").value(diaryId.toString()))

@@ -74,6 +74,13 @@ public class DiaryService {
     return DiaryResponse.fromEntity(savedDiary);
   }
 
+  @Transactional(readOnly = true)
+  public DiaryResponse getDiary(UUID diaryId, UUID userId) {
+    Diary diary = getCheckedValidDiary(diaryId, userId);
+
+    return DiaryResponse.fromEntity(diary);
+  }
+
   private Diary checkValidAndTempDiary(UUID diaryId, UUID userId) {
     Diary diary = getCheckedValidDiary(diaryId, userId);
 
