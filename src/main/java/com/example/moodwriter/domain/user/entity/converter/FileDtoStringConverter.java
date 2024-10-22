@@ -1,6 +1,6 @@
 package com.example.moodwriter.domain.user.entity.converter;
 
-import com.example.moodwriter.global.dto.FileDto;
+import com.example.moodwriter.global.s3.dto.FileDto;
 import com.example.moodwriter.global.exception.CustomException;
 import com.example.moodwriter.global.exception.code.ErrorCode;
 import com.fasterxml.jackson.core.JsonProcessingException;
