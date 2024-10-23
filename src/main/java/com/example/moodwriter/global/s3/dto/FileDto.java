@@ -1,4 +1,4 @@
-package com.example.moodwriter.global.dto;
+package com.example.moodwriter.global.s3.dto;
 
 import lombok.AllArgsConstructor;
 import lombok.Builder;

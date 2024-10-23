@@ -2,11 +2,11 @@ package com.example.moodwriter.domain.user.service;
 
 import com.example.moodwriter.domain.user.dao.UserRepository;
 import com.example.moodwriter.global.constant.FilePath;
-import com.example.moodwriter.global.dto.FileDto;
+import com.example.moodwriter.global.s3.dto.FileDto;
 import com.example.moodwriter.global.exception.code.ErrorCode;
 import com.example.moodwriter.global.jwt.TokenProvider;
 import com.example.moodwriter.global.jwt.dto.TokenResponse;
-import com.example.moodwriter.global.service.S3FileService;
+import com.example.moodwriter.global.s3.service.S3FileService;
 import com.example.moodwriter.domain.user.dto.TokenReissueRequest;
 import com.example.moodwriter.domain.user.dto.UserLoginRequest;
 import com.example.moodwriter.domain.user.dto.UserRegisterRequest;

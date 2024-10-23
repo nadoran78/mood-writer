@@ -1,6 +1,6 @@
 package com.example.moodwriter.domain.diary.dto;
 
-import com.example.moodwriter.global.dto.FileDto;
+import com.example.moodwriter.global.s3.dto.FileDto;
 import java.util.List;
 import java.util.stream.Collectors;
 import lombok.Builder;

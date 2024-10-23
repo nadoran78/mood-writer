@@ -1,7 +1,7 @@
 package com.example.moodwriter.domain.user.dto;
 
 import com.example.moodwriter.domain.user.entity.User;
-import com.example.moodwriter.global.dto.FileDto;
+import com.example.moodwriter.global.s3.dto.FileDto;
 import java.time.LocalDateTime;
 import java.util.List;
 import java.util.UUID;

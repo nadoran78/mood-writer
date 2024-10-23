@@ -3,7 +3,7 @@ package com.example.moodwriter.domain.user.entity;
 import com.example.moodwriter.domain.user.dto.UserRegisterRequest;
 import com.example.moodwriter.domain.user.entity.converter.FileDtoStringConverter;
 import com.example.moodwriter.global.constant.Role;
-import com.example.moodwriter.global.dto.FileDto;
+import com.example.moodwriter.global.s3.dto.FileDto;
 import com.example.moodwriter.global.entity.BaseEntity;
 import jakarta.persistence.Column;
 import jakarta.persistence.Convert;
