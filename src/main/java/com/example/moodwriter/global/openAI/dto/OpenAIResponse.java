@@ -2,8 +2,10 @@ package com.example.moodwriter.global.openAI.dto;
 
 import com.fasterxml.jackson.annotation.JsonProperty;
 import java.util.List;
+import lombok.AllArgsConstructor;
 import lombok.Builder;
 import lombok.Getter;
+import lombok.NoArgsConstructor;
 
 @Getter
 @Builder
@@ -18,6 +20,7 @@ public class OpenAIResponse {
   private String systemFingerprint;
 
   private List<Choice> choices;
+  private Usage usage;
 
 
   @Getter
@@ -56,6 +59,8 @@ public class OpenAIResponse {
 
   @Getter
   @Builder
+  @AllArgsConstructor
+  @NoArgsConstructor
   public static class CompletionTokensDetails {
     @JsonProperty("reasoning_tokens")
     private Integer reasoningTokens;
