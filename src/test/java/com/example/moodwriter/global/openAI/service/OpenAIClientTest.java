@@ -4,6 +4,7 @@ import static org.junit.jupiter.api.Assertions.assertEquals;
 import static org.junit.jupiter.api.Assertions.assertNotNull;
 import static org.junit.jupiter.api.Assertions.assertThrows;
 
+import com.example.moodwriter.global.constant.OpenAIModel;
 import com.example.moodwriter.global.exception.code.ErrorCode;
 import com.example.moodwriter.global.openAI.dto.OpenAIResponse;
 import com.example.moodwriter.global.openAI.exception.OpenAIException;
@@ -79,7 +80,7 @@ class OpenAIClientTest {
     String diaryContent = "오늘은 기분이 좋다.";
 
     // when
-    OpenAIResponse openAIResponse = openAIClient.callOpenAI(diaryContent);
+    OpenAIResponse openAIResponse = openAIClient.callOpenAI(diaryContent, OpenAIModel.GPT_4O);
 
     // then
     assertNotNull(openAIResponse);
@@ -99,7 +100,7 @@ class OpenAIClientTest {
 
     // when
     OpenAIException openAIException = assertThrows(OpenAIException.class,
-        () -> openAIClient.callOpenAI(diaryContent));
+        () -> openAIClient.callOpenAI(diaryContent, OpenAIModel.GPT_3_5_TURBO));
 
     // then
     assertEquals(ErrorCode.OPEN_AI_RETURN_UNEXPECTED_RESPONSE,

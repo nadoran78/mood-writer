@@ -2,6 +2,7 @@ package com.example.moodwriter.global.openAI.service;
 
 import static com.example.moodwriter.global.exception.code.ErrorCode.OPEN_AI_RETURN_UNEXPECTED_RESPONSE;
 
+import com.example.moodwriter.global.constant.OpenAIModel;
 import com.example.moodwriter.global.openAI.dto.OpenAIRequest;
 import com.example.moodwriter.global.openAI.dto.OpenAIRequest.Message;
 import com.example.moodwriter.global.openAI.dto.OpenAIResponse;
@@ -32,9 +33,8 @@ public class OpenAIClient {
   private String apiUrl;
 
   private final String role = "user";
-  private final String model = "gpt-4o-mini";
 
-  public OpenAIResponse callOpenAI(String diaryContent) throws IOException {
+  public OpenAIResponse callOpenAI(String diaryContent, OpenAIModel model) throws IOException {
 
     OpenAIRequest.Message message = Message.builder()
         .role(role)
@@ -42,7 +42,7 @@ public class OpenAIClient {
         .build();
 
     OpenAIRequest request = OpenAIRequest.builder()
-        .model(model)
+        .model(model.getModel())
         .messages(Collections.singletonList(message))
         .build();
 
