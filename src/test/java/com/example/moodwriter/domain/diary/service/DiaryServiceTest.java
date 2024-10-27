@@ -19,6 +19,7 @@ import com.example.moodwriter.domain.user.dao.UserRepository;
 import com.example.moodwriter.domain.user.entity.User;
 import com.example.moodwriter.domain.user.exception.UserException;
 import com.example.moodwriter.global.exception.code.ErrorCode;
+import java.time.LocalDate;
 import java.time.LocalDateTime;
 import java.util.Optional;
 import java.util.UUID;
@@ -49,6 +50,7 @@ class DiaryServiceTest {
     DiaryCreateRequest request = DiaryCreateRequest.builder()
         .title("임시 제목")
         .content("임시 내용")
+        .date(LocalDate.of(2024, 10,1))
         .build();
 
     User user = mock(User.class);
@@ -67,6 +69,34 @@ class DiaryServiceTest {
 
     assertEquals(request.getTitle(), response.getTitle());
     assertEquals(request.getContent(), response.getContent());
+    assertEquals(request.getDate(), response.getDate());
+    assertTrue(response.isTemp());
+  }
+
+  @Test
+  void successCreateDiary_whenRequestIsNull() {
+    // given
+    UUID userId = UUID.randomUUID();
+
+    DiaryCreateRequest request = null;
+
+    User user = mock(User.class);
+
+    given(userRepository.findById(userId)).willReturn(Optional.of(user));
+    given(diaryRepository.save(any(Diary.class))).will(returnsFirstArg());
+
+    // when
+    DiaryResponse response = diaryService.createDiary(userId, request);
+
+    // then
+    ArgumentCaptor<Diary> argumentCaptor = ArgumentCaptor.forClass(Diary.class);
+    verify(diaryRepository).save(argumentCaptor.capture());
+    assertEquals(user, argumentCaptor.getValue().getUser());
+    assertFalse(argumentCaptor.getValue().isDeleted());
+
+    assertNull(response.getTitle());
+    assertNull(response.getContent());
+    assertNull(response.getDate());
     assertTrue(response.isTemp());
   }
 
@@ -78,6 +108,7 @@ class DiaryServiceTest {
     DiaryCreateRequest request = DiaryCreateRequest.builder()
         .title("임시 제목")
         .content("임시 내용")
+        .date(LocalDate.of(2024, 10,1))
         .build();
 
     given(userRepository.findById(userId)).willReturn(Optional.empty());
@@ -98,6 +129,7 @@ class DiaryServiceTest {
     DiaryAutoSaveRequest request = DiaryAutoSaveRequest.builder()
         .title("임시 저장 제목")
         .content("임시 저장 내용")
+        .date(LocalDate.of(2024, 10, 1))
         .build();
 
     User user = mock(User.class);
@@ -123,6 +155,7 @@ class DiaryServiceTest {
     assertEquals(diaryId, response.getDiaryId());
     assertEquals(request.getTitle(), response.getTitle());
     assertEquals(request.getContent(), response.getContent());
+    assertEquals(request.getDate(), response.getDate());
     assertTrue(response.isTemp());
     assertEquals(now, response.getCreatedAt());
     assertEquals(now, response.getUpdatedAt());
@@ -226,6 +259,7 @@ class DiaryServiceTest {
     DiaryFinalSaveRequest request = DiaryFinalSaveRequest.builder()
         .title("최종 저장 제목")
         .content("최종 저장 내용")
+        .date(LocalDate.of(2024, 10, 1))
         .build();
 
     User user = mock(User.class);
@@ -251,6 +285,7 @@ class DiaryServiceTest {
     assertEquals(diaryId, response.getDiaryId());
     assertEquals(request.getTitle(), response.getTitle());
     assertEquals(request.getContent(), response.getContent());
+    assertEquals(request.getDate(), response.getDate());
     assertFalse(response.isTemp());
     assertEquals(now, response.getCreatedAt());
     assertEquals(now, response.getUpdatedAt());
@@ -359,6 +394,7 @@ class DiaryServiceTest {
         .user(user)
         .title("제목")
         .content("내용")
+        .date(LocalDate.of(2024, 10, 1))
         .isTemp(false)
         .isDeleted(false)
         .build());
@@ -376,6 +412,7 @@ class DiaryServiceTest {
     assertEquals(diaryId, response.getDiaryId());
     assertEquals(diary.getTitle(), response.getTitle());
     assertEquals(diary.getContent(), response.getContent());
+    assertEquals(diary.getDate(), response.getDate());
     assertTrue(response.isTemp());
     assertEquals(now, response.getCreatedAt());
     assertEquals(now, response.getUpdatedAt());
@@ -480,6 +517,7 @@ class DiaryServiceTest {
         .user(user)
         .title("제목")
         .content("내용")
+        .date(LocalDate.of(2024, 10, 1))
         .isTemp(false)
         .isDeleted(false)
         .build());
@@ -496,6 +534,7 @@ class DiaryServiceTest {
     assertEquals(diaryId, response.getDiaryId());
     assertEquals(diary.getTitle(), response.getTitle());
     assertEquals(diary.getContent(), response.getContent());
+    assertEquals(diary.getDate(), response.getDate());
     assertEquals(diary.isTemp(), response.isTemp());
     assertEquals(now, response.getCreatedAt());
     assertEquals(now, response.getUpdatedAt());
@@ -578,6 +617,7 @@ class DiaryServiceTest {
         .user(user)
         .title("제목")
         .content("내용")
+        .date(LocalDate.of(2024, 10, 1))
         .isTemp(false)
         .isDeleted(false)
         .build();
