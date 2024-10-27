@@ -1,5 +1,6 @@
 package com.example.moodwriter.domain.diary.dto;
 
+import java.time.LocalDate;
 import lombok.Builder;
 import lombok.Getter;
 
@@ -8,4 +9,5 @@ import lombok.Getter;
 public class DiaryCreateRequest {
   private String title;
   private String content;
+  private LocalDate date;
 }

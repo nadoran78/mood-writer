@@ -32,7 +32,7 @@ public class DiaryController {
   @PostMapping
   public ResponseEntity<DiaryResponse> createDiary(
       @AuthenticationPrincipal CustomUserDetails userDetails,
-      @RequestBody DiaryCreateRequest request) {
+      @RequestBody(required = false) DiaryCreateRequest request) {
     DiaryResponse response = diaryService.createDiary(userDetails.getId(), request);
     return ResponseEntity.status(HttpStatus.CREATED).body(response);
   }

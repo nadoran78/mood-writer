@@ -65,6 +65,14 @@ public class Diary extends BaseEntity {
   }
 
   public static Diary from(User user, DiaryCreateRequest request) {
+    if (request == null) {
+      return Diary.builder()
+          .user(user)
+          .isTemp(true)
+          .isDeleted(false)
+          .build();
+    }
+
     return Diary.builder()
         .user(user)
         .title(request.getTitle())
@@ -78,11 +86,13 @@ public class Diary extends BaseEntity {
   public void autoSave(DiaryAutoSaveRequest request) {
     this.title = request.getTitle();
     this.content = request.getContent();
+    this.date = request.getDate();
   }
 
   public void finalSave(DiaryFinalSaveRequest request) {
     this.title = request.getTitle();
     this.content = request.getContent();
+    this.date = request.getDate();
     this.isTemp = false;
   }
 
