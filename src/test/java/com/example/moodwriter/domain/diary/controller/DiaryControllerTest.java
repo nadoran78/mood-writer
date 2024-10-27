@@ -25,6 +25,7 @@ import com.example.moodwriter.global.jwt.JwtAuthenticationToken;
 import com.example.moodwriter.global.security.dto.CustomUserDetails;
 import com.example.moodwriter.global.security.filter.JwtAuthenticationFilter;
 import com.fasterxml.jackson.databind.ObjectMapper;
+import java.time.LocalDate;
 import java.time.LocalDateTime;
 import java.util.UUID;
 import org.junit.jupiter.api.BeforeEach;
@@ -76,6 +77,7 @@ class DiaryControllerTest {
     DiaryCreateRequest request = DiaryCreateRequest.builder()
         .title("임시 제목")
         .content("임시 내용")
+        .date(LocalDate.now().minusDays(1))
         .build();
 
     UUID diaryId = UUID.randomUUID();
@@ -83,12 +85,44 @@ class DiaryControllerTest {
         .diaryId(diaryId)
         .title(request.getTitle())
         .content(request.getContent())
+        .date(request.getDate())
         .isTemp(true)
         .createdAt(LocalDateTime.now())
         .updatedAt(LocalDateTime.now())
         .build();
 
     given(diaryService.createDiary(eq(userId), any(DiaryCreateRequest.class)))
+        .willReturn(response);
+
+    // when & then
+    mockMvc.perform(post("/api/diaries")
+            .contentType(MediaType.APPLICATION_JSON)
+            .content(objectMapper.writeValueAsString(request)))
+        .andExpect(status().isCreated())
+        .andDo(print())
+        .andExpect(jsonPath("$.diaryId").value(diaryId.toString()))
+        .andExpect(jsonPath("$.title").value(response.getTitle()))
+        .andExpect(jsonPath("$.content").value(response.getContent()))
+        .andExpect(jsonPath("$.date").value(response.getDate().toString()))
+        .andExpect(jsonPath("$.temp").value(response.isTemp()))
+        .andExpect(jsonPath("$.createdAt").exists())
+        .andExpect(jsonPath("$.updatedAt").exists());
+  }
+
+  @Test
+  void successCreateDiary_whenRequestIsNull() throws Exception {
+    // given
+    DiaryCreateRequest request = null;
+
+    UUID diaryId = UUID.randomUUID();
+    DiaryResponse response = DiaryResponse.builder()
+        .diaryId(diaryId)
+        .isTemp(true)
+        .createdAt(LocalDateTime.now())
+        .updatedAt(LocalDateTime.now())
+        .build();
+
+    given(diaryService.createDiary(userId, null))
         .willReturn(response);
 
     // when & then
@@ -106,16 +140,16 @@ class DiaryControllerTest {
   }
 
   @Test
-  void successCreateDiary_whenTitleAndContentIsNull() throws Exception {
+  void successCreateDiary_whenTitleAndContentAndDateIsNull() throws Exception {
     // given
-    DiaryCreateRequest request = DiaryCreateRequest.builder()
-        .build();
+    DiaryCreateRequest request = DiaryCreateRequest.builder().build();
 
     UUID diaryId = UUID.randomUUID();
     DiaryResponse response = DiaryResponse.builder()
         .diaryId(diaryId)
         .title(request.getTitle())
         .content(request.getContent())
+        .date(request.getDate())
         .isTemp(true)
         .createdAt(LocalDateTime.now())
         .updatedAt(LocalDateTime.now())
@@ -133,6 +167,7 @@ class DiaryControllerTest {
         .andExpect(jsonPath("$.diaryId").value(diaryId.toString()))
         .andExpect(jsonPath("$.title").value(response.getTitle()))
         .andExpect(jsonPath("$.content").value(response.getContent()))
+        .andExpect(jsonPath("$.date").value(response.getDate()))
         .andExpect(jsonPath("$.temp").value(response.isTemp()))
         .andExpect(jsonPath("$.createdAt").exists())
         .andExpect(jsonPath("$.updatedAt").exists());
@@ -146,12 +181,14 @@ class DiaryControllerTest {
     DiaryAutoSaveRequest request = DiaryAutoSaveRequest.builder()
         .title("자동 저장 제목")
         .content("자동 저장 내용")
+        .date(LocalDate.of(2024, 10, 1))
         .build();
 
     DiaryResponse response = DiaryResponse.builder()
         .diaryId(diaryId)
         .title(request.getTitle())
         .content(request.getContent())
+        .date(request.getDate())
         .isTemp(true)
         .createdAt(LocalDateTime.now())
         .updatedAt(LocalDateTime.now())
@@ -170,13 +207,14 @@ class DiaryControllerTest {
         .andExpect(jsonPath("$.diaryId").value(diaryId.toString()))
         .andExpect(jsonPath("$.title").value(response.getTitle()))
         .andExpect(jsonPath("$.content").value(response.getContent()))
+        .andExpect(jsonPath("$.date").value(response.getDate().toString()))
         .andExpect(jsonPath("$.temp").value(response.isTemp()))
         .andExpect(jsonPath("$.createdAt").exists())
         .andExpect(jsonPath("$.updatedAt").exists());
   }
 
   @Test
-  void successAutoSaveDiary_whenTitleIsNullInRequest() throws Exception {
+  void successAutoSaveDiary_whenTitleAndDateIsNullInRequest() throws Exception {
     // given
     UUID diaryId = UUID.randomUUID();
 
@@ -188,6 +226,7 @@ class DiaryControllerTest {
         .diaryId(diaryId)
         .title(request.getTitle())
         .content(request.getContent())
+        .date(request.getDate())
         .isTemp(true)
         .createdAt(LocalDateTime.now())
         .updatedAt(LocalDateTime.now())
@@ -206,9 +245,29 @@ class DiaryControllerTest {
         .andExpect(jsonPath("$.diaryId").value(diaryId.toString()))
         .andExpect(jsonPath("$.title").value(response.getTitle()))
         .andExpect(jsonPath("$.content").value(response.getContent()))
+        .andExpect(jsonPath("$.date").value(response.getDate()))
         .andExpect(jsonPath("$.temp").value(response.isTemp()))
         .andExpect(jsonPath("$.createdAt").exists())
         .andExpect(jsonPath("$.updatedAt").exists());
+  }
+
+  @Test
+  void autoSaveDiary_shouldReturnBadRequest_whenRequestIsNull()
+      throws Exception {
+    // given
+    UUID diaryId = UUID.randomUUID();
+
+    DiaryAutoSaveRequest request = null;
+
+    // when & then
+    mockMvc.perform(put("/api/diaries/auto-save/" + diaryId)
+            .contentType(MediaType.APPLICATION_JSON)
+            .content(objectMapper.writeValueAsString(request)))
+        .andExpect(status().isBadRequest())
+        .andDo(print())
+        .andExpect(jsonPath("$.errorCode").value("HTTP_MESSAGE_NOT_READABLE"))
+        .andExpect(jsonPath("$.message").value("HTTP 메시지를 읽을 수 없습니다."))
+        .andExpect(jsonPath("$.path").value("/api/diaries/auto-save/" + diaryId));
   }
 
   @Test
@@ -219,6 +278,7 @@ class DiaryControllerTest {
 
     DiaryAutoSaveRequest request = DiaryAutoSaveRequest.builder()
         .title("자동 저장 제목")
+        .date(LocalDate.of(2024, 10, 1))
         .build();
 
     // when & then
@@ -242,12 +302,14 @@ class DiaryControllerTest {
     DiaryFinalSaveRequest request = DiaryFinalSaveRequest.builder()
         .title("최종 저장 제목")
         .content("최종 저장 내용")
+        .date(LocalDate.of(2024, 10, 1))
         .build();
 
     DiaryResponse response = DiaryResponse.builder()
         .diaryId(diaryId)
         .title(request.getTitle())
         .content(request.getContent())
+        .date(request.getDate())
         .isTemp(true)
         .createdAt(LocalDateTime.now())
         .updatedAt(LocalDateTime.now())
@@ -258,13 +320,14 @@ class DiaryControllerTest {
 
     // when & then
     mockMvc.perform(put("/api/diaries/" + diaryId)
-        .contentType(MediaType.APPLICATION_JSON)
-        .content(objectMapper.writeValueAsString(request)))
+            .contentType(MediaType.APPLICATION_JSON)
+            .content(objectMapper.writeValueAsString(request)))
         .andExpect(status().isOk())
         .andDo(print())
         .andExpect(jsonPath("$.diaryId").value(diaryId.toString()))
         .andExpect(jsonPath("$.title").value(response.getTitle()))
         .andExpect(jsonPath("$.content").value(response.getContent()))
+        .andExpect(jsonPath("$.date").value(response.getDate().toString()))
         .andExpect(jsonPath("$.temp").value(response.isTemp()))
         .andExpect(jsonPath("$.createdAt").exists())
         .andExpect(jsonPath("$.updatedAt").exists());
@@ -278,6 +341,7 @@ class DiaryControllerTest {
 
     DiaryFinalSaveRequest request = DiaryFinalSaveRequest.builder()
         .title("최종 저장 제목")
+        .date(LocalDate.of(2024, 10, 1))
         .build();
 
     // when & then
@@ -301,6 +365,7 @@ class DiaryControllerTest {
 
     DiaryFinalSaveRequest request = DiaryFinalSaveRequest.builder()
         .content("최종 저장 내용")
+        .date(LocalDate.of(2024, 10, 1))
         .build();
 
     // when & then
@@ -317,6 +382,55 @@ class DiaryControllerTest {
   }
 
   @Test
+  void finalSaveDiary_shouldReturnBadRequest_whenDateIsNullInRequest()
+      throws Exception {
+    // given
+    UUID diaryId = UUID.randomUUID();
+
+    DiaryFinalSaveRequest request = DiaryFinalSaveRequest.builder()
+        .title("최종 저장 제목")
+        .content("최종 저장 내용")
+        .build();
+
+    // when & then
+    mockMvc.perform(put("/api/diaries/" + diaryId)
+            .contentType(MediaType.APPLICATION_JSON)
+            .content(objectMapper.writeValueAsString(request)))
+        .andExpect(status().isBadRequest())
+        .andDo(print())
+        .andExpect(jsonPath("$.errorCode").value("VALIDATION_ERROR"))
+        .andExpect(jsonPath("$.message").value("입력값이 유효하지 않습니다."))
+        .andExpect(jsonPath("$.fieldErrors[0].field").value("date"))
+        .andExpect(
+            jsonPath("$.fieldErrors[0].message").value("일기 최종저장 시에는 작성일자가 필요합니다."));
+  }
+
+  @Test
+  void finalSaveDiary_shouldReturnBadRequest_whenDateIsFuture()
+      throws Exception {
+    // given
+    UUID diaryId = UUID.randomUUID();
+
+    DiaryFinalSaveRequest request = DiaryFinalSaveRequest.builder()
+        .title("최종 저장 제목")
+        .content("최종 저장 내용")
+        .date(LocalDate.now().plusDays(1))
+        .build();
+
+    // when & then
+    mockMvc.perform(put("/api/diaries/" + diaryId)
+            .contentType(MediaType.APPLICATION_JSON)
+            .content(objectMapper.writeValueAsString(request)))
+        .andExpect(status().isBadRequest())
+        .andDo(print())
+        .andExpect(jsonPath("$.errorCode").value("VALIDATION_ERROR"))
+        .andExpect(jsonPath("$.message").value("입력값이 유효하지 않습니다."))
+        .andExpect(jsonPath("$.fieldErrors[0].field").value("date"))
+        .andExpect(
+            jsonPath("$.fieldErrors[0].message").value("일기 작성 날짜는 현재 또는 과거만 가능합니다."));
+  }
+
+  @Test
   void successStartEditingDiary() throws Exception {
     // given
     UUID diaryId = UUID.randomUUID();
@@ -325,6 +439,7 @@ class DiaryControllerTest {
         .diaryId(diaryId)
         .title("제목")
         .content("내용")
+        .date(LocalDate.of(2024, 10, 1))
         .isTemp(true)
         .createdAt(LocalDateTime.now())
         .updatedAt(LocalDateTime.now())
@@ -339,6 +454,7 @@ class DiaryControllerTest {
         .andExpect(jsonPath("$.diaryId").value(diaryId.toString()))
         .andExpect(jsonPath("$.title").value(response.getTitle()))
         .andExpect(jsonPath("$.content").value(response.getContent()))
+        .andExpect(jsonPath("$.date").value(response.getDate().toString()))
         .andExpect(jsonPath("$.temp").value(response.isTemp()))
         .andExpect(jsonPath("$.createdAt").exists())
         .andExpect(jsonPath("$.updatedAt").exists());
@@ -353,6 +469,7 @@ class DiaryControllerTest {
         .diaryId(diaryId)
         .title("제목")
         .content("내용")
+        .date(LocalDate.of(2024, 10, 1))
         .isTemp(true)
         .createdAt(LocalDateTime.now())
         .updatedAt(LocalDateTime.now())
@@ -367,6 +484,7 @@ class DiaryControllerTest {
         .andExpect(jsonPath("$.diaryId").value(diaryId.toString()))
         .andExpect(jsonPath("$.title").value(response.getTitle()))
         .andExpect(jsonPath("$.content").value(response.getContent()))
+        .andExpect(jsonPath("$.date").value(response.getDate().toString()))
         .andExpect(jsonPath("$.temp").value(response.isTemp()))
         .andExpect(jsonPath("$.createdAt").exists())
         .andExpect(jsonPath("$.updatedAt").exists());
