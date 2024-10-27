@@ -12,6 +12,7 @@ import jakarta.persistence.Id;
 import jakarta.persistence.JoinColumn;
 import jakarta.persistence.ManyToOne;
 import jakarta.persistence.Table;
+import java.time.LocalDate;
 import java.time.LocalDateTime;
 import java.util.UUID;
 import lombok.AccessLevel;
@@ -40,6 +41,8 @@ public class Diary extends BaseEntity {
   @Column(columnDefinition = "TEXT")
   private String content;
 
+  private LocalDate date;
+
   @Column(name = "is_temp", nullable = false)
   private boolean isTemp = true;
 
@@ -50,11 +53,12 @@ public class Diary extends BaseEntity {
   private LocalDateTime deletedAt;
 
   @Builder
-  public Diary(User user, String title, String content, boolean isTemp, boolean isDeleted,
-      LocalDateTime deletedAt) {
+  public Diary(User user, String title, String content, LocalDate date, boolean isTemp,
+      boolean isDeleted, LocalDateTime deletedAt) {
     this.user = user;
     this.title = title;
     this.content = content;
+    this.date = date;
     this.isTemp = isTemp;
     this.isDeleted = isDeleted;
     this.deletedAt = deletedAt;
@@ -65,6 +69,7 @@ public class Diary extends BaseEntity {
         .user(user)
         .title(request.getTitle())
         .content(request.getContent())
+        .date(request.getDate())
         .isTemp(true)
         .isDeleted(false)
         .build();
