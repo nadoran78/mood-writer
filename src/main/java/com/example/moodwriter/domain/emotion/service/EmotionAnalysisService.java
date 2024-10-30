@@ -22,6 +22,8 @@ import com.example.moodwriter.global.openAI.service.OpenAIClient;
 import com.fasterxml.jackson.core.JsonProcessingException;
 import com.fasterxml.jackson.databind.ObjectMapper;
 import java.util.UUID;
+import lombok.AllArgsConstructor;
+import lombok.Builder;
 import lombok.Getter;
 import lombok.NoArgsConstructor;
 import lombok.RequiredArgsConstructor;
@@ -56,6 +58,10 @@ public class EmotionAnalysisService {
     EmotionAnalysis emotionAnalysis = emotionAnalysisRepository.findByDiary(diary)
         .orElse(EmotionAnalysis.from(diary));
 
+    if(emotionAnalysis.isDeleted()) {
+      emotionAnalysis.clear(diary);
+    }
+
     String openAIRequest =
         diary.getContent() + OpenAIRequestSentence.PRIMARY_EMOTION_AND_SCORE.getSentence();
 
@@ -82,6 +88,8 @@ public class EmotionAnalysisService {
 
   @Getter
   @NoArgsConstructor
+  @Builder
+  @AllArgsConstructor
   public static class EmotionScoreAndPrimaryEmotion {
 
     private int emotionScore;
