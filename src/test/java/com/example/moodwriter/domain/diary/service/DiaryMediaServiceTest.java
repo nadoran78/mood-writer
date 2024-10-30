@@ -1,4 +1,4 @@
-package com.example.moodwriter.diary.service;
+package com.example.moodwriter.domain.diary.service;
 
 import static org.junit.jupiter.api.Assertions.assertEquals;
 import static org.junit.jupiter.api.Assertions.assertThrows;
