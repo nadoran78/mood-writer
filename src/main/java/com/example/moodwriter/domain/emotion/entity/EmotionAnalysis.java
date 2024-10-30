@@ -80,6 +80,17 @@ public class EmotionAnalysis extends BaseEntity {
         .build();
   }
 
+  public void clear(Diary diary) {
+    this.user = diary.getUser();
+    this.diary = diary;
+    this.date = diary.getDate();
+    this.isDeleted = false;
+    this.deletedAt = null;
+    this.primaryEmotion = null;
+    this.emotionScore = null;
+    this.analysisContent = null;
+  }
+
   public void updateScoreAndPrimaryEmotion(int score, String primaryEmotion) {
     this.emotionScore = score;
     this.primaryEmotion = primaryEmotion;
