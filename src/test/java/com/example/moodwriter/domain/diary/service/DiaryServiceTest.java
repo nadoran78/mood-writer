@@ -15,6 +15,8 @@ import com.example.moodwriter.domain.diary.dto.DiaryFinalSaveRequest;
 import com.example.moodwriter.domain.diary.dto.DiaryResponse;
 import com.example.moodwriter.domain.diary.entity.Diary;
 import com.example.moodwriter.domain.diary.exception.DiaryException;
+import com.example.moodwriter.domain.emotion.dao.EmotionAnalysisRepository;
+import com.example.moodwriter.domain.emotion.entity.EmotionAnalysis;
 import com.example.moodwriter.domain.user.dao.UserRepository;
 import com.example.moodwriter.domain.user.entity.User;
 import com.example.moodwriter.domain.user.exception.UserException;
@@ -39,6 +41,9 @@ class DiaryServiceTest {
   @Mock
   private DiaryRepository diaryRepository;
 
+  @Mock
+  private EmotionAnalysisRepository emotionAnalysisRepository;
+
   @InjectMocks
   private DiaryService diaryService;
 
@@ -50,7 +55,7 @@ class DiaryServiceTest {
     DiaryCreateRequest request = DiaryCreateRequest.builder()
         .title("임시 제목")
         .content("임시 내용")
-        .date(LocalDate.of(2024, 10,1))
+        .date(LocalDate.of(2024, 10, 1))
         .build();
 
     User user = mock(User.class);
@@ -108,7 +113,7 @@ class DiaryServiceTest {
     DiaryCreateRequest request = DiaryCreateRequest.builder()
         .title("임시 제목")
         .content("임시 내용")
-        .date(LocalDate.of(2024, 10,1))
+        .date(LocalDate.of(2024, 10, 1))
         .build();
 
     given(userRepository.findById(userId)).willReturn(Optional.empty());
@@ -605,7 +610,7 @@ class DiaryServiceTest {
   }
 
   @Test
-  void successDeleteDiary() {
+  void successDeleteDiary_whenEmotionAnalysisIsNotExist() {
     // given
     UUID diaryId = UUID.randomUUID();
     UUID userId = UUID.randomUUID();
@@ -623,6 +628,7 @@ class DiaryServiceTest {
         .build();
 
     given(diaryRepository.findById(diaryId)).willReturn(Optional.of(diary));
+    given(emotionAnalysisRepository.findByDiary(diary)).willReturn(Optional.empty());
 
     // when
     diaryService.deleteDiary(diaryId, userId);
@@ -632,6 +638,45 @@ class DiaryServiceTest {
     assertNotNull(diary.getDeletedAt());
 
     verify(diaryRepository).save(diary);
+  }
+
+  @Test
+  void successDeleteDiary_whenEmotionAnalysisIsExist() {
+    // given
+    UUID diaryId = UUID.randomUUID();
+    UUID userId = UUID.randomUUID();
+
+    User user = mock(User.class);
+    given(user.getId()).willReturn(userId);
+
+    Diary diary = Diary.builder()
+        .user(user)
+        .title("제목")
+        .content("내용")
+        .date(LocalDate.of(2024, 10, 1))
+        .isTemp(false)
+        .isDeleted(false)
+        .build();
+
+    EmotionAnalysis emotionAnalysis = EmotionAnalysis.builder()
+        .isDeleted(false)
+        .build();
+
+    given(diaryRepository.findById(diaryId)).willReturn(Optional.of(diary));
+    given(emotionAnalysisRepository.findByDiary(diary)).willReturn(
+        Optional.of(emotionAnalysis));
+
+    // when
+    diaryService.deleteDiary(diaryId, userId);
+
+    // then
+    assertTrue(diary.isDeleted());
+    assertNotNull(diary.getDeletedAt());
+
+    verify(diaryRepository).save(diary);
+
+    assertTrue(emotionAnalysis.isDeleted());
+    assertNotNull(emotionAnalysis.getDeletedAt());
   }
 
   @Test
