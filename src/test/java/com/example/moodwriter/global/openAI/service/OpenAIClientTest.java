@@ -3,17 +3,24 @@ package com.example.moodwriter.global.openAI.service;
 import static org.junit.jupiter.api.Assertions.assertEquals;
 import static org.junit.jupiter.api.Assertions.assertNotNull;
 import static org.junit.jupiter.api.Assertions.assertThrows;
+import static org.mockito.ArgumentMatchers.any;
+import static org.mockito.BDDMockito.given;
+import static org.mockito.Mockito.spy;
 
 import com.example.moodwriter.global.constant.OpenAIModel;
+import com.example.moodwriter.global.exception.CustomException;
 import com.example.moodwriter.global.exception.code.ErrorCode;
+import com.example.moodwriter.global.openAI.dto.OpenAIRequest;
 import com.example.moodwriter.global.openAI.dto.OpenAIResponse;
 import com.example.moodwriter.global.openAI.exception.OpenAIException;
+import com.fasterxml.jackson.core.JsonProcessingException;
 import com.fasterxml.jackson.databind.ObjectMapper;
 import com.fasterxml.jackson.module.paramnames.ParameterNamesModule;
 import java.io.IOException;
 import okhttp3.OkHttpClient;
 import okhttp3.mockwebserver.MockResponse;
 import okhttp3.mockwebserver.MockWebServer;
+import okhttp3.mockwebserver.SocketPolicy;
 import org.junit.jupiter.api.AfterEach;
 import org.junit.jupiter.api.BeforeEach;
 import org.junit.jupiter.api.Test;
@@ -24,13 +31,15 @@ class OpenAIClientTest {
   private OpenAIClient openAIClient;
   private MockWebServer mockWebServer;
 
+  private ObjectMapper objectMapper;
+
   @BeforeEach
   void setUp() throws IOException {
     mockWebServer = new MockWebServer();
     mockWebServer.start();
 
-    ObjectMapper objectMapper = new ObjectMapper().registerModule(
-        new ParameterNamesModule());
+    objectMapper = spy(new ObjectMapper().registerModule(
+        new ParameterNamesModule()));
 
     openAIClient = new OpenAIClient(new OkHttpClient(), objectMapper);
     ReflectionTestUtils.setField(openAIClient, "apiKey", "test-api-key");
@@ -105,5 +114,36 @@ class OpenAIClientTest {
     // then
     assertEquals(ErrorCode.OPEN_AI_RETURN_UNEXPECTED_RESPONSE,
         openAIException.getErrorCode());
+  }
+
+  @Test
+  void callOpenAI_shouldReturnCustomException_whenJsonProcessingIsFailed() throws IOException {
+    // given
+    String diaryContent = "오늘은 기분이 좋다.";
+
+    given(objectMapper.writeValueAsString(any(OpenAIRequest.class))).willThrow(
+        JsonProcessingException.class);
+
+    // when
+    CustomException customException = assertThrows(CustomException.class,
+        () -> openAIClient.callOpenAI(diaryContent, OpenAIModel.GPT_3_5_TURBO));
+
+    // then
+    assertEquals(ErrorCode.JSON_PARSE_ERROR, customException.getErrorCode());
+  }
+
+  @Test
+  void callOpenAI_shouldReturnCustomException_whenIOExceptionFromOkHttpClient() throws IOException {
+    // given
+    String diaryContent = "오늘은 기분이 좋다.";
+
+    mockWebServer.enqueue(new MockResponse().setSocketPolicy(SocketPolicy.DISCONNECT_AT_START));
+
+    // when
+    CustomException customException = assertThrows(CustomException.class,
+        () -> openAIClient.callOpenAI(diaryContent, OpenAIModel.GPT_3_5_TURBO));
+
+    // then
+    assertEquals(ErrorCode.FAIL_TO_CONNECT_WITH_OPEN_AI, customException.getErrorCode());
   }
 }
