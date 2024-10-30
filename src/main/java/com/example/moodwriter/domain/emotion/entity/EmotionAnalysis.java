@@ -1,6 +1,7 @@
 package com.example.moodwriter.domain.emotion.entity;
 
 import com.example.moodwriter.domain.diary.entity.Diary;
+import com.example.moodwriter.domain.emotion.dto.PrimaryEmotionAndScoreRequest;
 import com.example.moodwriter.domain.user.entity.User;
 import com.example.moodwriter.global.entity.BaseEntity;
 import jakarta.persistence.Column;
@@ -43,7 +44,7 @@ public class EmotionAnalysis extends BaseEntity {
   private String primaryEmotion;
 
   @Column(name = "emotion_score", columnDefinition = "TINYINT")
-  private int emotionScore;
+  private Integer emotionScore;
 
   @Column(name = "analysis_content", columnDefinition = "TEXT")
   private String analysisContent;
@@ -68,5 +69,19 @@ public class EmotionAnalysis extends BaseEntity {
     this.date = date;
     this.isDeleted = isDeleted;
     this.deletedAt = deletedAt;
+  }
+
+  public static EmotionAnalysis from(Diary diary) {
+    return EmotionAnalysis.builder()
+        .user(diary.getUser())
+        .diary(diary)
+        .date(diary.getDate())
+        .isDeleted(false)
+        .build();
+  }
+
+  public void updateScoreAndPrimaryEmotion(int score, String primaryEmotion) {
+    this.emotionScore = score;
+    this.primaryEmotion = primaryEmotion;
   }
 }
