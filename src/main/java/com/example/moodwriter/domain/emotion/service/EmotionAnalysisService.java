@@ -28,6 +28,7 @@ import lombok.Getter;
 import lombok.NoArgsConstructor;
 import lombok.RequiredArgsConstructor;
 import org.springframework.stereotype.Service;
+import org.springframework.transaction.annotation.Transactional;
 
 @Service
 @RequiredArgsConstructor
@@ -38,6 +39,7 @@ public class EmotionAnalysisService {
   private final OpenAIClient openAIClient;
   private final ObjectMapper objectMapper;
 
+  @Transactional
   public EmotionAnalysisResponse createPrimaryEmotionAndEmotionScore(
       PrimaryEmotionAndScoreRequest request, UUID userId) {
     Diary diary = diaryRepository.findById(request.getDiaryId())
