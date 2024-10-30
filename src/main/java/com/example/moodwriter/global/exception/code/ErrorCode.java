@@ -35,7 +35,9 @@ public enum ErrorCode {
   CONFLICT_DIARY_STATE(HttpStatus.CONFLICT, "일기가 유효한 상태가 아닙니다."),
 
   OPEN_AI_RETURN_UNEXPECTED_RESPONSE(HttpStatus.INTERNAL_SERVER_ERROR, "Open AI API 호출 결과 예상치 못 한 응답코드가 반환되었습니다."),
-  FAIL_TO_CONNECT_WITH_OPEN_AI(HttpStatus.INTERNAL_SERVER_ERROR, "Open AI와 통신 중 오류가 발생하였습니다.")
+  FAIL_TO_CONNECT_WITH_OPEN_AI(HttpStatus.INTERNAL_SERVER_ERROR, "Open AI와 통신 중 오류가 발생하였습니다."),
+
+  FINAL_SAVED_DIARY_REQUIRED_FOR_EMOTION_ANALYSIS(HttpStatus.CONFLICT, "감정점수 및 대표감정, 감정분석은 최종 저장된 일기만 가능합니다."),
 
   ;
 
