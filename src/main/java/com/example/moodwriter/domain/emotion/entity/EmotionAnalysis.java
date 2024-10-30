@@ -1,7 +1,6 @@
 package com.example.moodwriter.domain.emotion.entity;
 
 import com.example.moodwriter.domain.diary.entity.Diary;
-import com.example.moodwriter.domain.emotion.dto.PrimaryEmotionAndScoreRequest;
 import com.example.moodwriter.domain.user.entity.User;
 import com.example.moodwriter.global.entity.BaseEntity;
 import jakarta.persistence.Column;
@@ -94,5 +93,10 @@ public class EmotionAnalysis extends BaseEntity {
   public void updateScoreAndPrimaryEmotion(int score, String primaryEmotion) {
     this.emotionScore = score;
     this.primaryEmotion = primaryEmotion;
+  }
+
+  public void deactivate() {
+    this.isDeleted = true;
+    this.deletedAt = LocalDateTime.now();
   }
 }

@@ -7,6 +7,8 @@ import com.example.moodwriter.domain.diary.dto.DiaryFinalSaveRequest;
 import com.example.moodwriter.domain.diary.dto.DiaryResponse;
 import com.example.moodwriter.domain.diary.entity.Diary;
 import com.example.moodwriter.domain.diary.exception.DiaryException;
+import com.example.moodwriter.domain.emotion.dao.EmotionAnalysisRepository;
+import com.example.moodwriter.domain.emotion.entity.EmotionAnalysis;
 import com.example.moodwriter.domain.user.dao.UserRepository;
 import com.example.moodwriter.domain.user.entity.User;
 import com.example.moodwriter.domain.user.exception.UserException;
@@ -22,6 +24,7 @@ public class DiaryService {
 
   private final UserRepository userRepository;
   private final DiaryRepository diaryRepository;
+  private final EmotionAnalysisRepository emotionAnalysisRepository;
 
   @Transactional
   public DiaryResponse createDiary(UUID userId, DiaryCreateRequest request) {
@@ -82,6 +85,8 @@ public class DiaryService {
     Diary diary = checkValidAndNotTempDiary(diaryId, userId);
 
     diary.deactivate();
+
+    emotionAnalysisRepository.findByDiary(diary).ifPresent(EmotionAnalysis::deactivate);
 
     diaryRepository.save(diary);
   }
