@@ -16,7 +16,7 @@ public class EmotionAnalysisResponse {
   private UUID diaryId;
   private LocalDate date;
   private String primaryEmotion;
-  private int emotionScore;
+  private Integer emotionScore;
   private String analysisContent;
   private LocalDateTime createdAt;
   private LocalDateTime updatedAt;
