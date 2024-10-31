@@ -21,7 +21,7 @@ public class EmotionAnalysisController {
 
   private final EmotionAnalysisService emotionAnalysisService;
 
-  @PostMapping
+  @PostMapping("/score")
   public ResponseEntity<EmotionAnalysisResponse> createPrimaryEmotionAndEmotionScore(
       @RequestBody @Valid PrimaryEmotionAndScoreRequest request,
       @AuthenticationPrincipal CustomUserDetails userDetails) {

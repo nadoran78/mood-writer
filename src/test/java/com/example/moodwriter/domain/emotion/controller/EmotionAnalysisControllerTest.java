@@ -86,7 +86,7 @@ class EmotionAnalysisControllerTest {
         .willReturn(response);
 
     // when & then
-    mockMvc.perform(post("/api/emotion-analysis")
+    mockMvc.perform(post("/api/emotion-analysis/score")
             .content(objectMapper.writeValueAsString(request))
             .contentType(MediaType.APPLICATION_JSON))
         .andExpect(status().isCreated())
