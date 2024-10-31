@@ -29,4 +29,13 @@ public class EmotionAnalysisController {
         request, userDetails.getId());
     return ResponseEntity.status(HttpStatus.CREATED).body(response);
   }
+
+  @PostMapping("/detail")
+  public ResponseEntity<EmotionAnalysisResponse> createEmotionAnalysis(
+      @RequestBody @Valid EmotionAnalysisRequest request,
+      @AuthenticationPrincipal CustomUserDetails userDetails) {
+    EmotionAnalysisResponse response = emotionAnalysisService.createEmotionAnalysis(
+        request, userDetails.getId());
+    return ResponseEntity.status(HttpStatus.CREATED).body(response);
+  }
 }

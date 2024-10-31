@@ -95,6 +95,10 @@ public class EmotionAnalysis extends BaseEntity {
     this.primaryEmotion = primaryEmotion;
   }
 
+  public void updateEmotionAnalysisContent(String content) {
+    this.analysisContent = content;
+  }
+
   public void deactivate() {
     this.isDeleted = true;
     this.deletedAt = LocalDateTime.now();
