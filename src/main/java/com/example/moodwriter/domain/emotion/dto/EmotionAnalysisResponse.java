@@ -3,7 +3,6 @@ package com.example.moodwriter.domain.emotion.dto;
 import com.example.moodwriter.domain.emotion.entity.EmotionAnalysis;
 import java.time.LocalDate;
 import java.time.LocalDateTime;
-import java.util.List;
 import java.util.UUID;
 import lombok.Builder;
 import lombok.Getter;
