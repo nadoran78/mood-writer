@@ -10,7 +10,7 @@ import com.example.moodwriter.domain.diary.entity.Diary;
 import com.example.moodwriter.domain.diary.exception.DiaryException;
 import com.example.moodwriter.domain.emotion.dao.EmotionAnalysisRepository;
 import com.example.moodwriter.domain.emotion.dto.EmotionAnalysisResponse;
-import com.example.moodwriter.domain.emotion.dto.PrimaryEmotionAndScoreRequest;
+import com.example.moodwriter.domain.emotion.dto.EmotionAnalysisRequest;
 import com.example.moodwriter.domain.emotion.entity.EmotionAnalysis;
 import com.example.moodwriter.domain.emotion.exception.EmotionAnalysisException;
 import com.example.moodwriter.global.constant.OpenAIModel;
@@ -41,7 +41,7 @@ public class EmotionAnalysisService {
 
   @Transactional
   public EmotionAnalysisResponse createPrimaryEmotionAndEmotionScore(
-      PrimaryEmotionAndScoreRequest request, UUID userId) {
+      EmotionAnalysisRequest request, UUID userId) {
     Diary diary = diaryRepository.findById(request.getDiaryId())
         .orElseThrow(() -> new DiaryException(ErrorCode.NOT_FOUND_DIARY));
 

@@ -11,7 +11,7 @@ import static org.springframework.test.web.servlet.result.MockMvcResultMatchers.
 import static org.springframework.test.web.servlet.result.MockMvcResultMatchers.status;
 
 import com.example.moodwriter.domain.emotion.dto.EmotionAnalysisResponse;
-import com.example.moodwriter.domain.emotion.dto.PrimaryEmotionAndScoreRequest;
+import com.example.moodwriter.domain.emotion.dto.EmotionAnalysisRequest;
 import com.example.moodwriter.domain.emotion.service.EmotionAnalysisService;
 import com.example.moodwriter.domain.user.entity.User;
 import com.example.moodwriter.global.jwt.JwtAuthenticationToken;
@@ -68,7 +68,7 @@ class EmotionAnalysisControllerTest {
   void successCreatePrimaryEmotionAndEmotionScore() throws Exception {
     // given
     UUID diaryId = UUID.randomUUID();
-    PrimaryEmotionAndScoreRequest request = new PrimaryEmotionAndScoreRequest(diaryId);
+    EmotionAnalysisRequest request = new EmotionAnalysisRequest(diaryId);
 
     UUID emotionAnalysisId = UUID.randomUUID();
     EmotionAnalysisResponse response = EmotionAnalysisResponse.builder()
@@ -82,7 +82,7 @@ class EmotionAnalysisControllerTest {
         .build();
 
     given(emotionAnalysisService.createPrimaryEmotionAndEmotionScore(
-        any(PrimaryEmotionAndScoreRequest.class), eq(userId)))
+        any(EmotionAnalysisRequest.class), eq(userId)))
         .willReturn(response);
 
     // when & then

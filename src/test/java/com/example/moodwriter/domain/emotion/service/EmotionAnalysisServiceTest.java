@@ -14,7 +14,7 @@ import com.example.moodwriter.domain.diary.entity.Diary;
 import com.example.moodwriter.domain.diary.exception.DiaryException;
 import com.example.moodwriter.domain.emotion.dao.EmotionAnalysisRepository;
 import com.example.moodwriter.domain.emotion.dto.EmotionAnalysisResponse;
-import com.example.moodwriter.domain.emotion.dto.PrimaryEmotionAndScoreRequest;
+import com.example.moodwriter.domain.emotion.dto.EmotionAnalysisRequest;
 import com.example.moodwriter.domain.emotion.entity.EmotionAnalysis;
 import com.example.moodwriter.domain.emotion.exception.EmotionAnalysisException;
 import com.example.moodwriter.domain.emotion.service.EmotionAnalysisService.EmotionScoreAndPrimaryEmotion;
@@ -77,7 +77,7 @@ class EmotionAnalysisServiceTest {
     given(user.getId()).willReturn(userId);
     given(diary.getId()).willReturn(diaryId);
 
-    PrimaryEmotionAndScoreRequest request = new PrimaryEmotionAndScoreRequest(diaryId);
+    EmotionAnalysisRequest request = new EmotionAnalysisRequest(diaryId);
 
     String jsonResponse = """
         {
@@ -130,7 +130,7 @@ class EmotionAnalysisServiceTest {
     given(user.getId()).willReturn(userId);
     given(diary.getId()).willReturn(diaryId);
 
-    PrimaryEmotionAndScoreRequest request = new PrimaryEmotionAndScoreRequest(diaryId);
+    EmotionAnalysisRequest request = new EmotionAnalysisRequest(diaryId);
 
     EmotionAnalysis emotionAnalysis = EmotionAnalysis.builder()
         .diary(diary)
@@ -192,7 +192,7 @@ class EmotionAnalysisServiceTest {
     given(user.getId()).willReturn(userId);
     given(diary.getId()).willReturn(diaryId);
 
-    PrimaryEmotionAndScoreRequest request = new PrimaryEmotionAndScoreRequest(diaryId);
+    EmotionAnalysisRequest request = new EmotionAnalysisRequest(diaryId);
 
     EmotionAnalysis emotionAnalysis = EmotionAnalysis.builder()
         .diary(diary)
@@ -252,7 +252,7 @@ class EmotionAnalysisServiceTest {
   @Test
   void createPrimaryEmotionAndEmotionScore_shouldReturnDiaryException_whenDiaryIsNotExist() {
     // given
-    PrimaryEmotionAndScoreRequest request = new PrimaryEmotionAndScoreRequest(diaryId);
+    EmotionAnalysisRequest request = new EmotionAnalysisRequest(diaryId);
 
     given(diaryRepository.findById(diaryId)).willReturn(Optional.empty());
 
@@ -270,7 +270,7 @@ class EmotionAnalysisServiceTest {
     UUID anotherUserId = UUID.randomUUID();
     given(user.getId()).willReturn(anotherUserId);
 
-    PrimaryEmotionAndScoreRequest request = new PrimaryEmotionAndScoreRequest(diaryId);
+    EmotionAnalysisRequest request = new EmotionAnalysisRequest(diaryId);
 
     given(diaryRepository.findById(diaryId)).willReturn(Optional.of(diary));
 
@@ -288,7 +288,7 @@ class EmotionAnalysisServiceTest {
     given(user.getId()).willReturn(userId);
     diary.deactivate();
 
-    PrimaryEmotionAndScoreRequest request = new PrimaryEmotionAndScoreRequest(diaryId);
+    EmotionAnalysisRequest request = new EmotionAnalysisRequest(diaryId);
 
     given(diaryRepository.findById(diaryId)).willReturn(Optional.of(diary));
 
@@ -306,7 +306,7 @@ class EmotionAnalysisServiceTest {
     given(user.getId()).willReturn(userId);
     diary.startEditing();
 
-    PrimaryEmotionAndScoreRequest request = new PrimaryEmotionAndScoreRequest(diaryId);
+    EmotionAnalysisRequest request = new EmotionAnalysisRequest(diaryId);
 
     given(diaryRepository.findById(diaryId)).willReturn(Optional.of(diary));
 
@@ -326,7 +326,7 @@ class EmotionAnalysisServiceTest {
     // given
     given(user.getId()).willReturn(userId);
 
-    PrimaryEmotionAndScoreRequest request = new PrimaryEmotionAndScoreRequest(diaryId);
+    EmotionAnalysisRequest request = new EmotionAnalysisRequest(diaryId);
 
     String jsonResponse = """
         {
