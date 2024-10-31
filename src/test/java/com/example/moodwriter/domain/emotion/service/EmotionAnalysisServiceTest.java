@@ -1,7 +1,10 @@
 package com.example.moodwriter.domain.emotion.service;
 
 
-import static org.junit.jupiter.api.Assertions.*;
+import static org.junit.jupiter.api.Assertions.assertEquals;
+import static org.junit.jupiter.api.Assertions.assertFalse;
+import static org.junit.jupiter.api.Assertions.assertNull;
+import static org.junit.jupiter.api.Assertions.assertThrows;
 import static org.mockito.AdditionalAnswers.returnsFirstArg;
 import static org.mockito.ArgumentMatchers.any;
 import static org.mockito.ArgumentMatchers.anyString;
@@ -13,8 +16,8 @@ import com.example.moodwriter.domain.diary.dao.DiaryRepository;
 import com.example.moodwriter.domain.diary.entity.Diary;
 import com.example.moodwriter.domain.diary.exception.DiaryException;
 import com.example.moodwriter.domain.emotion.dao.EmotionAnalysisRepository;
+import com.example.moodwriter.domain.emotion.dto.EmotionAnalysisRequest;
 import com.example.moodwriter.domain.emotion.dto.EmotionAnalysisResponse;
-import com.example.moodwriter.domain.emotion.dto.PrimaryEmotionAndScoreRequest;
 import com.example.moodwriter.domain.emotion.entity.EmotionAnalysis;
 import com.example.moodwriter.domain.emotion.exception.EmotionAnalysisException;
 import com.example.moodwriter.domain.emotion.service.EmotionAnalysisService.EmotionScoreAndPrimaryEmotion;
@@ -29,6 +32,7 @@ import com.example.moodwriter.global.openAI.service.OpenAIClient;
 import com.fasterxml.jackson.core.JsonProcessingException;
 import com.fasterxml.jackson.databind.ObjectMapper;
 import java.time.LocalDate;
+import java.time.LocalDateTime;
 import java.util.Collections;
 import java.util.Optional;
 import java.util.UUID;
@@ -77,7 +81,7 @@ class EmotionAnalysisServiceTest {
     given(user.getId()).willReturn(userId);
     given(diary.getId()).willReturn(diaryId);
 
-    PrimaryEmotionAndScoreRequest request = new PrimaryEmotionAndScoreRequest(diaryId);
+    EmotionAnalysisRequest request = new EmotionAnalysisRequest(diaryId);
 
     String jsonResponse = """
         {
@@ -130,7 +134,7 @@ class EmotionAnalysisServiceTest {
     given(user.getId()).willReturn(userId);
     given(diary.getId()).willReturn(diaryId);
 
-    PrimaryEmotionAndScoreRequest request = new PrimaryEmotionAndScoreRequest(diaryId);
+    EmotionAnalysisRequest request = new EmotionAnalysisRequest(diaryId);
 
     EmotionAnalysis emotionAnalysis = EmotionAnalysis.builder()
         .diary(diary)
@@ -192,7 +196,7 @@ class EmotionAnalysisServiceTest {
     given(user.getId()).willReturn(userId);
     given(diary.getId()).willReturn(diaryId);
 
-    PrimaryEmotionAndScoreRequest request = new PrimaryEmotionAndScoreRequest(diaryId);
+    EmotionAnalysisRequest request = new EmotionAnalysisRequest(diaryId);
 
     EmotionAnalysis emotionAnalysis = EmotionAnalysis.builder()
         .diary(diary)
@@ -252,7 +256,7 @@ class EmotionAnalysisServiceTest {
   @Test
   void createPrimaryEmotionAndEmotionScore_shouldReturnDiaryException_whenDiaryIsNotExist() {
     // given
-    PrimaryEmotionAndScoreRequest request = new PrimaryEmotionAndScoreRequest(diaryId);
+    EmotionAnalysisRequest request = new EmotionAnalysisRequest(diaryId);
 
     given(diaryRepository.findById(diaryId)).willReturn(Optional.empty());
 
@@ -270,7 +274,7 @@ class EmotionAnalysisServiceTest {
     UUID anotherUserId = UUID.randomUUID();
     given(user.getId()).willReturn(anotherUserId);
 
-    PrimaryEmotionAndScoreRequest request = new PrimaryEmotionAndScoreRequest(diaryId);
+    EmotionAnalysisRequest request = new EmotionAnalysisRequest(diaryId);
 
     given(diaryRepository.findById(diaryId)).willReturn(Optional.of(diary));
 
@@ -288,7 +292,7 @@ class EmotionAnalysisServiceTest {
     given(user.getId()).willReturn(userId);
     diary.deactivate();
 
-    PrimaryEmotionAndScoreRequest request = new PrimaryEmotionAndScoreRequest(diaryId);
+    EmotionAnalysisRequest request = new EmotionAnalysisRequest(diaryId);
 
     given(diaryRepository.findById(diaryId)).willReturn(Optional.of(diary));
 
@@ -306,7 +310,7 @@ class EmotionAnalysisServiceTest {
     given(user.getId()).willReturn(userId);
     diary.startEditing();
 
-    PrimaryEmotionAndScoreRequest request = new PrimaryEmotionAndScoreRequest(diaryId);
+    EmotionAnalysisRequest request = new EmotionAnalysisRequest(diaryId);
 
     given(diaryRepository.findById(diaryId)).willReturn(Optional.of(diary));
 
@@ -326,7 +330,7 @@ class EmotionAnalysisServiceTest {
     // given
     given(user.getId()).willReturn(userId);
 
-    PrimaryEmotionAndScoreRequest request = new PrimaryEmotionAndScoreRequest(diaryId);
+    EmotionAnalysisRequest request = new EmotionAnalysisRequest(diaryId);
 
     String jsonResponse = """
         {
@@ -357,6 +361,209 @@ class EmotionAnalysisServiceTest {
             userId));
 
     assertEquals(ErrorCode.JSON_PARSE_ERROR, customException.getErrorCode());
+  }
+
+  @Test
+  void successCreateEmotionAnalysis_whenItIsFirstTimeForEmotionAnalysis() {
+    // given
+    String analysisContent = "일기를 보니 행복하십니다.";
+
+    EmotionAnalysisRequest request = new EmotionAnalysisRequest(diaryId);
+
+    OpenAIResponse openAIResponse = OpenAIResponse.builder()
+        .choices(Collections.singletonList(
+            Choice.builder()
+                .message(
+                    Message.builder()
+                        .content(analysisContent)
+                        .build())
+                .build()))
+        .build();
+
+    given(user.getId()).willReturn(userId);
+    given(diary.getId()).willReturn(diaryId);
+    given(diaryRepository.findById(diaryId)).willReturn(Optional.of(diary));
+    given(emotionAnalysisRepository.findByDiary(diary)).willReturn(Optional.empty());
+    given(openAIClient.callOpenAI(anyString(), any(OpenAIModel.class)))
+        .willReturn(openAIResponse);
+    given(emotionAnalysisRepository.save(any(EmotionAnalysis.class)))
+        .will(returnsFirstArg());
+
+    // when
+    EmotionAnalysisResponse response = emotionAnalysisService.createEmotionAnalysis(
+        request, userId);
+
+    // then
+    assertEquals(diaryId, response.getDiaryId());
+    assertEquals(diary.getDate(), response.getDate());
+    assertNull(response.getPrimaryEmotion());
+    assertNull(response.getEmotionScore());
+    assertEquals(analysisContent, response.getAnalysisContent());
+  }
+
+  @Test
+  void successCreateEmotionAnalysis_whenItIsNotFirstTimeForEmotionAnalysis() {
+    // given
+    String analysisContent = "일기를 보니 행복하십니다.";
+
+    EmotionAnalysisRequest request = new EmotionAnalysisRequest(diaryId);
+
+    OpenAIResponse openAIResponse = OpenAIResponse.builder()
+        .choices(Collections.singletonList(
+            Choice.builder()
+                .message(
+                    Message.builder()
+                        .content(analysisContent)
+                        .build())
+                .build()))
+        .build();
+
+    EmotionAnalysis emotionAnalysis = EmotionAnalysis.builder()
+        .diary(diary)
+        .emotionScore(0)
+        .primaryEmotion("슬픔")
+        .analysisContent("행복하십니다.")
+        .date(diary.getDate())
+        .build();
+
+    given(user.getId()).willReturn(userId);
+    given(diary.getId()).willReturn(diaryId);
+    given(diaryRepository.findById(diaryId)).willReturn(Optional.of(diary));
+    given(emotionAnalysisRepository.findByDiary(diary))
+        .willReturn(Optional.of(emotionAnalysis));
+    given(openAIClient.callOpenAI(anyString(), any(OpenAIModel.class)))
+        .willReturn(openAIResponse);
+    given(emotionAnalysisRepository.save(any(EmotionAnalysis.class)))
+        .will(returnsFirstArg());
+
+    // when
+    EmotionAnalysisResponse response = emotionAnalysisService.createEmotionAnalysis(
+        request, userId);
+
+    // then
+    assertEquals(diaryId, response.getDiaryId());
+    assertEquals(emotionAnalysis.getDate(), response.getDate());
+    assertEquals(emotionAnalysis.getPrimaryEmotion(), response.getPrimaryEmotion());
+    assertEquals(emotionAnalysis.getEmotionScore(), response.getEmotionScore());
+    assertEquals(analysisContent, response.getAnalysisContent());
+  }
+
+  @Test
+  void successCreateEmotionAnalysis_whenEmotionAnalysisIsDeleted() {
+    // given
+    String analysisContent = "일기를 보니 행복하십니다.";
+
+    EmotionAnalysisRequest request = new EmotionAnalysisRequest(diaryId);
+
+    OpenAIResponse openAIResponse = OpenAIResponse.builder()
+        .choices(Collections.singletonList(
+            Choice.builder()
+                .message(
+                    Message.builder()
+                        .content(analysisContent)
+                        .build())
+                .build()))
+        .build();
+
+    EmotionAnalysis emotionAnalysis = EmotionAnalysis.builder()
+        .diary(diary)
+        .emotionScore(0)
+        .primaryEmotion("슬픔")
+        .analysisContent("행복하십니다.")
+        .date(diary.getDate())
+        .isDeleted(true)
+        .deletedAt(LocalDateTime.now())
+        .build();
+
+    given(user.getId()).willReturn(userId);
+    given(diary.getId()).willReturn(diaryId);
+    given(diaryRepository.findById(diaryId)).willReturn(Optional.of(diary));
+    given(emotionAnalysisRepository.findByDiary(diary))
+        .willReturn(Optional.of(emotionAnalysis));
+    given(openAIClient.callOpenAI(anyString(), any(OpenAIModel.class)))
+        .willReturn(openAIResponse);
+    given(emotionAnalysisRepository.save(any(EmotionAnalysis.class)))
+        .will(returnsFirstArg());
+
+    // when
+    EmotionAnalysisResponse response = emotionAnalysisService.createEmotionAnalysis(
+        request, userId);
+
+    // then
+    assertEquals(diaryId, response.getDiaryId());
+    assertEquals(diary.getDate(), response.getDate());
+    assertNull(emotionAnalysis.getPrimaryEmotion());
+    assertNull(emotionAnalysis.getEmotionScore());
+    assertEquals(analysisContent, response.getAnalysisContent());
+    assertFalse(emotionAnalysis.isDeleted());
+    assertNull(emotionAnalysis.getDeletedAt());
+  }
+
+  @Test
+  void createEmotionAnalysis_shouldReturnDiaryException_whenDiaryIsNotExist() {
+    // given
+    EmotionAnalysisRequest request = new EmotionAnalysisRequest(diaryId);
+
+    given(diaryRepository.findById(diaryId)).willReturn(Optional.empty());
+
+    // when & then
+    DiaryException diaryException = assertThrows(DiaryException.class,
+        () -> emotionAnalysisService.createEmotionAnalysis(request, userId));
+
+    assertEquals(ErrorCode.NOT_FOUND_DIARY, diaryException.getErrorCode());
+  }
+
+  @Test
+  void createEmotionAnalysis_shouldReturnDiaryException_whenDiaryWriterIsNotMatched() {
+    // given
+    UUID anotherUserId = UUID.randomUUID();
+    given(user.getId()).willReturn(anotherUserId);
+
+    EmotionAnalysisRequest request = new EmotionAnalysisRequest(diaryId);
+
+    given(diaryRepository.findById(diaryId)).willReturn(Optional.of(diary));
+
+    // when & then
+    DiaryException diaryException = assertThrows(DiaryException.class,
+        () -> emotionAnalysisService.createEmotionAnalysis(request, userId));
+
+    assertEquals(ErrorCode.FORBIDDEN_ACCESS_DIARY, diaryException.getErrorCode());
+  }
+
+  @Test
+  void createEmotionAnalysis_shouldReturnDiaryException_whenDiaryIsDeleted() {
+    // given
+    given(user.getId()).willReturn(userId);
+    diary.deactivate();
+
+    EmotionAnalysisRequest request = new EmotionAnalysisRequest(diaryId);
+
+    given(diaryRepository.findById(diaryId)).willReturn(Optional.of(diary));
+
+    // when & then
+    DiaryException diaryException = assertThrows(DiaryException.class,
+        () -> emotionAnalysisService.createEmotionAnalysis(request, userId));
+
+    assertEquals(ErrorCode.ALREADY_DELETED_DIARY, diaryException.getErrorCode());
+  }
+
+  @Test
+  void createEmotionAnalysis_shouldReturnEmotionAnalysisException_whenDiaryIsTemp() {
+    // given
+    given(user.getId()).willReturn(userId);
+    diary.startEditing();
+
+    EmotionAnalysisRequest request = new EmotionAnalysisRequest(diaryId);
+
+    given(diaryRepository.findById(diaryId)).willReturn(Optional.of(diary));
+
+    // when & then
+    EmotionAnalysisException emotionAnalysisException = assertThrows(
+        EmotionAnalysisException.class,
+        () -> emotionAnalysisService.createEmotionAnalysis(request, userId));
+
+    assertEquals(ErrorCode.FINAL_SAVED_DIARY_REQUIRED_FOR_EMOTION_ANALYSIS,
+        emotionAnalysisException.getErrorCode());
   }
 
 }

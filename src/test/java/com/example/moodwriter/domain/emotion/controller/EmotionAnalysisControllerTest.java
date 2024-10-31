@@ -11,7 +11,7 @@ import static org.springframework.test.web.servlet.result.MockMvcResultMatchers.
 import static org.springframework.test.web.servlet.result.MockMvcResultMatchers.status;
 
 import com.example.moodwriter.domain.emotion.dto.EmotionAnalysisResponse;
-import com.example.moodwriter.domain.emotion.dto.PrimaryEmotionAndScoreRequest;
+import com.example.moodwriter.domain.emotion.dto.EmotionAnalysisRequest;
 import com.example.moodwriter.domain.emotion.service.EmotionAnalysisService;
 import com.example.moodwriter.domain.user.entity.User;
 import com.example.moodwriter.global.jwt.JwtAuthenticationToken;
@@ -68,7 +68,7 @@ class EmotionAnalysisControllerTest {
   void successCreatePrimaryEmotionAndEmotionScore() throws Exception {
     // given
     UUID diaryId = UUID.randomUUID();
-    PrimaryEmotionAndScoreRequest request = new PrimaryEmotionAndScoreRequest(diaryId);
+    EmotionAnalysisRequest request = new EmotionAnalysisRequest(diaryId);
 
     UUID emotionAnalysisId = UUID.randomUUID();
     EmotionAnalysisResponse response = EmotionAnalysisResponse.builder()
@@ -82,11 +82,11 @@ class EmotionAnalysisControllerTest {
         .build();
 
     given(emotionAnalysisService.createPrimaryEmotionAndEmotionScore(
-        any(PrimaryEmotionAndScoreRequest.class), eq(userId)))
+        any(EmotionAnalysisRequest.class), eq(userId)))
         .willReturn(response);
 
     // when & then
-    mockMvc.perform(post("/api/emotion-analysis")
+    mockMvc.perform(post("/api/emotion-analysis/score")
             .content(objectMapper.writeValueAsString(request))
             .contentType(MediaType.APPLICATION_JSON))
         .andExpect(status().isCreated())
@@ -97,6 +97,42 @@ class EmotionAnalysisControllerTest {
         .andExpect(jsonPath("$.primaryEmotion").value(response.getPrimaryEmotion()))
         .andExpect(jsonPath("$.emotionScore").value(response.getEmotionScore()))
         .andExpect(jsonPath("$.analysisContent").isEmpty())
+        .andExpect(jsonPath("$.createdAt").exists())
+        .andExpect(jsonPath("$.updatedAt").exists());
+  }
+
+  @Test
+  void successCreateEmotionAnalysis() throws Exception {
+    // given
+    UUID diaryId = UUID.randomUUID();
+    EmotionAnalysisRequest request = new EmotionAnalysisRequest(diaryId);
+
+    UUID emotionAnalysisId = UUID.randomUUID();
+    EmotionAnalysisResponse response = EmotionAnalysisResponse.builder()
+        .emotionAnalysisId(emotionAnalysisId)
+        .diaryId(diaryId)
+        .date(LocalDate.of(2024, 10, 1))
+        .analysisContent("행복하게 잘 살고 있으십니다.")
+        .createdAt(LocalDateTime.now())
+        .updatedAt(LocalDateTime.now())
+        .build();
+
+    given(emotionAnalysisService.createEmotionAnalysis(
+        any(EmotionAnalysisRequest.class), eq(userId)))
+        .willReturn(response);
+
+    // when & then
+    mockMvc.perform(post("/api/emotion-analysis/detail")
+            .content(objectMapper.writeValueAsString(request))
+            .contentType(MediaType.APPLICATION_JSON))
+        .andExpect(status().isCreated())
+        .andDo(print())
+        .andExpect(jsonPath("$.emotionAnalysisId").value(emotionAnalysisId.toString()))
+        .andExpect(jsonPath("$.diaryId").value(diaryId.toString()))
+        .andExpect(jsonPath("$.date").value(response.getDate().toString()))
+        .andExpect(jsonPath("$.primaryEmotion").isEmpty())
+        .andExpect(jsonPath("$.emotionScore").isEmpty())
+        .andExpect(jsonPath("$.analysisContent").value(response.getAnalysisContent()))
         .andExpect(jsonPath("$.createdAt").exists())
         .andExpect(jsonPath("$.updatedAt").exists());
   }

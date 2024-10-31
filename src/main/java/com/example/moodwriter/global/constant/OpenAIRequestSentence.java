@@ -16,6 +16,10 @@ public enum OpenAIRequestSentence {
           + "    \"primaryEmotion\": \"??, ??, ??\""
           + "\n}"
   ),
+  EMOTION_ANALYSIS(
+      "\n\n위 일기를 보고 감정분석을 상세하게 작성해주고, "
+          + "감정분석에 따른 적절한 조언을 상세히 작성해줘."
+  )
 
   ;
 

@@ -53,7 +53,7 @@ class OpenAIClientTest {
   }
 
   @Test
-  void successCallOpenAI() throws IOException {
+  void successCallOpenAI() {
     // given
     MockResponse mockResponse = new MockResponse()
         .setResponseCode(200)
@@ -133,7 +133,7 @@ class OpenAIClientTest {
   }
 
   @Test
-  void callOpenAI_shouldReturnCustomException_whenIOExceptionFromOkHttpClient() throws IOException {
+  void callOpenAI_shouldReturnCustomException_whenIOExceptionFromOkHttpClient() {
     // given
     String diaryContent = "오늘은 기분이 좋다.";
 

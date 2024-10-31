@@ -9,7 +9,7 @@ import lombok.NoArgsConstructor;
 @Getter
 @NoArgsConstructor
 @AllArgsConstructor
-public class PrimaryEmotionAndScoreRequest {
+public class EmotionAnalysisRequest {
 
   @NotNull
   private UUID diaryId;

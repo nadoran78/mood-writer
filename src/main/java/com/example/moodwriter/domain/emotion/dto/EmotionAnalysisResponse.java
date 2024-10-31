@@ -3,7 +3,6 @@ package com.example.moodwriter.domain.emotion.dto;
 import com.example.moodwriter.domain.emotion.entity.EmotionAnalysis;
 import java.time.LocalDate;
 import java.time.LocalDateTime;
-import java.util.List;
 import java.util.UUID;
 import lombok.Builder;
 import lombok.Getter;
@@ -16,7 +15,7 @@ public class EmotionAnalysisResponse {
   private UUID diaryId;
   private LocalDate date;
   private String primaryEmotion;
-  private int emotionScore;
+  private Integer emotionScore;
   private String analysisContent;
   private LocalDateTime createdAt;
   private LocalDateTime updatedAt;

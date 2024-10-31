@@ -1,7 +1,7 @@
 package com.example.moodwriter.domain.emotion.controller;
 
 import com.example.moodwriter.domain.emotion.dto.EmotionAnalysisResponse;
-import com.example.moodwriter.domain.emotion.dto.PrimaryEmotionAndScoreRequest;
+import com.example.moodwriter.domain.emotion.dto.EmotionAnalysisRequest;
 import com.example.moodwriter.domain.emotion.service.EmotionAnalysisService;
 import com.example.moodwriter.global.security.dto.CustomUserDetails;
 import jakarta.validation.Valid;
@@ -21,11 +21,20 @@ public class EmotionAnalysisController {
 
   private final EmotionAnalysisService emotionAnalysisService;
 
-  @PostMapping
+  @PostMapping("/score")
   public ResponseEntity<EmotionAnalysisResponse> createPrimaryEmotionAndEmotionScore(
-      @RequestBody @Valid PrimaryEmotionAndScoreRequest request,
+      @RequestBody @Valid EmotionAnalysisRequest request,
       @AuthenticationPrincipal CustomUserDetails userDetails) {
     EmotionAnalysisResponse response = emotionAnalysisService.createPrimaryEmotionAndEmotionScore(
+        request, userDetails.getId());
+    return ResponseEntity.status(HttpStatus.CREATED).body(response);
+  }
+
+  @PostMapping("/detail")
+  public ResponseEntity<EmotionAnalysisResponse> createEmotionAnalysis(
+      @RequestBody @Valid EmotionAnalysisRequest request,
+      @AuthenticationPrincipal CustomUserDetails userDetails) {
+    EmotionAnalysisResponse response = emotionAnalysisService.createEmotionAnalysis(
         request, userDetails.getId());
     return ResponseEntity.status(HttpStatus.CREATED).body(response);
   }

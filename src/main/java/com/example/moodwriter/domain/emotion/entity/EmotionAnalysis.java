@@ -58,7 +58,7 @@ public class EmotionAnalysis extends BaseEntity {
   private LocalDateTime deletedAt;
 
   @Builder
-  public EmotionAnalysis(User user, Diary diary, String primaryEmotion, int emotionScore,
+  public EmotionAnalysis(User user, Diary diary, String primaryEmotion, Integer emotionScore,
       String analysisContent, LocalDate date, boolean isDeleted, LocalDateTime deletedAt) {
     this.user = user;
     this.diary = diary;
@@ -90,9 +90,13 @@ public class EmotionAnalysis extends BaseEntity {
     this.analysisContent = null;
   }
 
-  public void updateScoreAndPrimaryEmotion(int score, String primaryEmotion) {
+  public void updateScoreAndPrimaryEmotion(Integer score, String primaryEmotion) {
     this.emotionScore = score;
     this.primaryEmotion = primaryEmotion;
+  }
+
+  public void updateEmotionAnalysisContent(String content) {
+    this.analysisContent = content;
   }
 
   public void deactivate() {
