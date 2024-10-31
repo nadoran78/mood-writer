@@ -547,4 +547,23 @@ class EmotionAnalysisServiceTest {
     assertEquals(ErrorCode.ALREADY_DELETED_DIARY, diaryException.getErrorCode());
   }
 
+  @Test
+  void createEmotionAnalysis_shouldReturnEmotionAnalysisException_whenDiaryIsTemp() {
+    // given
+    given(user.getId()).willReturn(userId);
+    diary.startEditing();
+
+    EmotionAnalysisRequest request = new EmotionAnalysisRequest(diaryId);
+
+    given(diaryRepository.findById(diaryId)).willReturn(Optional.of(diary));
+
+    // when & then
+    EmotionAnalysisException emotionAnalysisException = assertThrows(
+        EmotionAnalysisException.class,
+        () -> emotionAnalysisService.createEmotionAnalysis(request, userId));
+
+    assertEquals(ErrorCode.FINAL_SAVED_DIARY_REQUIRED_FOR_EMOTION_ANALYSIS,
+        emotionAnalysisException.getErrorCode());
+  }
+
 }
