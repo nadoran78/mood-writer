@@ -43,7 +43,7 @@ public class EmotionAnalysisController {
   }
 
   @GetMapping("/{diaryId}")
-  public ResponseEntity<EmotionAnalysisResponse> getEmotionAnalaysis(
+  public ResponseEntity<EmotionAnalysisResponse> getEmotionAnalysis(
       @PathVariable UUID diaryId, @AuthenticationPrincipal CustomUserDetails userDetails) {
     EmotionAnalysisResponse response = emotionAnalysisService.getEmotionAnalysis(
         diaryId, userDetails.getId());
