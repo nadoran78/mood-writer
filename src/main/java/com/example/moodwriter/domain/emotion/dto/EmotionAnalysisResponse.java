@@ -22,6 +22,7 @@ public class EmotionAnalysisResponse {
 
   public static EmotionAnalysisResponse fromEntity(EmotionAnalysis emotionAnalysis) {
     return EmotionAnalysisResponse.builder()
+        .emotionAnalysisId(emotionAnalysis.getId())
         .diaryId(emotionAnalysis.getDiary().getId())
         .date(emotionAnalysis.getDate())
         .primaryEmotion(emotionAnalysis.getPrimaryEmotion())
