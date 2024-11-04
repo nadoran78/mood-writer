@@ -5,10 +5,13 @@ import com.example.moodwriter.domain.emotion.dto.EmotionAnalysisRequest;
 import com.example.moodwriter.domain.emotion.service.EmotionAnalysisService;
 import com.example.moodwriter.global.security.dto.CustomUserDetails;
 import jakarta.validation.Valid;
+import java.util.UUID;
 import lombok.RequiredArgsConstructor;
 import org.springframework.http.HttpStatus;
 import org.springframework.http.ResponseEntity;
 import org.springframework.security.core.annotation.AuthenticationPrincipal;
+import org.springframework.web.bind.annotation.GetMapping;
+import org.springframework.web.bind.annotation.PathVariable;
 import org.springframework.web.bind.annotation.PostMapping;
 import org.springframework.web.bind.annotation.RequestBody;
 import org.springframework.web.bind.annotation.RequestMapping;
@@ -37,5 +40,13 @@ public class EmotionAnalysisController {
     EmotionAnalysisResponse response = emotionAnalysisService.createEmotionAnalysis(
         request, userDetails.getId());
     return ResponseEntity.status(HttpStatus.CREATED).body(response);
+  }
+
+  @GetMapping("/{diaryId}")
+  public ResponseEntity<EmotionAnalysisResponse> getEmotionAnalaysis(
+      @PathVariable UUID diaryId, @AuthenticationPrincipal CustomUserDetails userDetails) {
+    EmotionAnalysisResponse response = emotionAnalysisService.getEmotionAnalysis(
+        diaryId, userDetails.getId());
+    return ResponseEntity.ok(response);
   }
 }
