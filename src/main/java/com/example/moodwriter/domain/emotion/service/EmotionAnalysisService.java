@@ -1,9 +1,11 @@
 package com.example.moodwriter.domain.emotion.service;
 
 import static com.example.moodwriter.global.exception.code.ErrorCode.ALREADY_DELETED_DIARY;
+import static com.example.moodwriter.global.exception.code.ErrorCode.ALREADY_DELETED_EMOTION_ANALYSIS;
 import static com.example.moodwriter.global.exception.code.ErrorCode.FINAL_SAVED_DIARY_REQUIRED_FOR_EMOTION_ANALYSIS;
 import static com.example.moodwriter.global.exception.code.ErrorCode.FORBIDDEN_ACCESS_DIARY;
 import static com.example.moodwriter.global.exception.code.ErrorCode.JSON_PARSE_ERROR;
+import static com.example.moodwriter.global.exception.code.ErrorCode.NOT_FOUND_EMOTION_ANALYSIS;
 
 import com.example.moodwriter.domain.diary.dao.DiaryRepository;
 import com.example.moodwriter.domain.diary.entity.Diary;
@@ -124,6 +126,20 @@ public class EmotionAnalysisService {
         emotionAnalysis);
 
     return EmotionAnalysisResponse.fromEntity(savedEmotionAnalysis);
+  }
+
+  @Transactional(readOnly = true)
+  public EmotionAnalysisResponse getEmotionAnalysis(UUID diaryId, UUID userId) {
+    Diary diary = getValidDiary(diaryId, userId);
+
+    EmotionAnalysis emotionAnalysis = emotionAnalysisRepository.findByDiary(diary)
+        .orElseThrow(() -> new EmotionAnalysisException(NOT_FOUND_EMOTION_ANALYSIS));
+
+    if (emotionAnalysis.isDeleted()) {
+      throw new EmotionAnalysisException(ALREADY_DELETED_EMOTION_ANALYSIS);
+    }
+
+    return EmotionAnalysisResponse.fromEntity(emotionAnalysis);
   }
 
   @Getter

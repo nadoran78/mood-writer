@@ -38,6 +38,9 @@ public enum ErrorCode {
   FAIL_TO_CONNECT_WITH_OPEN_AI(HttpStatus.INTERNAL_SERVER_ERROR, "Open AI와 통신 중 오류가 발생하였습니다."),
 
   FINAL_SAVED_DIARY_REQUIRED_FOR_EMOTION_ANALYSIS(HttpStatus.CONFLICT, "감정점수 및 대표감정, 감정분석은 최종 저장된 일기만 가능합니다."),
+  NOT_FOUND_EMOTION_ANALYSIS(HttpStatus.NOT_FOUND, "감정분석 기록이 존재하지 않습니다."),
+  ALREADY_DELETED_EMOTION_ANALYSIS(HttpStatus.FORBIDDEN, "이미 삭제된 감정분석 기록입니다."),
+
 
   ;
 

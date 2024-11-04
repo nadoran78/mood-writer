@@ -5,6 +5,7 @@ import static org.mockito.ArgumentMatchers.eq;
 import static org.mockito.BDDMockito.given;
 import static org.mockito.Mockito.mock;
 import static org.mockito.Mockito.when;
+import static org.springframework.test.web.servlet.request.MockMvcRequestBuilders.get;
 import static org.springframework.test.web.servlet.request.MockMvcRequestBuilders.post;
 import static org.springframework.test.web.servlet.result.MockMvcResultHandlers.print;
 import static org.springframework.test.web.servlet.result.MockMvcResultMatchers.jsonPath;
@@ -132,6 +133,39 @@ class EmotionAnalysisControllerTest {
         .andExpect(jsonPath("$.date").value(response.getDate().toString()))
         .andExpect(jsonPath("$.primaryEmotion").isEmpty())
         .andExpect(jsonPath("$.emotionScore").isEmpty())
+        .andExpect(jsonPath("$.analysisContent").value(response.getAnalysisContent()))
+        .andExpect(jsonPath("$.createdAt").exists())
+        .andExpect(jsonPath("$.updatedAt").exists());
+  }
+
+  @Test
+  void successGetEmotionAnalysis() throws Exception {
+    // given
+    UUID diaryId = UUID.randomUUID();
+
+    EmotionAnalysisResponse response = EmotionAnalysisResponse.builder()
+        .emotionAnalysisId(UUID.randomUUID())
+        .diaryId(diaryId)
+        .date(LocalDate.now())
+        .primaryEmotion("행복, 여유, 만족")
+        .emotionScore(7)
+        .analysisContent("행복하신 하루였습니다.")
+        .createdAt(LocalDateTime.now())
+        .updatedAt(LocalDateTime.now())
+        .build();
+
+    given(emotionAnalysisService.getEmotionAnalysis(diaryId, userId))
+        .willReturn(response);
+
+    // when & then
+    mockMvc.perform(get("/api/emotion-analysis/" + diaryId))
+        .andExpect(status().isOk())
+        .andExpect(jsonPath("$.emotionAnalysisId").value(
+            response.getEmotionAnalysisId().toString()))
+        .andExpect(jsonPath("$.diaryId").value(response.getDiaryId().toString()))
+        .andExpect(jsonPath("$.date").value(response.getDate().toString()))
+        .andExpect(jsonPath("$.primaryEmotion").value(response.getPrimaryEmotion()))
+        .andExpect(jsonPath("$.emotionScore").value(response.getEmotionScore()))
         .andExpect(jsonPath("$.analysisContent").value(response.getAnalysisContent()))
         .andExpect(jsonPath("$.createdAt").exists())
         .andExpect(jsonPath("$.updatedAt").exists());
