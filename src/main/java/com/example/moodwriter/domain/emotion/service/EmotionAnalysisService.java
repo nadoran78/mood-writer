@@ -6,6 +6,7 @@ import static com.example.moodwriter.global.exception.code.ErrorCode.FINAL_SAVED
 import static com.example.moodwriter.global.exception.code.ErrorCode.FORBIDDEN_ACCESS_DIARY;
 import static com.example.moodwriter.global.exception.code.ErrorCode.JSON_PARSE_ERROR;
 import static com.example.moodwriter.global.exception.code.ErrorCode.NOT_FOUND_EMOTION_ANALYSIS;
+import static com.example.moodwriter.global.exception.code.ErrorCode.NOT_FOUND_USER;
 
 import com.example.moodwriter.domain.diary.dao.DiaryRepository;
 import com.example.moodwriter.domain.diary.entity.Diary;
@@ -15,6 +16,9 @@ import com.example.moodwriter.domain.emotion.dto.EmotionAnalysisResponse;
 import com.example.moodwriter.domain.emotion.dto.EmotionAnalysisRequest;
 import com.example.moodwriter.domain.emotion.entity.EmotionAnalysis;
 import com.example.moodwriter.domain.emotion.exception.EmotionAnalysisException;
+import com.example.moodwriter.domain.user.dao.UserRepository;
+import com.example.moodwriter.domain.user.entity.User;
+import com.example.moodwriter.domain.user.exception.UserException;
 import com.example.moodwriter.global.constant.OpenAIModel;
 import com.example.moodwriter.global.constant.OpenAIRequestSentence;
 import com.example.moodwriter.global.exception.CustomException;
@@ -23,12 +27,15 @@ import com.example.moodwriter.global.openAI.dto.OpenAIResponse;
 import com.example.moodwriter.global.openAI.service.OpenAIClient;
 import com.fasterxml.jackson.core.JsonProcessingException;
 import com.fasterxml.jackson.databind.ObjectMapper;
+import java.time.LocalDate;
 import java.util.UUID;
 import lombok.AllArgsConstructor;
 import lombok.Builder;
 import lombok.Getter;
 import lombok.NoArgsConstructor;
 import lombok.RequiredArgsConstructor;
+import org.springframework.data.domain.Pageable;
+import org.springframework.data.domain.Slice;
 import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Transactional;
 
@@ -38,6 +45,7 @@ public class EmotionAnalysisService {
 
   private final DiaryRepository diaryRepository;
   private final EmotionAnalysisRepository emotionAnalysisRepository;
+  private final UserRepository userRepository;
   private final OpenAIClient openAIClient;
   private final ObjectMapper objectMapper;
 
@@ -140,6 +148,22 @@ public class EmotionAnalysisService {
     }
 
     return EmotionAnalysisResponse.fromEntity(emotionAnalysis);
+  }
+
+  @Transactional(readOnly = true)
+  public Slice<EmotionAnalysisResponse> getEmotionAnalysisByDateRange(
+      LocalDate startDate, LocalDate endDate, UUID userId, Pageable pageable) {
+    if (startDate.isAfter(endDate)) {
+      throw new EmotionAnalysisException(ErrorCode.START_DATE_MUST_BE_BEFORE_END_DATE);
+    }
+
+    User user = userRepository.findById(userId)
+        .orElseThrow(() -> new UserException(NOT_FOUND_USER));
+
+    Slice<EmotionAnalysis> responses = emotionAnalysisRepository.findByDateBetweenAndIsDeletedFalseAndUser(
+        startDate, endDate, user, pageable);
+
+    return responses.map(EmotionAnalysisResponse::fromEntity);
   }
 
   @Transactional
