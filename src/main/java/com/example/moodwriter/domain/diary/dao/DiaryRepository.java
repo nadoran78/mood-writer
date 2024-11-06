@@ -3,7 +3,6 @@ package com.example.moodwriter.domain.diary.dao;
 import com.example.moodwriter.domain.diary.entity.Diary;
 import com.example.moodwriter.domain.user.entity.User;
 import java.time.LocalDate;
-import java.util.List;
 import java.util.UUID;
 import org.springframework.data.domain.Pageable;
 import org.springframework.data.domain.Slice;
