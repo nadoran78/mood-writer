@@ -154,7 +154,7 @@ public class EmotionAnalysisService {
   public Slice<EmotionAnalysisResponse> getEmotionAnalysisByDateRange(
       LocalDate startDate, LocalDate endDate, UUID userId, Pageable pageable) {
     if (startDate.isAfter(endDate)) {
-      throw new DiaryException(ErrorCode.START_DATE_MUST_BE_BEFORE_END_DATE);
+      throw new EmotionAnalysisException(ErrorCode.START_DATE_MUST_BE_BEFORE_END_DATE);
     }
 
     User user = userRepository.findById(userId)
