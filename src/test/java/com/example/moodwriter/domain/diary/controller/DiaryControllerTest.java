@@ -27,6 +27,7 @@ import com.example.moodwriter.global.security.filter.JwtAuthenticationFilter;
 import com.fasterxml.jackson.databind.ObjectMapper;
 import java.time.LocalDate;
 import java.time.LocalDateTime;
+import java.util.Arrays;
 import java.util.UUID;
 import org.junit.jupiter.api.BeforeEach;
 import org.junit.jupiter.api.Test;
@@ -36,6 +37,10 @@ import org.springframework.boot.test.autoconfigure.web.servlet.WebMvcTest;
 import org.springframework.boot.test.mock.mockito.MockBean;
 import org.springframework.context.annotation.ComponentScan;
 import org.springframework.context.annotation.FilterType;
+import org.springframework.data.domain.PageRequest;
+import org.springframework.data.domain.Pageable;
+import org.springframework.data.domain.SliceImpl;
+import org.springframework.data.domain.Sort;
 import org.springframework.http.MediaType;
 import org.springframework.security.core.context.SecurityContext;
 import org.springframework.security.core.context.SecurityContextHolder;
@@ -500,5 +505,168 @@ class DiaryControllerTest {
         .andExpect(status().isNoContent());
 
     verify(diaryService).deleteDiary(diaryId, userId);
+  }
+
+  @Test
+  void successGetDiariesByDateRange_whenParameterIsDefault() throws Exception {
+    // given
+    UUID diaryId1 = UUID.randomUUID();
+    UUID diaryId2 = UUID.randomUUID();
+
+    LocalDate startDate = LocalDate.of(2024, 10, 1);
+    LocalDate endDate = LocalDate.of(2024, 10, 31);
+
+    DiaryResponse response1 = DiaryResponse.builder()
+        .diaryId(diaryId1)
+        .title("제목1")
+        .content("내용1")
+        .date(LocalDate.of(2024, 10, 1))
+        .isTemp(false)
+        .createdAt(LocalDateTime.now())
+        .updatedAt(LocalDateTime.now())
+        .build();
+
+    DiaryResponse response2 = DiaryResponse.builder()
+        .diaryId(diaryId2)
+        .title("제목2")
+        .content("내용2")
+        .date(LocalDate.of(2024, 10, 3))
+        .isTemp(false)
+        .createdAt(LocalDateTime.now())
+        .updatedAt(LocalDateTime.now())
+        .build();
+
+    SliceImpl<DiaryResponse> responses = new SliceImpl<>(
+        Arrays.asList(response1, response2),
+        PageRequest.of(0, 10, Sort.by("date").descending()),
+        false);
+
+    given(diaryService.getDiariesByDateRange(eq(startDate), eq(endDate),
+        any(Pageable.class), eq(userId))).willReturn(responses);
+
+    // when & then
+    mockMvc.perform(get("/api/diaries")
+            .param("startDate", "2024-10-01")
+            .param("endDate", "2024-10-31"))
+        .andExpect(status().isOk())
+        .andDo(print())
+        .andExpect(jsonPath("$.content[0].diaryId").value(diaryId1.toString()))
+        .andExpect(jsonPath("$.content[0].title").value(response1.getTitle()))
+        .andExpect(jsonPath("$.content[0].content").value(response1.getContent()))
+        .andExpect(jsonPath("$.content[0].date").value(response1.getDate().toString()))
+        .andExpect(jsonPath("$.content[0].createdAt").exists())
+        .andExpect(jsonPath("$.content[0].updatedAt").exists())
+        .andExpect(jsonPath("$.content[1].diaryId").value(diaryId2.toString()))
+        .andExpect(jsonPath("$.content[1].title").value(response2.getTitle()))
+        .andExpect(jsonPath("$.content[1].content").value(response2.getContent()))
+        .andExpect(jsonPath("$.content[1].date").value(response2.getDate().toString()))
+        .andExpect(jsonPath("$.content[1].createdAt").exists())
+        .andExpect(jsonPath("$.content[1].updatedAt").exists());
+  }
+
+  @Test
+  void successGetDiariesByDateRange_whenInputParameter() throws Exception {
+    // given
+    UUID diaryId1 = UUID.randomUUID();
+    UUID diaryId2 = UUID.randomUUID();
+
+    LocalDate startDate = LocalDate.of(2024, 10, 1);
+    LocalDate endDate = LocalDate.of(2024, 10, 31);
+
+    DiaryResponse response1 = DiaryResponse.builder()
+        .diaryId(diaryId1)
+        .title("제목1")
+        .content("내용1")
+        .date(LocalDate.of(2024, 10, 1))
+        .isTemp(false)
+        .createdAt(LocalDateTime.now())
+        .updatedAt(LocalDateTime.now())
+        .build();
+
+    DiaryResponse response2 = DiaryResponse.builder()
+        .diaryId(diaryId2)
+        .title("제목2")
+        .content("내용2")
+        .date(LocalDate.of(2024, 10, 3))
+        .isTemp(false)
+        .createdAt(LocalDateTime.now())
+        .updatedAt(LocalDateTime.now())
+        .build();
+
+    SliceImpl<DiaryResponse> responses = new SliceImpl<>(
+        Arrays.asList(response1, response2),
+        PageRequest.of(0, 10, Sort.by("date").descending()),
+        false);
+
+    given(diaryService.getDiariesByDateRange(eq(startDate), eq(endDate),
+        any(Pageable.class), eq(userId))).willReturn(responses);
+
+    // when & then
+    mockMvc.perform(get("/api/diaries")
+            .param("startDate", "2024-10-01")
+            .param("endDate", "2024-10-31")
+            .param("page", "1")
+            .param("size", "10")
+            .param("sortOrder", "asc"))
+        .andExpect(status().isOk())
+        .andDo(print())
+        .andExpect(jsonPath("$.content[0].diaryId").value(diaryId1.toString()))
+        .andExpect(jsonPath("$.content[0].title").value(response1.getTitle()))
+        .andExpect(jsonPath("$.content[0].content").value(response1.getContent()))
+        .andExpect(jsonPath("$.content[0].date").value(response1.getDate().toString()))
+        .andExpect(jsonPath("$.content[0].createdAt").exists())
+        .andExpect(jsonPath("$.content[0].updatedAt").exists())
+        .andExpect(jsonPath("$.content[1].diaryId").value(diaryId2.toString()))
+        .andExpect(jsonPath("$.content[1].title").value(response2.getTitle()))
+        .andExpect(jsonPath("$.content[1].content").value(response2.getContent()))
+        .andExpect(jsonPath("$.content[1].date").value(response2.getDate().toString()))
+        .andExpect(jsonPath("$.content[1].createdAt").exists())
+        .andExpect(jsonPath("$.content[1].updatedAt").exists());
+  }
+
+  @Test
+  void getDiariesByDateRange_shouldThrowValidationError_whenInputDateIsFuture()
+      throws Exception {
+    // given
+    String startDate = LocalDate.now().plusDays(2).toString();
+    String endDate = LocalDate.now().plusMonths(1).toString();
+
+    // when & then
+    mockMvc.perform(get("/api/diaries")
+            .param("startDate", startDate)
+            .param("endDate", endDate)
+            .param("page", "1")
+            .param("size", "10")
+            .param("sortOrder", "asc"))
+        .andExpect(status().isBadRequest())
+        .andDo(print())
+        .andExpect(jsonPath("$.errorCode").value("VALIDATION_ERROR"))
+        .andExpect(jsonPath("$.message").value("입력값이 유효하지 않습니다."))
+        .andExpect(jsonPath("$.path").value("/api/diaries"))
+        .andExpect(jsonPath("$.parameterErrors[0].messages[0]").value(
+            "조회하는 날짜는 오늘을 포함한 이전 날짜만 가능합니다."))
+        .andExpect(jsonPath("$.parameterErrors[1].messages[0]").value(
+            "조회하는 날짜는 오늘을 포함한 이전 날짜만 가능합니다."));
+  }
+
+  @Test
+  void getDiariesByDateRange_shouldThrowError_whenInputInvalidSortOrder()
+      throws Exception {
+    // given
+    String startDate = LocalDate.now().minusMonths(2).toString();
+    String endDate = LocalDate.now().minusMonths(1).toString();
+
+    // when & then
+    mockMvc.perform(get("/api/diaries")
+            .param("startDate", startDate)
+            .param("endDate", endDate)
+            .param("page", "1")
+            .param("size", "10")
+            .param("sortOrder", "ascending"))
+        .andExpect(status().isBadRequest())
+        .andDo(print())
+        .andExpect(jsonPath("$.errorCode").value("METHOD_ARGUMENT_TYPE_MISMATCHED"))
+        .andExpect(jsonPath("$.message").value("함수의 argument의 타입이 일치하지 않습니다."))
+        .andExpect(jsonPath("$.path").value("/api/diaries"));
   }
 }

@@ -11,6 +11,7 @@ public enum ErrorCode {
   HTTP_MESSAGE_NOT_READABLE(HttpStatus.BAD_REQUEST, "HTTP 메시지를 읽을 수 없습니다."),
   INTERNAL_ERROR(HttpStatus.INTERNAL_SERVER_ERROR, "처리되지 않은 에러가 발생하였습니다."),
   VALIDATION_ERROR(HttpStatus.BAD_REQUEST, "입력값이 유효하지 않습니다."),
+  METHOD_ARGUMENT_TYPE_MISMATCHED(HttpStatus.BAD_REQUEST, "함수의 argument의 타입이 일치하지 않습니다."),
 
   ALREADY_REGISTERED_USER(HttpStatus.BAD_REQUEST, "이미 가입한 회원입니다."),
   NOT_FOUND_USER(HttpStatus.NOT_FOUND, "해당하는 회원이 존재하지 않습니다."),
