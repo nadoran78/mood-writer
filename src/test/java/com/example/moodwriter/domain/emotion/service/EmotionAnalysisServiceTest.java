@@ -3,14 +3,17 @@ package com.example.moodwriter.domain.emotion.service;
 
 import static org.junit.jupiter.api.Assertions.assertEquals;
 import static org.junit.jupiter.api.Assertions.assertFalse;
+import static org.junit.jupiter.api.Assertions.assertNotNull;
 import static org.junit.jupiter.api.Assertions.assertNull;
 import static org.junit.jupiter.api.Assertions.assertThrows;
+import static org.junit.jupiter.api.Assertions.assertTrue;
 import static org.mockito.AdditionalAnswers.returnsFirstArg;
 import static org.mockito.ArgumentMatchers.any;
 import static org.mockito.ArgumentMatchers.anyString;
 import static org.mockito.BDDMockito.given;
 import static org.mockito.Mockito.mock;
 import static org.mockito.Mockito.spy;
+import static org.mockito.Mockito.verify;
 
 import com.example.moodwriter.domain.diary.dao.DiaryRepository;
 import com.example.moodwriter.domain.diary.entity.Diary;
@@ -697,7 +700,8 @@ class EmotionAnalysisServiceTest {
 
     given(user.getId()).willReturn(userId);
     given(diaryRepository.findById(diaryId)).willReturn(Optional.of(diary));
-    given(emotionAnalysisRepository.findByDiary(diary)).willReturn(Optional.of(emotionAnalysis));
+    given(emotionAnalysisRepository.findByDiary(diary)).willReturn(
+        Optional.of(emotionAnalysis));
 
     // when & then
     EmotionAnalysisException emotionAnalysisException = assertThrows(
@@ -705,6 +709,109 @@ class EmotionAnalysisServiceTest {
         () -> emotionAnalysisService.getEmotionAnalysis(diaryId, userId));
 
     assertEquals(ErrorCode.ALREADY_DELETED_EMOTION_ANALYSIS,
+        emotionAnalysisException.getErrorCode());
+  }
+
+  @Test
+  void successDeleteDiary() {
+    // given
+    EmotionAnalysis emotionAnalysis = EmotionAnalysis.builder()
+        .diary(diary)
+        .emotionScore(0)
+        .primaryEmotion("슬픔")
+        .analysisContent("행복하십니다.")
+        .date(diary.getDate())
+        .isDeleted(false)
+        .build();
+
+    given(user.getId()).willReturn(userId);
+    given(diaryRepository.findById(diaryId)).willReturn(Optional.of(diary));
+    given(emotionAnalysisRepository.findByDiary(diary))
+        .willReturn(Optional.of(emotionAnalysis));
+
+    // when & then
+    emotionAnalysisService.deleteEmotionAnalysis(diaryId, userId);
+
+    verify(emotionAnalysisRepository).save(emotionAnalysis);
+
+    assertTrue(emotionAnalysis.isDeleted());
+    assertNotNull(emotionAnalysis.getDeletedAt());
+  }
+
+  @Test
+  void deleteEmotionAnalysis_shouldReturnDiaryException_whenDiaryIsNotExist() {
+    // given
+    given(diaryRepository.findById(diaryId)).willReturn(Optional.empty());
+
+    // when
+    DiaryException diaryException = assertThrows(DiaryException.class,
+        () -> emotionAnalysisService.deleteEmotionAnalysis(diaryId, userId));
+
+    // then
+    assertEquals(ErrorCode.NOT_FOUND_DIARY, diaryException.getErrorCode());
+  }
+
+  @Test
+  void deleteEmotionAnalysis_shouldReturnDiaryException_whenDiaryWriterIsNotMatched() {
+    // given
+    UUID anotherUserId = UUID.randomUUID();
+    given(user.getId()).willReturn(anotherUserId);
+
+    given(diaryRepository.findById(diaryId)).willReturn(Optional.of(diary));
+
+    // when & then
+    DiaryException diaryException = assertThrows(DiaryException.class,
+        () -> emotionAnalysisService.deleteEmotionAnalysis(diaryId, userId));
+
+    assertEquals(ErrorCode.FORBIDDEN_ACCESS_DIARY, diaryException.getErrorCode());
+  }
+
+  @Test
+  void deleteEmotionAnalysis_shouldReturnDiaryException_whenDiaryIsDeleted() {
+    // given
+    given(user.getId()).willReturn(userId);
+    diary.deactivate();
+
+    given(diaryRepository.findById(diaryId)).willReturn(Optional.of(diary));
+
+    // when & then
+    DiaryException diaryException = assertThrows(DiaryException.class,
+        () -> emotionAnalysisService.deleteEmotionAnalysis(diaryId, userId));
+
+    assertEquals(ErrorCode.ALREADY_DELETED_DIARY, diaryException.getErrorCode());
+  }
+
+  @Test
+  void deleteEmotionAnalysis_shouldReturnEmotionAnalysisException_whenDiaryIsTemp() {
+    // given
+    given(user.getId()).willReturn(userId);
+    diary.startEditing();
+
+    given(diaryRepository.findById(diaryId)).willReturn(Optional.of(diary));
+
+    // when & then
+    EmotionAnalysisException emotionAnalysisException = assertThrows(
+        EmotionAnalysisException.class,
+        () -> emotionAnalysisService.deleteEmotionAnalysis(diaryId, userId));
+
+    assertEquals(ErrorCode.FINAL_SAVED_DIARY_REQUIRED_FOR_EMOTION_ANALYSIS,
+        emotionAnalysisException.getErrorCode());
+  }
+
+  @Test
+  void deleteEmotionAnalysis_shouldReturnEmotionAnalysisException_whenEmotionAnalysisIsNotExist() {
+    // given
+    given(user.getId()).willReturn(userId);
+
+    given(diaryRepository.findById(diaryId)).willReturn(Optional.of(diary));
+    given(emotionAnalysisRepository.findByDiary(diary)).willReturn(Optional.empty());
+
+    // when & then
+    EmotionAnalysisException emotionAnalysisException = assertThrows(
+        EmotionAnalysisException.class,
+        () -> emotionAnalysisService.deleteEmotionAnalysis(diaryId, userId));
+
+    assertEquals(ErrorCode.NOT_FOUND_EMOTION_ANALYSIS,
         emotionAnalysisException.getErrorCode());
   }
 }
