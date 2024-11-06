@@ -16,7 +16,6 @@ import static org.mockito.Mockito.spy;
 import static org.mockito.Mockito.verify;
 
 import com.example.moodwriter.domain.diary.dao.DiaryRepository;
-import com.example.moodwriter.domain.diary.dto.DiaryResponse;
 import com.example.moodwriter.domain.diary.entity.Diary;
 import com.example.moodwriter.domain.diary.exception.DiaryException;
 import com.example.moodwriter.domain.emotion.dao.EmotionAnalysisRepository;
