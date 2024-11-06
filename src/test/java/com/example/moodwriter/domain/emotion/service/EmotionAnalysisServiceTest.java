@@ -16,6 +16,7 @@ import static org.mockito.Mockito.spy;
 import static org.mockito.Mockito.verify;
 
 import com.example.moodwriter.domain.diary.dao.DiaryRepository;
+import com.example.moodwriter.domain.diary.dto.DiaryResponse;
 import com.example.moodwriter.domain.diary.entity.Diary;
 import com.example.moodwriter.domain.diary.exception.DiaryException;
 import com.example.moodwriter.domain.emotion.dao.EmotionAnalysisRepository;
@@ -24,7 +25,9 @@ import com.example.moodwriter.domain.emotion.dto.EmotionAnalysisResponse;
 import com.example.moodwriter.domain.emotion.entity.EmotionAnalysis;
 import com.example.moodwriter.domain.emotion.exception.EmotionAnalysisException;
 import com.example.moodwriter.domain.emotion.service.EmotionAnalysisService.EmotionScoreAndPrimaryEmotion;
+import com.example.moodwriter.domain.user.dao.UserRepository;
 import com.example.moodwriter.domain.user.entity.User;
+import com.example.moodwriter.domain.user.exception.UserException;
 import com.example.moodwriter.global.constant.OpenAIModel;
 import com.example.moodwriter.global.exception.CustomException;
 import com.example.moodwriter.global.exception.code.ErrorCode;
@@ -36,6 +39,7 @@ import com.fasterxml.jackson.core.JsonProcessingException;
 import com.fasterxml.jackson.databind.ObjectMapper;
 import java.time.LocalDate;
 import java.time.LocalDateTime;
+import java.util.Arrays;
 import java.util.Collections;
 import java.util.Optional;
 import java.util.UUID;
@@ -45,6 +49,10 @@ import org.junit.jupiter.api.extension.ExtendWith;
 import org.mockito.InjectMocks;
 import org.mockito.Mock;
 import org.mockito.junit.jupiter.MockitoExtension;
+import org.springframework.data.domain.PageRequest;
+import org.springframework.data.domain.Pageable;
+import org.springframework.data.domain.Slice;
+import org.springframework.data.domain.SliceImpl;
 
 @ExtendWith(MockitoExtension.class)
 class EmotionAnalysisServiceTest {
@@ -53,6 +61,8 @@ class EmotionAnalysisServiceTest {
   private DiaryRepository diaryRepository;
   @Mock
   private EmotionAnalysisRepository emotionAnalysisRepository;
+  @Mock
+  private UserRepository userRepository;
   @Mock
   private OpenAIClient openAIClient;
   @Mock
@@ -813,5 +823,123 @@ class EmotionAnalysisServiceTest {
 
     assertEquals(ErrorCode.NOT_FOUND_EMOTION_ANALYSIS,
         emotionAnalysisException.getErrorCode());
+  }
+
+  @Test
+  void successGetEmotionAnalysisByDateRange() {
+    // given
+    LocalDate startDate = LocalDate.of(2024, 10, 1);
+    LocalDate endDate = LocalDate.of(2024, 10, 10);
+
+    UUID userId = UUID.randomUUID();
+    User user = mock(User.class);
+
+    UUID diaryId = UUID.randomUUID();
+    Diary diary = mock(Diary.class);
+
+    LocalDateTime now = LocalDateTime.now();
+    UUID emotionAnalysisId1 = UUID.randomUUID();
+    UUID emotionAnalysisId2 = UUID.randomUUID();
+
+    EmotionAnalysis emotionAnalysis1 = spy(EmotionAnalysis.builder()
+        .diary(diary)
+        .date(LocalDate.of(2024, 10, 1))
+        .primaryEmotion("행복, 여유, 만족")
+        .emotionScore(9)
+        .analysisContent("행복해보이십니다.")
+        .build());
+
+    EmotionAnalysis emotionAnalysis2 = spy(EmotionAnalysis.builder()
+        .diary(diary)
+        .date(LocalDate.of(2024, 10, 10))
+        .primaryEmotion("불안, 초조, 걱정")
+        .emotionScore(2)
+        .analysisContent("불안해보이십니다.")
+        .build());
+
+    Pageable pageable = PageRequest.of(0, 10);
+
+    given(diary.getId()).willReturn(diaryId);
+    given(emotionAnalysis1.getId()).willReturn(emotionAnalysisId1);
+    given(emotionAnalysis2.getId()).willReturn(emotionAnalysisId2);
+    given(emotionAnalysis1.getCreatedAt()).willReturn(now);
+    given(emotionAnalysis1.getUpdatedAt()).willReturn(now);
+    given(emotionAnalysis2.getCreatedAt()).willReturn(now);
+    given(emotionAnalysis2.getUpdatedAt()).willReturn(now);
+    given(userRepository.findById(userId)).willReturn(Optional.of(user));
+    given(
+        emotionAnalysisRepository.findByDateBetweenAndIsDeletedFalseAndUser(startDate,
+            endDate, user, pageable))
+        .willReturn(new SliceImpl<>(Arrays.asList(emotionAnalysis1, emotionAnalysis2)));
+
+    // when
+    Slice<EmotionAnalysisResponse> responses = emotionAnalysisService.getEmotionAnalysisByDateRange(
+        startDate,
+        endDate, userId, pageable);
+
+    // then
+    assertEquals(2, responses.getContent().size());
+    assertEquals(emotionAnalysisId1,
+        responses.getContent().get(0).getEmotionAnalysisId());
+    assertEquals(diaryId, responses.getContent().get(0).getDiaryId());
+    assertEquals(emotionAnalysis1.getDate(), responses.getContent().get(0).getDate());
+    assertEquals(emotionAnalysis1.getPrimaryEmotion(),
+        responses.getContent().get(0).getPrimaryEmotion());
+    assertEquals(emotionAnalysis1.getEmotionScore(),
+        responses.getContent().get(0).getEmotionScore());
+    assertEquals(emotionAnalysis1.getAnalysisContent(),
+        responses.getContent().get(0).getAnalysisContent());
+    assertEquals(now, responses.getContent().get(0).getCreatedAt());
+    assertEquals(now, responses.getContent().get(0).getUpdatedAt());
+    assertEquals(emotionAnalysisId2,
+        responses.getContent().get(1).getEmotionAnalysisId());
+    assertEquals(diaryId, responses.getContent().get(1).getDiaryId());
+    assertEquals(emotionAnalysis2.getDate(), responses.getContent().get(1).getDate());
+    assertEquals(emotionAnalysis2.getPrimaryEmotion(),
+        responses.getContent().get(1).getPrimaryEmotion());
+    assertEquals(emotionAnalysis2.getEmotionScore(),
+        responses.getContent().get(1).getEmotionScore());
+    assertEquals(emotionAnalysis2.getAnalysisContent(),
+        responses.getContent().get(1).getAnalysisContent());
+    assertEquals(now, responses.getContent().get(1).getCreatedAt());
+    assertEquals(now, responses.getContent().get(1).getUpdatedAt());
+  }
+
+  @Test
+  void getEmotionAnalysisByDateRange_shouldReturnDiaryException_whenStartDateIsBeforeEndDate() {
+    // given
+    LocalDate startDate = LocalDate.of(2024, 10, 10);
+    LocalDate endDate = LocalDate.of(2024, 10, 1);
+
+    Pageable pageable = mock(Pageable.class);
+    UUID userId = mock(UUID.class);
+
+    // when & then
+    EmotionAnalysisException emotionAnalysisException = assertThrows(
+        EmotionAnalysisException.class,
+        () -> emotionAnalysisService.getEmotionAnalysisByDateRange(startDate, endDate,
+            userId, pageable));
+
+    assertEquals(ErrorCode.START_DATE_MUST_BE_BEFORE_END_DATE,
+        emotionAnalysisException.getErrorCode());
+  }
+
+  @Test
+  void getDiariesByDateRange_shouldReturnUserException_whenUserIsNotExist() {
+    // given
+    LocalDate startDate = LocalDate.of(2024, 10, 1);
+    LocalDate endDate = LocalDate.of(2024, 10, 10);
+
+    Pageable pageable = mock(Pageable.class);
+    UUID userId = mock(UUID.class);
+
+    given(userRepository.findById(userId)).willReturn(Optional.empty());
+
+    // when & then
+    UserException userException = assertThrows(UserException.class,
+        () -> emotionAnalysisService.getEmotionAnalysisByDateRange(startDate, endDate,
+            userId, pageable));
+
+    assertEquals(ErrorCode.NOT_FOUND_USER, userException.getErrorCode());
   }
 }
