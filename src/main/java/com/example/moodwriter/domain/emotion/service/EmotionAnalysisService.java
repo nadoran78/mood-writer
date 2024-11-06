@@ -142,6 +142,18 @@ public class EmotionAnalysisService {
     return EmotionAnalysisResponse.fromEntity(emotionAnalysis);
   }
 
+  @Transactional
+  public void deleteEmotionAnalysis(UUID diaryId, UUID userId) {
+    Diary diary = getValidDiary(diaryId, userId);
+
+    EmotionAnalysis emotionAnalysis = emotionAnalysisRepository.findByDiary(diary)
+        .orElseThrow(() -> new EmotionAnalysisException(NOT_FOUND_EMOTION_ANALYSIS));
+
+    emotionAnalysis.deactivate();
+
+    emotionAnalysisRepository.save(emotionAnalysis);
+  }
+
   @Getter
   @NoArgsConstructor
   @Builder
