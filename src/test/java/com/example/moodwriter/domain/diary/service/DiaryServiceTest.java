@@ -1,6 +1,11 @@
 package com.example.moodwriter.domain.diary.service;
 
-import static org.junit.jupiter.api.Assertions.*;
+import static org.junit.jupiter.api.Assertions.assertEquals;
+import static org.junit.jupiter.api.Assertions.assertFalse;
+import static org.junit.jupiter.api.Assertions.assertNotNull;
+import static org.junit.jupiter.api.Assertions.assertNull;
+import static org.junit.jupiter.api.Assertions.assertThrows;
+import static org.junit.jupiter.api.Assertions.assertTrue;
 import static org.mockito.AdditionalAnswers.returnsFirstArg;
 import static org.mockito.ArgumentMatchers.any;
 import static org.mockito.BDDMockito.given;
@@ -23,6 +28,7 @@ import com.example.moodwriter.domain.user.exception.UserException;
 import com.example.moodwriter.global.exception.code.ErrorCode;
 import java.time.LocalDate;
 import java.time.LocalDateTime;
+import java.util.Arrays;
 import java.util.Optional;
 import java.util.UUID;
 import org.junit.jupiter.api.Test;
@@ -31,6 +37,10 @@ import org.mockito.ArgumentCaptor;
 import org.mockito.InjectMocks;
 import org.mockito.Mock;
 import org.mockito.junit.jupiter.MockitoExtension;
+import org.springframework.data.domain.PageRequest;
+import org.springframework.data.domain.Pageable;
+import org.springframework.data.domain.Slice;
+import org.springframework.data.domain.SliceImpl;
 
 @ExtendWith(MockitoExtension.class)
 class DiaryServiceTest {
@@ -771,5 +781,103 @@ class DiaryServiceTest {
         () -> diaryService.deleteDiary(diaryId, userId));
 
     assertEquals(ErrorCode.CONFLICT_DIARY_STATE, diaryException.getErrorCode());
+  }
+
+  @Test
+  void successGetDiariesByDateRange() {
+    // given
+    LocalDate startDate = LocalDate.of(2024, 10, 1);
+    LocalDate endDate = LocalDate.of(2024, 10, 10);
+
+    UUID userId = UUID.randomUUID();
+
+    User user = mock(User.class);
+
+    LocalDateTime now = LocalDateTime.now();
+    UUID diaryId1 = UUID.randomUUID();
+    UUID diaryId2 = UUID.randomUUID();
+
+    Diary diary1 = spy(Diary.builder()
+        .title("제목")
+        .content("content")
+        .date(LocalDate.of(2024, 10, 1))
+        .isTemp(false)
+        .build());
+
+    Diary diary2 = spy(Diary.builder()
+        .title("제목2")
+        .content("content2")
+        .date(LocalDate.of(2024, 10, 10))
+        .isTemp(false)
+        .build());
+
+    Pageable pageable = PageRequest.of(0, 10);
+
+    given(diary1.getId()).willReturn(diaryId1);
+    given(diary2.getId()).willReturn(diaryId2);
+    given(diary1.getCreatedAt()).willReturn(now);
+    given(diary1.getUpdatedAt()).willReturn(now);
+    given(diary2.getCreatedAt()).willReturn(now);
+    given(diary2.getUpdatedAt()).willReturn(now);
+    given(userRepository.findById(userId)).willReturn(Optional.of(user));
+    given(
+        diaryRepository.findByDateBetweenAndIsDeletedFalseAndIsTempFalseAndUser(startDate,
+            endDate, user, pageable))
+        .willReturn(new SliceImpl<>(Arrays.asList(diary1, diary2)));
+
+    // when
+    Slice<DiaryResponse> responses = diaryService.getDiariesByDateRange(startDate,
+        endDate, pageable, userId);
+
+    // then
+    assertEquals(2, responses.getContent().size());
+    assertEquals(diaryId1, responses.getContent().get(0).getDiaryId());
+    assertEquals(diary1.getTitle(), responses.getContent().get(0).getTitle());
+    assertEquals(diary1.getContent(), responses.getContent().get(0).getContent());
+    assertEquals(diary1.getDate(), responses.getContent().get(0).getDate());
+    assertEquals(diary1.isTemp(), responses.getContent().get(0).isTemp());
+    assertEquals(now, responses.getContent().get(0).getCreatedAt());
+    assertEquals(now, responses.getContent().get(0).getUpdatedAt());
+    assertEquals(diaryId2, responses.getContent().get(1).getDiaryId());
+    assertEquals(diary2.getTitle(), responses.getContent().get(1).getTitle());
+    assertEquals(diary2.getContent(), responses.getContent().get(1).getContent());
+    assertEquals(diary2.getDate(), responses.getContent().get(1).getDate());
+    assertEquals(diary2.isTemp(), responses.getContent().get(1).isTemp());
+    assertEquals(now, responses.getContent().get(0).getCreatedAt());
+    assertEquals(now, responses.getContent().get(0).getUpdatedAt());
+  }
+
+  @Test
+  void getDiariesByDateRange_shouldReturnDiaryException_whenStartDateIsBeforeEndDate() {
+    // given
+    LocalDate startDate = LocalDate.of(2024, 10, 10);
+    LocalDate endDate = LocalDate.of(2024, 10, 1);
+
+    Pageable pageable = mock(Pageable.class);
+    UUID userId = mock(UUID.class);
+
+    // when & then
+    DiaryException diaryException = assertThrows(DiaryException.class,
+        () -> diaryService.getDiariesByDateRange(startDate, endDate, pageable, userId));
+
+    assertEquals(ErrorCode.START_DATE_MUST_BE_BEFORE_END_DATE, diaryException.getErrorCode());
+  }
+
+  @Test
+  void getDiariesByDateRange_shouldReturnUserException_whenUserIsNotExist() {
+    // given
+    LocalDate startDate = LocalDate.of(2024, 10, 1);
+    LocalDate endDate = LocalDate.of(2024, 10, 10);
+
+    Pageable pageable = mock(Pageable.class);
+    UUID userId = mock(UUID.class);
+
+    given(userRepository.findById(userId)).willReturn(Optional.empty());
+
+    // when & then
+    UserException userException = assertThrows(UserException.class,
+        () -> diaryService.getDiariesByDateRange(startDate, endDate, pageable, userId));
+
+    assertEquals(ErrorCode.NOT_FOUND_USER, userException.getErrorCode());
   }
 }

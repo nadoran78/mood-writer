@@ -48,6 +48,8 @@ dependencies {
 
     implementation 'com.squareup.okhttp3:okhttp'
     testImplementation 'com.squareup.okhttp3:mockwebserver'
+
+    testImplementation 'com.h2database:h2'
 }
 
 tasks.named('test') {

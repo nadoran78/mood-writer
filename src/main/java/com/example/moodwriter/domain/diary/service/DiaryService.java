@@ -13,8 +13,11 @@ import com.example.moodwriter.domain.user.dao.UserRepository;
 import com.example.moodwriter.domain.user.entity.User;
 import com.example.moodwriter.domain.user.exception.UserException;
 import com.example.moodwriter.global.exception.code.ErrorCode;
+import java.time.LocalDate;
 import java.util.UUID;
 import lombok.RequiredArgsConstructor;
+import org.springframework.data.domain.Pageable;
+import org.springframework.data.domain.Slice;
 import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Transactional;
 
@@ -78,6 +81,21 @@ public class DiaryService {
     Diary diary = getCheckedValidDiary(diaryId, userId);
 
     return DiaryResponse.fromEntity(diary);
+  }
+
+  @Transactional(readOnly = true)
+  public Slice<DiaryResponse> getDiariesByDateRange(LocalDate startDate,
+      LocalDate endDate, Pageable pageable, UUID userId) {
+    if (startDate.isAfter(endDate)) {
+      throw new DiaryException(ErrorCode.START_DATE_MUST_BE_BEFORE_END_DATE);
+    }
+
+    User user = userRepository.findById(userId)
+        .orElseThrow(() -> new UserException(ErrorCode.NOT_FOUND_USER));
+
+    Slice<Diary> diaries = diaryRepository.findByDateBetweenAndIsDeletedFalseAndIsTempFalseAndUser(
+        startDate, endDate, user, pageable);
+    return diaries.map(DiaryResponse::fromEntity);
   }
 
   @Transactional

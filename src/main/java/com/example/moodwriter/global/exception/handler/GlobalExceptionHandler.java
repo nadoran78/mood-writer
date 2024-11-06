@@ -15,6 +15,7 @@ import org.springframework.web.bind.MethodArgumentNotValidException;
 import org.springframework.web.bind.annotation.ControllerAdvice;
 import org.springframework.web.bind.annotation.ExceptionHandler;
 import org.springframework.web.method.annotation.HandlerMethodValidationException;
+import org.springframework.web.method.annotation.MethodArgumentTypeMismatchException;
 
 @Slf4j
 @ControllerAdvice
@@ -78,6 +79,18 @@ public class GlobalExceptionHandler {
     return ResponseEntity
         .status(HttpStatus.BAD_REQUEST)
         .body(ErrorResponse.of(ErrorCode.HTTP_MESSAGE_NOT_READABLE,
+            request.getRequestURI()));
+  }
+
+  @ExceptionHandler(MethodArgumentTypeMismatchException.class)
+  public ResponseEntity<ErrorResponse> handleMethodArgumentTypeMismatchException(
+      MethodArgumentTypeMismatchException e, HttpServletRequest request) {
+    log.error("MethodArgumentTypeMismatchException[{}] is occurred. uri : {}",
+        e.getMessage(), request.getRequestURI());
+
+    return ResponseEntity
+        .status(HttpStatus.BAD_REQUEST)
+        .body(ErrorResponse.of(ErrorCode.METHOD_ARGUMENT_TYPE_MISMATCHED,
             request.getRequestURI()));
   }
 
