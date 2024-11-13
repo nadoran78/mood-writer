@@ -1,5 +1,6 @@
 package com.example.moodwriter.domain.user.entity;
 
+import com.example.moodwriter.domain.user.dto.SocialLoginRequest;
 import com.example.moodwriter.domain.user.dto.UserRegisterRequest;
 import com.example.moodwriter.domain.user.entity.converter.FileDtoStringConverter;
 import com.example.moodwriter.global.constant.Role;
@@ -80,6 +81,16 @@ public class User extends BaseEntity {
         .passwordHash(passwordHash)
         .name(request.getName())
         .profilePictureUrl(profilePictureUrl)
+        .role(Role.ROLE_USER)
+        .isDeleted(false)
+        .build();
+  }
+
+  public static User from(SocialLoginRequest request) {
+    return User.builder()
+        .email(request.getEmail())
+        .name(request.getName())
+        .socialProvider(request.getSocialProvider())
         .role(Role.ROLE_USER)
         .isDeleted(false)
         .build();

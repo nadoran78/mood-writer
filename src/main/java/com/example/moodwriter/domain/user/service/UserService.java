@@ -1,6 +1,7 @@
 package com.example.moodwriter.domain.user.service;
 
 import com.example.moodwriter.domain.user.dao.UserRepository;
+import com.example.moodwriter.domain.user.dto.SocialLoginRequest;
 import com.example.moodwriter.global.constant.FilePath;
 import com.example.moodwriter.global.s3.dto.FileDto;
 import com.example.moodwriter.global.exception.code.ErrorCode;
@@ -136,5 +137,16 @@ public class UserService {
         request.getRefreshToken());
     tokenProvider.addBlackList(resolvedOldAccessToken, email);
     return tokenResponse;
+  }
+
+  @Transactional
+  public TokenResponse loginBySocialProvider(SocialLoginRequest request) {
+    User user = userRepository.findByEmail(request.getEmail())
+        .orElse(User.from(request));
+
+    User savedUser = userRepository.save(user);
+
+    return tokenProvider.generateTokenResponse(savedUser.getEmail(),
+        List.of(savedUser.getRole().toString()));
   }
 }
