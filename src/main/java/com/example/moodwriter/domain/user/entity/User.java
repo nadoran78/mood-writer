@@ -3,6 +3,7 @@ package com.example.moodwriter.domain.user.entity;
 import com.example.moodwriter.domain.user.dto.UserRegisterRequest;
 import com.example.moodwriter.domain.user.entity.converter.FileDtoStringConverter;
 import com.example.moodwriter.global.constant.Role;
+import com.example.moodwriter.global.constant.SocialProvider;
 import com.example.moodwriter.global.s3.dto.FileDto;
 import com.example.moodwriter.global.entity.BaseEntity;
 import jakarta.persistence.Column;
@@ -54,10 +55,14 @@ public class User extends BaseEntity {
   @Column(name = "deleted_at")
   private LocalDateTime deletedAt;
 
+  @Column(name = "social_provider")
+  @Enumerated(value = EnumType.STRING)
+  private SocialProvider socialProvider;
+
   @Builder
   public User(String email, String passwordHash, String name,
       List<FileDto> profilePictureUrl, Role role, boolean isDeleted,
-      LocalDateTime deletedAt) {
+      LocalDateTime deletedAt, SocialProvider socialProvider) {
     this.email = email;
     this.passwordHash = passwordHash;
     this.name = name;
@@ -65,6 +70,7 @@ public class User extends BaseEntity {
     this.role = role;
     this.isDeleted = isDeleted;
     this.deletedAt = deletedAt;
+    this.socialProvider = socialProvider;
   }
 
   public static User from(UserRegisterRequest request, String passwordHash,
