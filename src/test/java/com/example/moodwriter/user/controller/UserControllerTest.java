@@ -1,5 +1,9 @@
 package com.example.moodwriter.user.controller;
 
+import static org.hamcrest.Matchers.allOf;
+import static org.hamcrest.Matchers.hasEntry;
+import static org.hamcrest.Matchers.hasItems;
+import static org.hamcrest.Matchers.hasSize;
 import static org.mockito.ArgumentMatchers.any;
 import static org.mockito.ArgumentMatchers.anyString;
 import static org.mockito.BDDMockito.given;
@@ -15,6 +19,7 @@ import static org.springframework.test.web.servlet.result.MockMvcResultMatchers.
 import static org.springframework.test.web.servlet.result.MockMvcResultMatchers.status;
 
 import com.example.moodwriter.domain.user.controller.UserController;
+import com.example.moodwriter.domain.user.dto.SocialLoginRequest;
 import com.example.moodwriter.global.s3.dto.FileDto;
 import com.example.moodwriter.global.jwt.JwtAuthenticationToken;
 import com.example.moodwriter.global.jwt.dto.TokenResponse;
@@ -697,6 +702,72 @@ class UserControllerTest {
         .andExpect(jsonPath("$.fieldErrors[0].field").value("refreshToken"))
         .andExpect(jsonPath("$.fieldErrors[0].message").value("리프레쉬 토큰을 필수값입니다."));
 
+  }
+
+  @Test
+  void successLoginBySocialProvider() throws Exception {
+    // given
+    String jsonRequest = """
+        {
+           "email": "test@test.com",
+           "name": "name",
+           "socialProvider": "google"
+        }
+        """;
+
+    TokenResponse tokenResponse = TokenResponse.builder()
+        .email("test@test.com")
+        .accessToken("accessToken")
+        .refreshToken("refreshToken")
+        .build();
+
+    given(userService.loginBySocialProvider(any(SocialLoginRequest.class)))
+        .willReturn(tokenResponse);
+
+    // when & then
+    mockMvc.perform(post("/api/users/social-login")
+        .contentType(MediaType.APPLICATION_JSON)
+        .content(jsonRequest))
+        .andDo(print())
+        .andExpect(jsonPath("$.email").value(tokenResponse.getEmail()))
+        .andExpect(jsonPath("$.accessToken").value(tokenResponse.getAccessToken()))
+        .andExpect(jsonPath("$.refreshToken").value(tokenResponse.getRefreshToken()));
+  }
+
+  @Test
+  void loginBySocialProvider_throwValidationError_whenCallWithInvalidRequest()
+      throws Exception {
+    // given
+    String jsonRequest = """
+        {
+           "email": "test@testcom",
+           "name": null,
+           "socialProvider": null
+        }
+        """;
+
+    // when & then
+    mockMvc.perform(post("/api/users/social-login")
+            .contentType(MediaType.APPLICATION_JSON)
+            .content(jsonRequest))
+        .andExpect(status().isBadRequest())
+        .andExpect(jsonPath("$.errorCode").value("VALIDATION_ERROR"))
+        .andExpect(jsonPath("$.message").value("입력값이 유효하지 않습니다."))
+        .andExpect(jsonPath("$.fieldErrors", hasSize(3)))
+        .andExpect(jsonPath("$.fieldErrors", hasItems(
+            allOf(
+                hasEntry("field", "email"),
+                hasEntry("message", "올바른 이메일 형식이 아닙니다.")
+            ),
+            allOf(
+                hasEntry("field", "socialProvider"),
+                hasEntry("message", "어떤 소셜네트워크서비스를 통해 로그인하였는지 입력하여 주세요.")
+            ),
+            allOf(
+                hasEntry("field", "name"),
+                hasEntry("message", "이름을 입력하여 주세요.")
+            )
+        )));
   }
 
 }
