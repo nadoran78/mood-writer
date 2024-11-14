@@ -770,4 +770,28 @@ class UserControllerTest {
         )));
   }
 
+  @Test
+  void loginBySocialProvider_throwHttpMessageNotReadableException_whenCallWithInvalidSocialProvider()
+      throws Exception {
+    // given
+    String jsonRequest = """
+        {
+           "email": "test@test.com",
+           "name": "name",
+           "socialProvider": "kakao"
+        }
+        """;
+
+    // when & then
+    mockMvc.perform(post("/api/users/social-login")
+            .contentType(MediaType.APPLICATION_JSON)
+            .content(jsonRequest))
+        .andDo(print())
+        .andExpect(status().isBadRequest())
+        .andExpect(jsonPath("$.errorCode").value("HTTP_MESSAGE_NOT_READABLE"))
+        .andExpect(jsonPath("$.message").value("HTTP 메시지를 읽을 수 없습니다."))
+        .andExpect(jsonPath("$.path").value("/api/users/social-login"));
+
+  }
+
 }
