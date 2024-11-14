@@ -1,6 +1,7 @@
 package com.example.moodwriter.domain.user.controller;
 
 import com.example.moodwriter.domain.user.dto.LogoutResponse;
+import com.example.moodwriter.domain.user.dto.SocialLoginRequest;
 import com.example.moodwriter.domain.user.dto.TokenReissueRequest;
 import com.example.moodwriter.domain.user.dto.UserLoginRequest;
 import com.example.moodwriter.domain.user.dto.UserRegisterRequest;
@@ -85,5 +86,12 @@ public class UserController {
     TokenResponse response = userService.reissueToken(userDetails.getUsername(),
         accessToken, request);
     return ResponseEntity.ok(response);
+  }
+
+  @PostMapping("/social-login")
+  public ResponseEntity<TokenResponse> loginBySocialProvider(@RequestBody @Valid
+      SocialLoginRequest request) {
+    TokenResponse tokenResponse = userService.loginBySocialProvider(request);
+    return ResponseEntity.ok(tokenResponse);
   }
 }

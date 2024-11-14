@@ -7,6 +7,7 @@ import static org.junit.jupiter.api.Assertions.assertNotNull;
 import static org.junit.jupiter.api.Assertions.assertNull;
 import static org.junit.jupiter.api.Assertions.assertThrows;
 import static org.junit.jupiter.api.Assertions.assertTrue;
+import static org.mockito.AdditionalAnswers.returnsFirstArg;
 import static org.mockito.ArgumentMatchers.any;
 import static org.mockito.ArgumentMatchers.anyList;
 import static org.mockito.BDDMockito.given;
@@ -14,9 +15,11 @@ import static org.mockito.Mockito.never;
 import static org.mockito.Mockito.spy;
 import static org.mockito.Mockito.verify;
 
+import com.example.moodwriter.domain.user.dto.SocialLoginRequest;
 import com.example.moodwriter.domain.user.service.UserService;
 import com.example.moodwriter.global.constant.FilePath;
 import com.example.moodwriter.global.constant.Role;
+import com.example.moodwriter.global.constant.SocialProvider;
 import com.example.moodwriter.global.s3.dto.FileDto;
 import com.example.moodwriter.global.exception.code.ErrorCode;
 import com.example.moodwriter.global.jwt.TokenProvider;
@@ -486,7 +489,8 @@ class UserServiceTest {
     String accessToken = "Bearer access-token";
     String resolvedAccessToken = accessToken.replace("Bearer ", "");
 
-    given(tokenProvider.resolveTokenFromRequest(accessToken)).willReturn(resolvedAccessToken);
+    given(tokenProvider.resolveTokenFromRequest(accessToken)).willReturn(
+        resolvedAccessToken);
 
     // when
     userService.logout(email, accessToken);
@@ -510,7 +514,8 @@ class UserServiceTest {
         .refreshToken("refresh-token")
         .build();
 
-    given(tokenProvider.resolveTokenFromRequest(accessToken)).willReturn(resolvedAccessToken);
+    given(tokenProvider.resolveTokenFromRequest(accessToken)).willReturn(
+        resolvedAccessToken);
     given(tokenProvider.regenerateAccessToken(request.getRefreshToken()))
         .willReturn(response);
 
@@ -523,6 +528,78 @@ class UserServiceTest {
     assertEquals(response.getRefreshToken(), tokenResponse.getRefreshToken());
 
     verify(tokenProvider).addBlackList(resolvedAccessToken, email);
+  }
+
+  @Test
+  void successLoginBySocialProvider_whenUserExists() {
+    // given
+    String email = "test@test.com";
+
+    SocialLoginRequest request = SocialLoginRequest.builder()
+        .email(email)
+        .name("name")
+        .socialProvider(SocialProvider.GOOGLE)
+        .build();
+
+    User user = User.builder()
+        .email(email)
+        .role(Role.ROLE_USER)
+        .build();
+
+    TokenResponse response = TokenResponse.builder()
+        .email(email)
+        .accessToken("accessToken")
+        .refreshToken("refreshToken")
+        .build();
+
+    given(userRepository.findByEmail(request.getEmail())).willReturn(Optional.of(user));
+    given(userRepository.save(any(User.class))).will(returnsFirstArg());
+    given(tokenProvider.generateTokenResponse(user.getEmail(),
+        List.of(user.getRole().toString()))).willReturn(response);
+
+    // when
+    TokenResponse tokenResponse = userService.loginBySocialProvider(request);
+
+    // then
+    assertEquals(response, tokenResponse);
+    verify(userRepository).findByEmail(request.getEmail());
+    verify(tokenProvider).generateTokenResponse(user.getEmail(),
+        List.of(user.getRole().toString()));
+
+  }
+
+  @Test
+  void successLoginBySocialProvider_whenUserDoesNotExists() {
+    // given
+    String email = "test@test.com";
+
+    SocialLoginRequest request = SocialLoginRequest.builder()
+        .email(email)
+        .name("name")
+        .socialProvider(SocialProvider.GOOGLE)
+        .build();
+
+    TokenResponse response = TokenResponse.builder()
+        .email(email)
+        .accessToken("accessToken")
+        .refreshToken("refreshToken")
+        .build();
+
+    given(userRepository.findByEmail(request.getEmail())).willReturn(Optional.empty());
+    given(userRepository.save(any(User.class))).will(returnsFirstArg());
+    given(tokenProvider.generateTokenResponse(request.getEmail(),
+        List.of(Role.ROLE_USER.toString()))).willReturn(response);
+
+    // when
+    TokenResponse tokenResponse = userService.loginBySocialProvider(request);
+
+    // then
+    assertEquals(response, tokenResponse);
+    verify(userRepository).findByEmail(request.getEmail());
+    verify(userRepository).save(any(User.class));
+    verify(tokenProvider).generateTokenResponse(request.getEmail(),
+        List.of(Role.ROLE_USER.toString()));
+
   }
 
 }
