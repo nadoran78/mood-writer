@@ -117,4 +117,21 @@ class DiaryRepositoryTest {
     assertEquals(LocalDate.of(2024, 10, 1), diaries.getContent().get(1).getDate());
 
   }
+
+  @Test
+  void successFindAllByUserAndIsDeletedFalseAndIsTempFalse() {
+    Pageable pageable = PageRequest.of(0, 10, Sort.by("date").descending());
+
+    Slice<Diary> diaries = diaryRepository.findAllByUserAndIsDeletedFalseAndIsTempFalse(
+        user, pageable);
+
+    assertEquals(3, diaries.getContent().size());
+    assertTrue(diaries.getContent().stream().noneMatch(Diary::isDeleted));
+    assertTrue(diaries.getContent().stream().noneMatch(Diary::isTemp));
+    assertTrue(diaries.getContent().stream().allMatch(diary -> diary.getUser().equals(user)));
+    assertEquals(LocalDate.of(2024, 10, 15), diaries.getContent().get(0).getDate());
+    assertEquals(LocalDate.of(2024, 10, 5), diaries.getContent().get(1).getDate());
+    assertEquals(LocalDate.of(2024, 10, 1), diaries.getContent().get(2).getDate());
+
+  }
 }

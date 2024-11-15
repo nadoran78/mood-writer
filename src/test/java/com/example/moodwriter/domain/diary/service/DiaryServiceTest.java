@@ -880,4 +880,78 @@ class DiaryServiceTest {
 
     assertEquals(ErrorCode.NOT_FOUND_USER, userException.getErrorCode());
   }
+
+  @Test
+  void successGetAllMyDiaries() {
+    // given
+    UUID userId = UUID.randomUUID();
+
+    User user = mock(User.class);
+
+    LocalDateTime now = LocalDateTime.now();
+    UUID diaryId1 = UUID.randomUUID();
+    UUID diaryId2 = UUID.randomUUID();
+
+    Diary diary1 = spy(Diary.builder()
+        .title("제목")
+        .content("content")
+        .date(LocalDate.of(2024, 10, 1))
+        .isTemp(false)
+        .build());
+
+    Diary diary2 = spy(Diary.builder()
+        .title("제목2")
+        .content("content2")
+        .date(LocalDate.of(2024, 10, 10))
+        .isTemp(false)
+        .build());
+
+    Pageable pageable = PageRequest.of(0, 10);
+
+    given(diary1.getId()).willReturn(diaryId1);
+    given(diary2.getId()).willReturn(diaryId2);
+    given(diary1.getCreatedAt()).willReturn(now);
+    given(diary1.getUpdatedAt()).willReturn(now);
+    given(diary2.getCreatedAt()).willReturn(now);
+    given(diary2.getUpdatedAt()).willReturn(now);
+    given(userRepository.findById(userId)).willReturn(Optional.of(user));
+    given(
+        diaryRepository.findAllByUserAndIsDeletedFalseAndIsTempFalse(user, pageable))
+        .willReturn(new SliceImpl<>(Arrays.asList(diary1, diary2)));
+
+    // when
+    Slice<DiaryResponse> responses = diaryService.getAllMyDiaries(pageable, userId);
+
+    // then
+    assertEquals(2, responses.getContent().size());
+    assertEquals(diaryId1, responses.getContent().get(0).getDiaryId());
+    assertEquals(diary1.getTitle(), responses.getContent().get(0).getTitle());
+    assertEquals(diary1.getContent(), responses.getContent().get(0).getContent());
+    assertEquals(diary1.getDate(), responses.getContent().get(0).getDate());
+    assertEquals(diary1.isTemp(), responses.getContent().get(0).isTemp());
+    assertEquals(now, responses.getContent().get(0).getCreatedAt());
+    assertEquals(now, responses.getContent().get(0).getUpdatedAt());
+    assertEquals(diaryId2, responses.getContent().get(1).getDiaryId());
+    assertEquals(diary2.getTitle(), responses.getContent().get(1).getTitle());
+    assertEquals(diary2.getContent(), responses.getContent().get(1).getContent());
+    assertEquals(diary2.getDate(), responses.getContent().get(1).getDate());
+    assertEquals(diary2.isTemp(), responses.getContent().get(1).isTemp());
+    assertEquals(now, responses.getContent().get(0).getCreatedAt());
+    assertEquals(now, responses.getContent().get(0).getUpdatedAt());
+  }
+
+  @Test
+  void getAllMyDiaries_shouldReturnUserException_whenUserIsNotExist() {
+    // given
+    Pageable pageable = mock(Pageable.class);
+    UUID userId = mock(UUID.class);
+
+    given(userRepository.findById(userId)).willReturn(Optional.empty());
+
+    // when & then
+    UserException userException = assertThrows(UserException.class,
+        () -> diaryService.getAllMyDiaries(pageable, userId));
+
+    assertEquals(ErrorCode.NOT_FOUND_USER, userException.getErrorCode());
+  }
 }

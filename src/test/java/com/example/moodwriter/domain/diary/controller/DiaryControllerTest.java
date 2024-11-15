@@ -669,4 +669,130 @@ class DiaryControllerTest {
         .andExpect(jsonPath("$.message").value("함수의 argument의 타입이 일치하지 않습니다."))
         .andExpect(jsonPath("$.path").value("/api/diaries"));
   }
+
+  @Test
+  void successGetAllMyDiaries_whenInputParameter() throws Exception {
+    // given
+    UUID diaryId1 = UUID.randomUUID();
+    UUID diaryId2 = UUID.randomUUID();
+
+    DiaryResponse response1 = DiaryResponse.builder()
+        .diaryId(diaryId1)
+        .title("제목1")
+        .content("내용1")
+        .date(LocalDate.of(2024, 10, 1))
+        .isTemp(false)
+        .createdAt(LocalDateTime.now())
+        .updatedAt(LocalDateTime.now())
+        .build();
+
+    DiaryResponse response2 = DiaryResponse.builder()
+        .diaryId(diaryId2)
+        .title("제목2")
+        .content("내용2")
+        .date(LocalDate.of(2024, 10, 3))
+        .isTemp(false)
+        .createdAt(LocalDateTime.now())
+        .updatedAt(LocalDateTime.now())
+        .build();
+
+    SliceImpl<DiaryResponse> responses = new SliceImpl<>(
+        Arrays.asList(response1, response2),
+        PageRequest.of(0, 10, Sort.by("date").descending()),
+        false);
+
+    given(diaryService.getAllMyDiaries(any(Pageable.class), eq(userId)))
+        .willReturn(responses);
+
+    // when & then
+    mockMvc.perform(get("/api/diaries/all")
+            .param("page", "1")
+            .param("size", "10")
+            .param("sortOrder", "asc"))
+        .andExpect(status().isOk())
+        .andDo(print())
+        .andExpect(jsonPath("$.content[0].diaryId").value(diaryId1.toString()))
+        .andExpect(jsonPath("$.content[0].title").value(response1.getTitle()))
+        .andExpect(jsonPath("$.content[0].content").value(response1.getContent()))
+        .andExpect(jsonPath("$.content[0].date").value(response1.getDate().toString()))
+        .andExpect(jsonPath("$.content[0].temp").value(response1.isTemp()))
+        .andExpect(jsonPath("$.content[0].createdAt").exists())
+        .andExpect(jsonPath("$.content[0].updatedAt").exists())
+        .andExpect(jsonPath("$.content[1].diaryId").value(diaryId2.toString()))
+        .andExpect(jsonPath("$.content[1].title").value(response2.getTitle()))
+        .andExpect(jsonPath("$.content[1].content").value(response2.getContent()))
+        .andExpect(jsonPath("$.content[1].date").value(response2.getDate().toString()))
+        .andExpect(jsonPath("$.content[1].temp").value(response1.isTemp()))
+        .andExpect(jsonPath("$.content[1].createdAt").exists())
+        .andExpect(jsonPath("$.content[1].updatedAt").exists());
+  }
+
+  @Test
+  void successGetAllMyDiaries_whenDoNotInputParameter() throws Exception {
+    // given
+    UUID diaryId1 = UUID.randomUUID();
+    UUID diaryId2 = UUID.randomUUID();
+
+    DiaryResponse response1 = DiaryResponse.builder()
+        .diaryId(diaryId1)
+        .title("제목1")
+        .content("내용1")
+        .date(LocalDate.of(2024, 10, 1))
+        .isTemp(false)
+        .createdAt(LocalDateTime.now())
+        .updatedAt(LocalDateTime.now())
+        .build();
+
+    DiaryResponse response2 = DiaryResponse.builder()
+        .diaryId(diaryId2)
+        .title("제목2")
+        .content("내용2")
+        .date(LocalDate.of(2024, 10, 3))
+        .isTemp(false)
+        .createdAt(LocalDateTime.now())
+        .updatedAt(LocalDateTime.now())
+        .build();
+
+    SliceImpl<DiaryResponse> responses = new SliceImpl<>(
+        Arrays.asList(response1, response2),
+        PageRequest.of(0, 10, Sort.by("date").descending()),
+        false);
+
+    given(diaryService.getAllMyDiaries(any(Pageable.class), eq(userId)))
+        .willReturn(responses);
+
+    // when & then
+    mockMvc.perform(get("/api/diaries/all"))
+        .andExpect(status().isOk())
+        .andDo(print())
+        .andExpect(jsonPath("$.content[0].diaryId").value(diaryId1.toString()))
+        .andExpect(jsonPath("$.content[0].title").value(response1.getTitle()))
+        .andExpect(jsonPath("$.content[0].content").value(response1.getContent()))
+        .andExpect(jsonPath("$.content[0].date").value(response1.getDate().toString()))
+        .andExpect(jsonPath("$.content[0].temp").value(response1.isTemp()))
+        .andExpect(jsonPath("$.content[0].createdAt").exists())
+        .andExpect(jsonPath("$.content[0].updatedAt").exists())
+        .andExpect(jsonPath("$.content[1].diaryId").value(diaryId2.toString()))
+        .andExpect(jsonPath("$.content[1].title").value(response2.getTitle()))
+        .andExpect(jsonPath("$.content[1].content").value(response2.getContent()))
+        .andExpect(jsonPath("$.content[1].date").value(response2.getDate().toString()))
+        .andExpect(jsonPath("$.content[1].temp").value(response1.isTemp()))
+        .andExpect(jsonPath("$.content[1].createdAt").exists())
+        .andExpect(jsonPath("$.content[1].updatedAt").exists());
+  }
+
+  @Test
+  void getAllMyDiaries_shouldThrowError_whenInputInvalidSortOrder()
+      throws Exception {
+    // when & then
+    mockMvc.perform(get("/api/diaries/all")
+            .param("page", "1")
+            .param("size", "10")
+            .param("sortOrder", "ascending"))
+        .andExpect(status().isBadRequest())
+        .andDo(print())
+        .andExpect(jsonPath("$.errorCode").value("METHOD_ARGUMENT_TYPE_MISMATCHED"))
+        .andExpect(jsonPath("$.message").value("함수의 argument의 타입이 일치하지 않습니다."))
+        .andExpect(jsonPath("$.path").value("/api/diaries/all"));
+  }
 }
