@@ -98,6 +98,16 @@ public class DiaryService {
     return diaries.map(DiaryResponse::fromEntity);
   }
 
+  @Transactional(readOnly = true)
+  public Slice<DiaryResponse> getAllMyDiaries(Pageable pageable, UUID userId) {
+    User user = userRepository.findById(userId)
+        .orElseThrow(() -> new UserException(ErrorCode.NOT_FOUND_USER));
+
+    Slice<Diary> diaries = diaryRepository.findAllByUserAndIsDeletedFalseAndIsTempFalse(
+        user, pageable);
+    return diaries.map(DiaryResponse::fromEntity);
+  }
+
   @Transactional
   public void deleteDiary(UUID diaryId, UUID userId) {
     Diary diary = checkValidAndNotTempDiary(diaryId, userId);
