@@ -72,6 +72,8 @@ class DiaryServiceTest {
 
     given(userRepository.findById(userId)).willReturn(Optional.of(user));
     given(diaryRepository.save(any(Diary.class))).will(returnsFirstArg());
+    given(emotionAnalysisRepository.findByDiary(any(Diary.class)))
+        .willReturn(Optional.empty());
 
     // when
     DiaryResponse response = diaryService.createDiary(userId, request);
@@ -82,7 +84,7 @@ class DiaryServiceTest {
     assertEquals(user, argumentCaptor.getValue().getUser());
     assertFalse(argumentCaptor.getValue().isDeleted());
 
-    assertEquals(request.getTitle(), response.getTitle());
+    assertFalse(response.isHaveEmotionAnalysis());
     assertEquals(request.getContent(), response.getContent());
     assertEquals(request.getDate(), response.getDate());
     assertTrue(response.isTemp());
@@ -99,6 +101,8 @@ class DiaryServiceTest {
 
     given(userRepository.findById(userId)).willReturn(Optional.of(user));
     given(diaryRepository.save(any(Diary.class))).will(returnsFirstArg());
+    given(emotionAnalysisRepository.findByDiary(any(Diary.class)))
+        .willReturn(Optional.empty());
 
     // when
     DiaryResponse response = diaryService.createDiary(userId, request);
@@ -109,7 +113,7 @@ class DiaryServiceTest {
     assertEquals(user, argumentCaptor.getValue().getUser());
     assertFalse(argumentCaptor.getValue().isDeleted());
 
-    assertNull(response.getTitle());
+    assertFalse(response.isHaveEmotionAnalysis());
     assertNull(response.getContent());
     assertNull(response.getDate());
     assertTrue(response.isTemp());
@@ -162,13 +166,15 @@ class DiaryServiceTest {
 
     given(diaryRepository.findById(diaryId)).willReturn(Optional.of(diary));
     given(diaryRepository.save(diary)).will(returnsFirstArg());
+    given(emotionAnalysisRepository.findByDiary(any(Diary.class)))
+        .willReturn(Optional.empty());
 
     // when
     DiaryResponse response = diaryService.autoSaveDiary(diaryId, userId, request);
 
     // then
     assertEquals(diaryId, response.getDiaryId());
-    assertEquals(request.getTitle(), response.getTitle());
+    assertFalse(response.isHaveEmotionAnalysis());
     assertEquals(request.getContent(), response.getContent());
     assertEquals(request.getDate(), response.getDate());
     assertTrue(response.isTemp());
@@ -292,13 +298,15 @@ class DiaryServiceTest {
 
     given(diaryRepository.findById(diaryId)).willReturn(Optional.of(diary));
     given(diaryRepository.save(diary)).will(returnsFirstArg());
+    given(emotionAnalysisRepository.findByDiary(any(Diary.class)))
+        .willReturn(Optional.empty());
 
     // when
     DiaryResponse response = diaryService.finalSaveDiary(diaryId, userId, request);
 
     // then
     assertEquals(diaryId, response.getDiaryId());
-    assertEquals(request.getTitle(), response.getTitle());
+    assertFalse(response.isHaveEmotionAnalysis());
     assertEquals(request.getContent(), response.getContent());
     assertEquals(request.getDate(), response.getDate());
     assertFalse(response.isTemp());
@@ -419,13 +427,15 @@ class DiaryServiceTest {
 
     given(diaryRepository.findById(diaryId)).willReturn(Optional.of(diary));
     given(diaryRepository.save(diary)).will(returnsFirstArg());
+    given(emotionAnalysisRepository.findByDiary(any(Diary.class)))
+        .willReturn(Optional.empty());
 
     // when
     DiaryResponse response = diaryService.startEditingDiary(diaryId, userId);
 
     // then
     assertEquals(diaryId, response.getDiaryId());
-    assertEquals(diary.getTitle(), response.getTitle());
+    assertFalse(response.isHaveEmotionAnalysis());
     assertEquals(diary.getContent(), response.getContent());
     assertEquals(diary.getDate(), response.getDate());
     assertTrue(response.isTemp());
@@ -541,13 +551,15 @@ class DiaryServiceTest {
     given(diary.getUpdatedAt()).willReturn(now);
 
     given(diaryRepository.findById(diaryId)).willReturn(Optional.of(diary));
+    given(emotionAnalysisRepository.findByDiary(any(Diary.class)))
+        .willReturn(Optional.empty());
 
     // when
     DiaryResponse response = diaryService.getDiary(diaryId, userId);
 
     // then
     assertEquals(diaryId, response.getDiaryId());
-    assertEquals(diary.getTitle(), response.getTitle());
+    assertFalse(response.isHaveEmotionAnalysis());
     assertEquals(diary.getContent(), response.getContent());
     assertEquals(diary.getDate(), response.getDate());
     assertEquals(diary.isTemp(), response.isTemp());
@@ -824,6 +836,8 @@ class DiaryServiceTest {
         diaryRepository.findByDateBetweenAndIsDeletedFalseAndIsTempFalseAndUser(startDate,
             endDate, user, pageable))
         .willReturn(new SliceImpl<>(Arrays.asList(diary1, diary2)));
+    given(emotionAnalysisRepository.findByDiary(any(Diary.class)))
+        .willReturn(Optional.empty());
 
     // when
     Slice<DiaryResponse> responses = diaryService.getDiariesByDateRange(startDate,
@@ -832,14 +846,14 @@ class DiaryServiceTest {
     // then
     assertEquals(2, responses.getContent().size());
     assertEquals(diaryId1, responses.getContent().get(0).getDiaryId());
-    assertEquals(diary1.getTitle(), responses.getContent().get(0).getTitle());
+    assertFalse(responses.getContent().get(0).isHaveEmotionAnalysis());
     assertEquals(diary1.getContent(), responses.getContent().get(0).getContent());
     assertEquals(diary1.getDate(), responses.getContent().get(0).getDate());
     assertEquals(diary1.isTemp(), responses.getContent().get(0).isTemp());
     assertEquals(now, responses.getContent().get(0).getCreatedAt());
     assertEquals(now, responses.getContent().get(0).getUpdatedAt());
     assertEquals(diaryId2, responses.getContent().get(1).getDiaryId());
-    assertEquals(diary2.getTitle(), responses.getContent().get(1).getTitle());
+    assertFalse(responses.getContent().get(1).isHaveEmotionAnalysis());
     assertEquals(diary2.getContent(), responses.getContent().get(1).getContent());
     assertEquals(diary2.getDate(), responses.getContent().get(1).getDate());
     assertEquals(diary2.isTemp(), responses.getContent().get(1).isTemp());
@@ -918,6 +932,8 @@ class DiaryServiceTest {
     given(
         diaryRepository.findAllByUserAndIsDeletedFalseAndIsTempFalse(user, pageable))
         .willReturn(new SliceImpl<>(Arrays.asList(diary1, diary2)));
+    given(emotionAnalysisRepository.findByDiary(any(Diary.class)))
+        .willReturn(Optional.empty());
 
     // when
     Slice<DiaryResponse> responses = diaryService.getAllMyDiaries(pageable, userId);
@@ -925,14 +941,14 @@ class DiaryServiceTest {
     // then
     assertEquals(2, responses.getContent().size());
     assertEquals(diaryId1, responses.getContent().get(0).getDiaryId());
-    assertEquals(diary1.getTitle(), responses.getContent().get(0).getTitle());
+    assertFalse(responses.getContent().get(0).isHaveEmotionAnalysis());
     assertEquals(diary1.getContent(), responses.getContent().get(0).getContent());
     assertEquals(diary1.getDate(), responses.getContent().get(0).getDate());
     assertEquals(diary1.isTemp(), responses.getContent().get(0).isTemp());
     assertEquals(now, responses.getContent().get(0).getCreatedAt());
     assertEquals(now, responses.getContent().get(0).getUpdatedAt());
     assertEquals(diaryId2, responses.getContent().get(1).getDiaryId());
-    assertEquals(diary2.getTitle(), responses.getContent().get(1).getTitle());
+    assertFalse(responses.getContent().get(1).isHaveEmotionAnalysis());
     assertEquals(diary2.getContent(), responses.getContent().get(1).getContent());
     assertEquals(diary2.getDate(), responses.getContent().get(1).getDate());
     assertEquals(diary2.isTemp(), responses.getContent().get(1).isTemp());

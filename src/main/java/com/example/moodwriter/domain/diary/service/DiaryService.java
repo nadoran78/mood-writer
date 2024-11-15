@@ -38,7 +38,10 @@ public class DiaryService {
 
     Diary savedDiary = diaryRepository.save(diary);
 
-    return DiaryResponse.fromEntity(savedDiary);
+    boolean haveEmotionAnalysis =
+        emotionAnalysisRepository.findByDiary(savedDiary).isPresent();
+
+    return DiaryResponse.fromEntity(savedDiary, haveEmotionAnalysis);
   }
 
   @Transactional
@@ -50,7 +53,10 @@ public class DiaryService {
 
     Diary savedDiary = diaryRepository.save(diary);
 
-    return DiaryResponse.fromEntity(savedDiary);
+    boolean haveEmotionAnalysis =
+        emotionAnalysisRepository.findByDiary(savedDiary).isPresent();
+
+    return DiaryResponse.fromEntity(savedDiary, haveEmotionAnalysis);
   }
 
   @Transactional
@@ -62,7 +68,10 @@ public class DiaryService {
 
     Diary savedDiary = diaryRepository.save(diary);
 
-    return DiaryResponse.fromEntity(savedDiary);
+    boolean haveEmotionAnalysis =
+        emotionAnalysisRepository.findByDiary(savedDiary).isPresent();
+
+    return DiaryResponse.fromEntity(savedDiary, haveEmotionAnalysis);
   }
 
   @Transactional
@@ -73,14 +82,20 @@ public class DiaryService {
 
     Diary savedDiary = diaryRepository.save(diary);
 
-    return DiaryResponse.fromEntity(savedDiary);
+    boolean haveEmotionAnalysis =
+        emotionAnalysisRepository.findByDiary(savedDiary).isPresent();
+
+    return DiaryResponse.fromEntity(savedDiary, haveEmotionAnalysis);
   }
 
   @Transactional(readOnly = true)
   public DiaryResponse getDiary(UUID diaryId, UUID userId) {
     Diary diary = getCheckedValidDiary(diaryId, userId);
 
-    return DiaryResponse.fromEntity(diary);
+    boolean haveEmotionAnalysis =
+        emotionAnalysisRepository.findByDiary(diary).isPresent();
+
+    return DiaryResponse.fromEntity(diary, haveEmotionAnalysis);
   }
 
   @Transactional(readOnly = true)
@@ -95,7 +110,12 @@ public class DiaryService {
 
     Slice<Diary> diaries = diaryRepository.findByDateBetweenAndIsDeletedFalseAndIsTempFalseAndUser(
         startDate, endDate, user, pageable);
-    return diaries.map(DiaryResponse::fromEntity);
+
+    return diaries.map(diary -> {
+      boolean haveEmotionAnalysis =
+          emotionAnalysisRepository.findByDiary(diary).isPresent();
+      return DiaryResponse.fromEntity(diary, haveEmotionAnalysis);
+    });
   }
 
   @Transactional(readOnly = true)
@@ -105,7 +125,12 @@ public class DiaryService {
 
     Slice<Diary> diaries = diaryRepository.findAllByUserAndIsDeletedFalseAndIsTempFalse(
         user, pageable);
-    return diaries.map(DiaryResponse::fromEntity);
+
+    return diaries.map(diary -> {
+      boolean haveEmotionAnalysis =
+          emotionAnalysisRepository.findByDiary(diary).isPresent();
+      return DiaryResponse.fromEntity(diary, haveEmotionAnalysis);
+    });
   }
 
   @Transactional

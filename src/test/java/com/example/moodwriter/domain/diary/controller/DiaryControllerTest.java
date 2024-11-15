@@ -88,12 +88,12 @@ class DiaryControllerTest {
     UUID diaryId = UUID.randomUUID();
     DiaryResponse response = DiaryResponse.builder()
         .diaryId(diaryId)
-        .title(request.getTitle())
         .content(request.getContent())
         .date(request.getDate())
         .isTemp(true)
         .createdAt(LocalDateTime.now())
         .updatedAt(LocalDateTime.now())
+        .haveEmotionAnalysis(false)
         .build();
 
     given(diaryService.createDiary(eq(userId), any(DiaryCreateRequest.class)))
@@ -106,7 +106,8 @@ class DiaryControllerTest {
         .andExpect(status().isCreated())
         .andDo(print())
         .andExpect(jsonPath("$.diaryId").value(diaryId.toString()))
-        .andExpect(jsonPath("$.title").value(response.getTitle()))
+        .andExpect(
+            jsonPath("$.haveEmotionAnalysis").value(response.isHaveEmotionAnalysis()))
         .andExpect(jsonPath("$.content").value(response.getContent()))
         .andExpect(jsonPath("$.date").value(response.getDate().toString()))
         .andExpect(jsonPath("$.temp").value(response.isTemp()))
@@ -125,6 +126,7 @@ class DiaryControllerTest {
         .isTemp(true)
         .createdAt(LocalDateTime.now())
         .updatedAt(LocalDateTime.now())
+        .haveEmotionAnalysis(false)
         .build();
 
     given(diaryService.createDiary(userId, null))
@@ -137,7 +139,8 @@ class DiaryControllerTest {
         .andExpect(status().isCreated())
         .andDo(print())
         .andExpect(jsonPath("$.diaryId").value(diaryId.toString()))
-        .andExpect(jsonPath("$.title").value(response.getTitle()))
+        .andExpect(
+            jsonPath("$.haveEmotionAnalysis").value(response.isHaveEmotionAnalysis()))
         .andExpect(jsonPath("$.content").value(response.getContent()))
         .andExpect(jsonPath("$.temp").value(response.isTemp()))
         .andExpect(jsonPath("$.createdAt").exists())
@@ -152,12 +155,12 @@ class DiaryControllerTest {
     UUID diaryId = UUID.randomUUID();
     DiaryResponse response = DiaryResponse.builder()
         .diaryId(diaryId)
-        .title(request.getTitle())
         .content(request.getContent())
         .date(request.getDate())
         .isTemp(true)
         .createdAt(LocalDateTime.now())
         .updatedAt(LocalDateTime.now())
+        .haveEmotionAnalysis(false)
         .build();
 
     given(diaryService.createDiary(eq(userId), any(DiaryCreateRequest.class)))
@@ -170,7 +173,8 @@ class DiaryControllerTest {
         .andExpect(status().isCreated())
         .andDo(print())
         .andExpect(jsonPath("$.diaryId").value(diaryId.toString()))
-        .andExpect(jsonPath("$.title").value(response.getTitle()))
+        .andExpect(
+            jsonPath("$.haveEmotionAnalysis").value(response.isHaveEmotionAnalysis()))
         .andExpect(jsonPath("$.content").value(response.getContent()))
         .andExpect(jsonPath("$.date").value(response.getDate()))
         .andExpect(jsonPath("$.temp").value(response.isTemp()))
@@ -191,7 +195,7 @@ class DiaryControllerTest {
 
     DiaryResponse response = DiaryResponse.builder()
         .diaryId(diaryId)
-        .title(request.getTitle())
+        .haveEmotionAnalysis(false)
         .content(request.getContent())
         .date(request.getDate())
         .isTemp(true)
@@ -210,7 +214,8 @@ class DiaryControllerTest {
         .andExpect(status().isOk())
         .andDo(print())
         .andExpect(jsonPath("$.diaryId").value(diaryId.toString()))
-        .andExpect(jsonPath("$.title").value(response.getTitle()))
+        .andExpect(
+            jsonPath("$.haveEmotionAnalysis").value(response.isHaveEmotionAnalysis()))
         .andExpect(jsonPath("$.content").value(response.getContent()))
         .andExpect(jsonPath("$.date").value(response.getDate().toString()))
         .andExpect(jsonPath("$.temp").value(response.isTemp()))
@@ -229,7 +234,7 @@ class DiaryControllerTest {
 
     DiaryResponse response = DiaryResponse.builder()
         .diaryId(diaryId)
-        .title(request.getTitle())
+        .haveEmotionAnalysis(false)
         .content(request.getContent())
         .date(request.getDate())
         .isTemp(true)
@@ -248,7 +253,8 @@ class DiaryControllerTest {
         .andExpect(status().isOk())
         .andDo(print())
         .andExpect(jsonPath("$.diaryId").value(diaryId.toString()))
-        .andExpect(jsonPath("$.title").value(response.getTitle()))
+        .andExpect(
+            jsonPath("$.haveEmotionAnalysis").value(response.isHaveEmotionAnalysis()))
         .andExpect(jsonPath("$.content").value(response.getContent()))
         .andExpect(jsonPath("$.date").value(response.getDate()))
         .andExpect(jsonPath("$.temp").value(response.isTemp()))
@@ -312,7 +318,7 @@ class DiaryControllerTest {
 
     DiaryResponse response = DiaryResponse.builder()
         .diaryId(diaryId)
-        .title(request.getTitle())
+        .haveEmotionAnalysis(false)
         .content(request.getContent())
         .date(request.getDate())
         .isTemp(true)
@@ -330,7 +336,8 @@ class DiaryControllerTest {
         .andExpect(status().isOk())
         .andDo(print())
         .andExpect(jsonPath("$.diaryId").value(diaryId.toString()))
-        .andExpect(jsonPath("$.title").value(response.getTitle()))
+        .andExpect(
+            jsonPath("$.haveEmotionAnalysis").value(response.isHaveEmotionAnalysis()))
         .andExpect(jsonPath("$.content").value(response.getContent()))
         .andExpect(jsonPath("$.date").value(response.getDate().toString()))
         .andExpect(jsonPath("$.temp").value(response.isTemp()))
@@ -442,7 +449,7 @@ class DiaryControllerTest {
 
     DiaryResponse response = DiaryResponse.builder()
         .diaryId(diaryId)
-        .title("제목")
+        .haveEmotionAnalysis(false)
         .content("내용")
         .date(LocalDate.of(2024, 10, 1))
         .isTemp(true)
@@ -457,7 +464,8 @@ class DiaryControllerTest {
         .andExpect(status().isOk())
         .andDo(print())
         .andExpect(jsonPath("$.diaryId").value(diaryId.toString()))
-        .andExpect(jsonPath("$.title").value(response.getTitle()))
+        .andExpect(
+            jsonPath("$.haveEmotionAnalysis").value(response.isHaveEmotionAnalysis()))
         .andExpect(jsonPath("$.content").value(response.getContent()))
         .andExpect(jsonPath("$.date").value(response.getDate().toString()))
         .andExpect(jsonPath("$.temp").value(response.isTemp()))
@@ -472,7 +480,7 @@ class DiaryControllerTest {
 
     DiaryResponse response = DiaryResponse.builder()
         .diaryId(diaryId)
-        .title("제목")
+        .haveEmotionAnalysis(false)
         .content("내용")
         .date(LocalDate.of(2024, 10, 1))
         .isTemp(true)
@@ -487,7 +495,8 @@ class DiaryControllerTest {
         .andExpect(status().isOk())
         .andDo(print())
         .andExpect(jsonPath("$.diaryId").value(diaryId.toString()))
-        .andExpect(jsonPath("$.title").value(response.getTitle()))
+        .andExpect(
+            jsonPath("$.haveEmotionAnalysis").value(response.isHaveEmotionAnalysis()))
         .andExpect(jsonPath("$.content").value(response.getContent()))
         .andExpect(jsonPath("$.date").value(response.getDate().toString()))
         .andExpect(jsonPath("$.temp").value(response.isTemp()))
@@ -518,7 +527,7 @@ class DiaryControllerTest {
 
     DiaryResponse response1 = DiaryResponse.builder()
         .diaryId(diaryId1)
-        .title("제목1")
+        .haveEmotionAnalysis(false)
         .content("내용1")
         .date(LocalDate.of(2024, 10, 1))
         .isTemp(false)
@@ -528,7 +537,7 @@ class DiaryControllerTest {
 
     DiaryResponse response2 = DiaryResponse.builder()
         .diaryId(diaryId2)
-        .title("제목2")
+        .haveEmotionAnalysis(false)
         .content("내용2")
         .date(LocalDate.of(2024, 10, 3))
         .isTemp(false)
@@ -551,13 +560,15 @@ class DiaryControllerTest {
         .andExpect(status().isOk())
         .andDo(print())
         .andExpect(jsonPath("$.content[0].diaryId").value(diaryId1.toString()))
-        .andExpect(jsonPath("$.content[0].title").value(response1.getTitle()))
+        .andExpect(jsonPath("$.content[0].haveEmotionAnalysis").value(
+            response1.isHaveEmotionAnalysis()))
         .andExpect(jsonPath("$.content[0].content").value(response1.getContent()))
         .andExpect(jsonPath("$.content[0].date").value(response1.getDate().toString()))
         .andExpect(jsonPath("$.content[0].createdAt").exists())
         .andExpect(jsonPath("$.content[0].updatedAt").exists())
         .andExpect(jsonPath("$.content[1].diaryId").value(diaryId2.toString()))
-        .andExpect(jsonPath("$.content[1].title").value(response2.getTitle()))
+        .andExpect(jsonPath("$.content[1].haveEmotionAnalysis").value(
+            response2.isHaveEmotionAnalysis()))
         .andExpect(jsonPath("$.content[1].content").value(response2.getContent()))
         .andExpect(jsonPath("$.content[1].date").value(response2.getDate().toString()))
         .andExpect(jsonPath("$.content[1].createdAt").exists())
@@ -575,7 +586,7 @@ class DiaryControllerTest {
 
     DiaryResponse response1 = DiaryResponse.builder()
         .diaryId(diaryId1)
-        .title("제목1")
+        .haveEmotionAnalysis(false)
         .content("내용1")
         .date(LocalDate.of(2024, 10, 1))
         .isTemp(false)
@@ -585,7 +596,7 @@ class DiaryControllerTest {
 
     DiaryResponse response2 = DiaryResponse.builder()
         .diaryId(diaryId2)
-        .title("제목2")
+        .haveEmotionAnalysis(false)
         .content("내용2")
         .date(LocalDate.of(2024, 10, 3))
         .isTemp(false)
@@ -611,13 +622,15 @@ class DiaryControllerTest {
         .andExpect(status().isOk())
         .andDo(print())
         .andExpect(jsonPath("$.content[0].diaryId").value(diaryId1.toString()))
-        .andExpect(jsonPath("$.content[0].title").value(response1.getTitle()))
+        .andExpect(jsonPath("$.content[0].haveEmotionAnalysis").value(
+            response1.isHaveEmotionAnalysis()))
         .andExpect(jsonPath("$.content[0].content").value(response1.getContent()))
         .andExpect(jsonPath("$.content[0].date").value(response1.getDate().toString()))
         .andExpect(jsonPath("$.content[0].createdAt").exists())
         .andExpect(jsonPath("$.content[0].updatedAt").exists())
         .andExpect(jsonPath("$.content[1].diaryId").value(diaryId2.toString()))
-        .andExpect(jsonPath("$.content[1].title").value(response2.getTitle()))
+        .andExpect(jsonPath("$.content[1].haveEmotionAnalysis").value(
+            response2.isHaveEmotionAnalysis()))
         .andExpect(jsonPath("$.content[1].content").value(response2.getContent()))
         .andExpect(jsonPath("$.content[1].date").value(response2.getDate().toString()))
         .andExpect(jsonPath("$.content[1].createdAt").exists())
@@ -678,7 +691,7 @@ class DiaryControllerTest {
 
     DiaryResponse response1 = DiaryResponse.builder()
         .diaryId(diaryId1)
-        .title("제목1")
+        .haveEmotionAnalysis(false)
         .content("내용1")
         .date(LocalDate.of(2024, 10, 1))
         .isTemp(false)
@@ -688,7 +701,7 @@ class DiaryControllerTest {
 
     DiaryResponse response2 = DiaryResponse.builder()
         .diaryId(diaryId2)
-        .title("제목2")
+        .haveEmotionAnalysis(false)
         .content("내용2")
         .date(LocalDate.of(2024, 10, 3))
         .isTemp(false)
@@ -712,14 +725,16 @@ class DiaryControllerTest {
         .andExpect(status().isOk())
         .andDo(print())
         .andExpect(jsonPath("$.content[0].diaryId").value(diaryId1.toString()))
-        .andExpect(jsonPath("$.content[0].title").value(response1.getTitle()))
+        .andExpect(jsonPath("$.content[0].haveEmotionAnalysis").value(
+            response1.isHaveEmotionAnalysis()))
         .andExpect(jsonPath("$.content[0].content").value(response1.getContent()))
         .andExpect(jsonPath("$.content[0].date").value(response1.getDate().toString()))
         .andExpect(jsonPath("$.content[0].temp").value(response1.isTemp()))
         .andExpect(jsonPath("$.content[0].createdAt").exists())
         .andExpect(jsonPath("$.content[0].updatedAt").exists())
         .andExpect(jsonPath("$.content[1].diaryId").value(diaryId2.toString()))
-        .andExpect(jsonPath("$.content[1].title").value(response2.getTitle()))
+        .andExpect(jsonPath("$.content[1].haveEmotionAnalysis").value(
+            response2.isHaveEmotionAnalysis()))
         .andExpect(jsonPath("$.content[1].content").value(response2.getContent()))
         .andExpect(jsonPath("$.content[1].date").value(response2.getDate().toString()))
         .andExpect(jsonPath("$.content[1].temp").value(response1.isTemp()))
@@ -735,7 +750,7 @@ class DiaryControllerTest {
 
     DiaryResponse response1 = DiaryResponse.builder()
         .diaryId(diaryId1)
-        .title("제목1")
+        .haveEmotionAnalysis(false)
         .content("내용1")
         .date(LocalDate.of(2024, 10, 1))
         .isTemp(false)
@@ -745,7 +760,7 @@ class DiaryControllerTest {
 
     DiaryResponse response2 = DiaryResponse.builder()
         .diaryId(diaryId2)
-        .title("제목2")
+        .haveEmotionAnalysis(false)
         .content("내용2")
         .date(LocalDate.of(2024, 10, 3))
         .isTemp(false)
@@ -766,14 +781,16 @@ class DiaryControllerTest {
         .andExpect(status().isOk())
         .andDo(print())
         .andExpect(jsonPath("$.content[0].diaryId").value(diaryId1.toString()))
-        .andExpect(jsonPath("$.content[0].title").value(response1.getTitle()))
+        .andExpect(jsonPath("$.content[0].haveEmotionAnalysis").value(
+            response1.isHaveEmotionAnalysis()))
         .andExpect(jsonPath("$.content[0].content").value(response1.getContent()))
         .andExpect(jsonPath("$.content[0].date").value(response1.getDate().toString()))
         .andExpect(jsonPath("$.content[0].temp").value(response1.isTemp()))
         .andExpect(jsonPath("$.content[0].createdAt").exists())
         .andExpect(jsonPath("$.content[0].updatedAt").exists())
         .andExpect(jsonPath("$.content[1].diaryId").value(diaryId2.toString()))
-        .andExpect(jsonPath("$.content[1].title").value(response2.getTitle()))
+        .andExpect(jsonPath("$.content[1].haveEmotionAnalysis").value(
+            response2.isHaveEmotionAnalysis()))
         .andExpect(jsonPath("$.content[1].content").value(response2.getContent()))
         .andExpect(jsonPath("$.content[1].date").value(response2.getDate().toString()))
         .andExpect(jsonPath("$.content[1].temp").value(response1.isTemp()))

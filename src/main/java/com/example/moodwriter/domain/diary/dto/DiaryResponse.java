@@ -12,22 +12,22 @@ import lombok.Getter;
 public class DiaryResponse {
 
   private UUID diaryId;
-  private String title;
   private String content;
   private LocalDate date;
   private LocalDateTime createdAt;
   private LocalDateTime updatedAt;
   private boolean isTemp;
+  private boolean haveEmotionAnalysis;
 
-  public static DiaryResponse fromEntity(Diary diary) {
+  public static DiaryResponse fromEntity(Diary diary, boolean haveEmotionAnalysis) {
     return DiaryResponse.builder()
         .diaryId(diary.getId())
-        .title(diary.getTitle())
         .content(diary.getContent())
         .date(diary.getDate())
         .createdAt(diary.getCreatedAt())
         .updatedAt(diary.getUpdatedAt())
         .isTemp(diary.isTemp())
+        .haveEmotionAnalysis(haveEmotionAnalysis)
         .build();
   }
 }
