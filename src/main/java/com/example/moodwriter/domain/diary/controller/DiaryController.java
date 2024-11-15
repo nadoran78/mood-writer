@@ -97,6 +97,20 @@ public class DiaryController {
     return ResponseEntity.ok(responses);
   }
 
+  @GetMapping("/all")
+  public ResponseEntity<Slice<DiaryResponse>> getAllMyDiaries(
+      @RequestParam(required = false, defaultValue = "0") int page,
+      @RequestParam(required = false, defaultValue = "10") int size,
+      @RequestParam(required = false, defaultValue = "desc") SortOrder sortOrder,
+      @AuthenticationPrincipal CustomUserDetails userDetails) {
+    Sort sort = sortOrder == SortOrder.DESC ? Sort.by("date").descending()
+        : Sort.by("date").ascending();
+    Pageable pageable = PageRequest.of(page, size, sort);
+    Slice<DiaryResponse> responses = diaryService.getAllMyDiaries(pageable,
+        userDetails.getId());
+    return ResponseEntity.ok(responses);
+  }
+
 
   @DeleteMapping("/{diaryId}")
   public ResponseEntity<Void> deleteDiary(
