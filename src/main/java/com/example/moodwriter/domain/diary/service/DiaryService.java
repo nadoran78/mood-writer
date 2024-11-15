@@ -103,7 +103,8 @@ public class DiaryService {
     User user = userRepository.findById(userId)
         .orElseThrow(() -> new UserException(ErrorCode.NOT_FOUND_USER));
 
-    Slice<Diary> diaries = diaryRepository.findAllByUser(user, pageable);
+    Slice<Diary> diaries = diaryRepository.findAllByUserAndIsDeletedFalseAndIsTempFalse(
+        user, pageable);
     return diaries.map(DiaryResponse::fromEntity);
   }
 

@@ -14,5 +14,5 @@ public interface DiaryRepository extends JpaRepository<Diary, UUID> {
 
   Slice<Diary> findByDateBetweenAndIsDeletedFalseAndIsTempFalseAndUser(LocalDate startDate,
       LocalDate endDate, User user, Pageable pageable);
-  Slice<Diary> findAllByUser(User user, Pageable pageable);
+  Slice<Diary> findAllByUserAndIsDeletedFalseAndIsTempFalse(User user, Pageable pageable);
 }
