@@ -411,7 +411,6 @@ class DiaryServiceTest {
     LocalDateTime now = LocalDateTime.now();
     Diary diary = spy(Diary.builder()
         .user(user)
-        .title("제목")
         .content("내용")
         .date(LocalDate.of(2024, 10, 1))
         .isTemp(false)
@@ -536,7 +535,6 @@ class DiaryServiceTest {
     LocalDateTime now = LocalDateTime.now();
     Diary diary = spy(Diary.builder()
         .user(user)
-        .title("제목")
         .content("내용")
         .date(LocalDate.of(2024, 10, 1))
         .isTemp(false)
@@ -612,7 +610,6 @@ class DiaryServiceTest {
 
     Diary diary = spy(Diary.builder()
         .user(user)
-        .title("제목")
         .content("내용")
         .isTemp(false)
         .isDeleted(true)
@@ -638,7 +635,6 @@ class DiaryServiceTest {
 
     Diary diary = Diary.builder()
         .user(user)
-        .title("제목")
         .content("내용")
         .date(LocalDate.of(2024, 10, 1))
         .isTemp(false)
@@ -669,7 +665,6 @@ class DiaryServiceTest {
 
     Diary diary = Diary.builder()
         .user(user)
-        .title("제목")
         .content("내용")
         .date(LocalDate.of(2024, 10, 1))
         .isTemp(false)
@@ -724,7 +719,6 @@ class DiaryServiceTest {
 
     Diary diary = Diary.builder()
         .user(user)
-        .title("제목")
         .content("내용")
         .isTemp(false)
         .isDeleted(false)
@@ -750,7 +744,6 @@ class DiaryServiceTest {
 
     Diary diary = spy(Diary.builder()
         .user(user)
-        .title("제목")
         .content("내용")
         .isTemp(false)
         .isDeleted(true)
@@ -776,7 +769,6 @@ class DiaryServiceTest {
 
     Diary diary = Diary.builder()
         .user(user)
-        .title("제목")
         .content("내용")
         .isTemp(true)
         .isDeleted(false)
@@ -806,14 +798,12 @@ class DiaryServiceTest {
     UUID diaryId2 = UUID.randomUUID();
 
     Diary diary1 = spy(Diary.builder()
-        .title("제목")
         .content("content")
         .date(LocalDate.of(2024, 10, 1))
         .isTemp(false)
         .build());
 
     Diary diary2 = spy(Diary.builder()
-        .title("제목2")
         .content("content2")
         .date(LocalDate.of(2024, 10, 10))
         .isTemp(false)
@@ -903,14 +893,12 @@ class DiaryServiceTest {
     UUID diaryId2 = UUID.randomUUID();
 
     Diary diary1 = spy(Diary.builder()
-        .title("제목")
         .content("content")
         .date(LocalDate.of(2024, 10, 1))
         .isTemp(false)
         .build());
 
     Diary diary2 = spy(Diary.builder()
-        .title("제목2")
         .content("content2")
         .date(LocalDate.of(2024, 10, 10))
         .isTemp(false)

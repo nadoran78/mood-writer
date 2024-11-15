@@ -51,7 +51,7 @@ public class Diary extends BaseEntity {
   private LocalDateTime deletedAt;
 
   @Builder
-  public Diary(User user, String title, String content, LocalDate date, boolean isTemp,
+  public Diary(User user, String content, LocalDate date, boolean isTemp,
       boolean isDeleted, LocalDateTime deletedAt) {
     this.user = user;
     this.content = content;
