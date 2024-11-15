@@ -36,8 +36,6 @@ public class Diary extends BaseEntity {
   @JoinColumn(name = "user_id", nullable = false)
   private User user;
 
-  private String title;
-
   @Column(columnDefinition = "TEXT")
   private String content;
 
@@ -56,7 +54,6 @@ public class Diary extends BaseEntity {
   public Diary(User user, String title, String content, LocalDate date, boolean isTemp,
       boolean isDeleted, LocalDateTime deletedAt) {
     this.user = user;
-    this.title = title;
     this.content = content;
     this.date = date;
     this.isTemp = isTemp;
@@ -84,13 +81,11 @@ public class Diary extends BaseEntity {
   }
 
   public void autoSave(DiaryAutoSaveRequest request) {
-    this.title = request.getTitle();
     this.content = request.getContent();
     this.date = request.getDate();
   }
 
   public void finalSave(DiaryFinalSaveRequest request) {
-    this.title = request.getTitle();
     this.content = request.getContent();
     this.date = request.getDate();
     this.isTemp = false;
