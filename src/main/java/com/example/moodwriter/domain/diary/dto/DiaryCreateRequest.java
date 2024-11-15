@@ -7,7 +7,6 @@ import lombok.Getter;
 @Getter
 @Builder
 public class DiaryCreateRequest {
-  private String title;
   private String content;
   private LocalDate date;
 }

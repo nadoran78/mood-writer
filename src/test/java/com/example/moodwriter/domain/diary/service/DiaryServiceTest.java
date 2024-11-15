@@ -63,7 +63,6 @@ class DiaryServiceTest {
     UUID userId = UUID.randomUUID();
 
     DiaryCreateRequest request = DiaryCreateRequest.builder()
-        .title("임시 제목")
         .content("임시 내용")
         .date(LocalDate.of(2024, 10, 1))
         .build();
@@ -125,7 +124,6 @@ class DiaryServiceTest {
     UUID userId = UUID.randomUUID();
 
     DiaryCreateRequest request = DiaryCreateRequest.builder()
-        .title("임시 제목")
         .content("임시 내용")
         .date(LocalDate.of(2024, 10, 1))
         .build();
@@ -146,7 +144,6 @@ class DiaryServiceTest {
     UUID userId = UUID.randomUUID();
 
     DiaryAutoSaveRequest request = DiaryAutoSaveRequest.builder()
-        .title("임시 저장 제목")
         .content("임시 저장 내용")
         .date(LocalDate.of(2024, 10, 1))
         .build();
@@ -278,7 +275,6 @@ class DiaryServiceTest {
     UUID userId = UUID.randomUUID();
 
     DiaryFinalSaveRequest request = DiaryFinalSaveRequest.builder()
-        .title("최종 저장 제목")
         .content("최종 저장 내용")
         .date(LocalDate.of(2024, 10, 1))
         .build();

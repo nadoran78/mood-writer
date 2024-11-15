@@ -80,7 +80,6 @@ class DiaryControllerTest {
   void successCreateDiary() throws Exception {
     // given
     DiaryCreateRequest request = DiaryCreateRequest.builder()
-        .title("임시 제목")
         .content("임시 내용")
         .date(LocalDate.now().minusDays(1))
         .build();
@@ -188,7 +187,6 @@ class DiaryControllerTest {
     UUID diaryId = UUID.randomUUID();
 
     DiaryAutoSaveRequest request = DiaryAutoSaveRequest.builder()
-        .title("자동 저장 제목")
         .content("자동 저장 내용")
         .date(LocalDate.of(2024, 10, 1))
         .build();
@@ -288,7 +286,6 @@ class DiaryControllerTest {
     UUID diaryId = UUID.randomUUID();
 
     DiaryAutoSaveRequest request = DiaryAutoSaveRequest.builder()
-        .title("자동 저장 제목")
         .date(LocalDate.of(2024, 10, 1))
         .build();
 
@@ -311,7 +308,6 @@ class DiaryControllerTest {
     UUID diaryId = UUID.randomUUID();
 
     DiaryFinalSaveRequest request = DiaryFinalSaveRequest.builder()
-        .title("최종 저장 제목")
         .content("최종 저장 내용")
         .date(LocalDate.of(2024, 10, 1))
         .build();
@@ -352,7 +348,6 @@ class DiaryControllerTest {
     UUID diaryId = UUID.randomUUID();
 
     DiaryFinalSaveRequest request = DiaryFinalSaveRequest.builder()
-        .title("최종 저장 제목")
         .date(LocalDate.of(2024, 10, 1))
         .build();
 
@@ -370,37 +365,12 @@ class DiaryControllerTest {
   }
 
   @Test
-  void finalSaveDiary_shouldReturnBadRequest_whenTitleIsNullInRequest()
-      throws Exception {
-    // given
-    UUID diaryId = UUID.randomUUID();
-
-    DiaryFinalSaveRequest request = DiaryFinalSaveRequest.builder()
-        .content("최종 저장 내용")
-        .date(LocalDate.of(2024, 10, 1))
-        .build();
-
-    // when & then
-    mockMvc.perform(put("/api/diaries/" + diaryId)
-            .contentType(MediaType.APPLICATION_JSON)
-            .content(objectMapper.writeValueAsString(request)))
-        .andExpect(status().isBadRequest())
-        .andDo(print())
-        .andExpect(jsonPath("$.errorCode").value("VALIDATION_ERROR"))
-        .andExpect(jsonPath("$.message").value("입력값이 유효하지 않습니다."))
-        .andExpect(jsonPath("$.fieldErrors[0].field").value("title"))
-        .andExpect(
-            jsonPath("$.fieldErrors[0].message").value("제목을 입력해주세요."));
-  }
-
-  @Test
   void finalSaveDiary_shouldReturnBadRequest_whenDateIsNullInRequest()
       throws Exception {
     // given
     UUID diaryId = UUID.randomUUID();
 
     DiaryFinalSaveRequest request = DiaryFinalSaveRequest.builder()
-        .title("최종 저장 제목")
         .content("최종 저장 내용")
         .build();
 
@@ -424,7 +394,6 @@ class DiaryControllerTest {
     UUID diaryId = UUID.randomUUID();
 
     DiaryFinalSaveRequest request = DiaryFinalSaveRequest.builder()
-        .title("최종 저장 제목")
         .content("최종 저장 내용")
         .date(LocalDate.now().plusDays(1))
         .build();

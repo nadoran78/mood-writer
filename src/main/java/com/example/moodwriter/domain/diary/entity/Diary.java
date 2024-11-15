@@ -72,7 +72,6 @@ public class Diary extends BaseEntity {
 
     return Diary.builder()
         .user(user)
-        .title(request.getTitle())
         .content(request.getContent())
         .date(request.getDate())
         .isTemp(true)
