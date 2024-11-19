@@ -126,16 +126,14 @@ public class UserService {
 
   public void logout(String email, String accessToken) {
     String resolvedAccessToken = tokenProvider.resolveTokenFromRequest(accessToken);
-    tokenProvider.addBlackList(resolvedAccessToken, email);
+    tokenProvider.addBlackList(resolvedAccessToken);
     tokenProvider.deleteRefreshToken(email);
   }
 
-  public TokenResponse reissueToken(String email, String oldAccessToken,
-      TokenReissueRequest request) {
-    String resolvedOldAccessToken = tokenProvider.resolveTokenFromRequest(oldAccessToken);
+  public TokenResponse reissueToken(TokenReissueRequest request) {
     TokenResponse tokenResponse = tokenProvider.regenerateAccessToken(
         request.getRefreshToken());
-    tokenProvider.addBlackList(resolvedOldAccessToken, email);
+    tokenProvider.addBlackList(request.getAccessToken());
     return tokenResponse;
   }
 

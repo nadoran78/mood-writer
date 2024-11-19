@@ -169,7 +169,9 @@ public class TokenProvider {
     }
   }
 
-  public void addBlackList(String accessToken, String email) {
+  public void addBlackList(String accessToken) {
+    String email = Jwts.parser().setSigningKey(secretKey).parseClaimsJws(accessToken)
+        .getBody().getSubject();
     long expirationSeconds = getTokenExpireTime(accessToken);
     redisTemplate.opsForValue()
         .set(KEY_ACCESS_TOKEN + email, accessToken, expirationSeconds, TimeUnit.SECONDS);

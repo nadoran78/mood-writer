@@ -46,7 +46,7 @@ public class SecurityConfig {
             .requestMatchers(HttpMethod.DELETE, "/api/users")
             .hasRole(Role.ROLE_USER.getRole())
             .requestMatchers("/api/users/logout").hasRole(Role.ROLE_USER.getRole())
-            .requestMatchers("/api/users/reissue-token").hasRole(Role.ROLE_USER.getRole())
+            .requestMatchers("/api/users/reissue-token").permitAll()
             .requestMatchers("/api/users/register").permitAll()
             .requestMatchers("/api/users/login").permitAll()
             .requestMatchers("/api/users/social-login").permitAll()

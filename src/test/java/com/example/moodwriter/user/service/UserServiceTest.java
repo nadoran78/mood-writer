@@ -497,7 +497,7 @@ class UserServiceTest {
 
     // then
     verify(tokenProvider).resolveTokenFromRequest(accessToken);
-    verify(tokenProvider).addBlackList(resolvedAccessToken, email);
+    verify(tokenProvider).addBlackList(resolvedAccessToken);
     verify(tokenProvider).deleteRefreshToken(email);
   }
 
@@ -505,29 +505,25 @@ class UserServiceTest {
   void successReissueToken() {
     // given
     String email = "test@example.com";
-    String accessToken = "Bearer access-token";
-    String resolvedAccessToken = accessToken.replace("Bearer ", "");
-    TokenReissueRequest request = new TokenReissueRequest("refresh-token");
+    TokenReissueRequest request = new TokenReissueRequest("access-token", "refresh-token");
     TokenResponse response = TokenResponse.builder()
         .email(email)
         .accessToken("new-access-token")
         .refreshToken("refresh-token")
         .build();
 
-    given(tokenProvider.resolveTokenFromRequest(accessToken)).willReturn(
-        resolvedAccessToken);
     given(tokenProvider.regenerateAccessToken(request.getRefreshToken()))
         .willReturn(response);
 
     // when
-    TokenResponse tokenResponse = userService.reissueToken(email, accessToken, request);
+    TokenResponse tokenResponse = userService.reissueToken(request);
 
     // then
     assertEquals(response.getEmail(), tokenResponse.getEmail());
     assertEquals(response.getAccessToken(), tokenResponse.getAccessToken());
     assertEquals(response.getRefreshToken(), tokenResponse.getRefreshToken());
 
-    verify(tokenProvider).addBlackList(resolvedAccessToken, email);
+    verify(tokenProvider).addBlackList(request.getAccessToken());
   }
 
   @Test
