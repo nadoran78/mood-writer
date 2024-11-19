@@ -10,6 +10,9 @@ import lombok.NoArgsConstructor;
 @AllArgsConstructor
 public class TokenReissueRequest {
 
-  @NotBlank(message = "리프레쉬 토큰을 필수값입니다.")
+  @NotBlank(message = "액세스 토큰을 입력해주세요.")
+  private String accessToken;
+
+  @NotBlank(message = "리프레쉬 토큰을 입력해주세요.")
   private String refreshToken;
 }

@@ -394,7 +394,8 @@ class UserControllerTest {
     UserResponse userResponse = UserResponse.builder()
         .id(userId)
         .name(updateName)
-        .profilePictureUrl(List.of(new FileDto("https://image.url", filename, "image/jpeg")))
+        .profilePictureUrl(
+            List.of(new FileDto("https://image.url", filename, "image/jpeg")))
         .build();
 
     given(userService.updateUser(any(UUID.class), any(UserUpdateRequest.class)))
@@ -423,7 +424,8 @@ class UserControllerTest {
     UserResponse userResponse = UserResponse.builder()
         .id(userId)
         .name(oldName)
-        .profilePictureUrl(List.of(new FileDto("https://image.url", filename, "image/jpeg")))
+        .profilePictureUrl(
+            List.of(new FileDto("https://image.url", filename, "image/jpeg")))
         .build();
 
     given(userService.updateUser(any(UUID.class), any(UserUpdateRequest.class)))
@@ -451,7 +453,8 @@ class UserControllerTest {
     UserResponse userResponse = UserResponse.builder()
         .id(userId)
         .name(updateName)
-        .profilePictureUrl(List.of(new FileDto("https://image.url", oldFilename, "image/jpeg")))
+        .profilePictureUrl(
+            List.of(new FileDto("https://image.url", oldFilename, "image/jpeg")))
         .build();
 
     given(userService.updateUser(any(UUID.class), any(UserUpdateRequest.class)))
@@ -479,7 +482,8 @@ class UserControllerTest {
     UserResponse userResponse = UserResponse.builder()
         .id(userId)
         .name(oldName)
-        .profilePictureUrl(List.of(new FileDto("https://image.url", oldFilename, "image/jpeg")))
+        .profilePictureUrl(
+            List.of(new FileDto("https://image.url", oldFilename, "image/jpeg")))
         .build();
 
     given(userService.updateUser(any(UUID.class), any(UserUpdateRequest.class)))
@@ -644,15 +648,14 @@ class UserControllerTest {
   void successReissueToken() throws Exception {
     // given
     String accessToken = "Bearer access-token";
-    TokenReissueRequest request = new TokenReissueRequest("refresh-token");
+    TokenReissueRequest request = new TokenReissueRequest("accessToken", "refresh-token");
     TokenResponse response = TokenResponse.builder()
         .email(email)
         .accessToken("new-access-token")
         .refreshToken("refresh-token")
         .build();
 
-    given(userService.reissueToken(anyString(), anyString(),
-        any(TokenReissueRequest.class))).willReturn(response);
+    given(userService.reissueToken(any(TokenReissueRequest.class))).willReturn(response);
 
     // when & then
     mockMvc.perform(post("/api/users/reissue-token")
@@ -668,7 +671,7 @@ class UserControllerTest {
   void reissueTokenShouldThrowCustomExceptionWhenRefreshTokenIsNull() throws Exception {
     // given
     String accessToken = "Bearer access-token";
-    TokenReissueRequest request = new TokenReissueRequest(null);
+    TokenReissueRequest request = new TokenReissueRequest(null, null);
 
     // when & then
     mockMvc.perform(post("/api/users/reissue-token")
@@ -679,8 +682,17 @@ class UserControllerTest {
         .andExpect(jsonPath("$.errorCode").value("VALIDATION_ERROR"))
         .andExpect(jsonPath("$.message").value("입력값이 유효하지 않습니다."))
         .andExpect(jsonPath("$.path").value("/api/users/reissue-token"))
-        .andExpect(jsonPath("$.fieldErrors[0].field").value("refreshToken"))
-        .andExpect(jsonPath("$.fieldErrors[0].message").value("리프레쉬 토큰을 필수값입니다."));
+        .andExpect(jsonPath("$.fieldErrors", hasSize(2)))
+        .andExpect(jsonPath("$.fieldErrors", hasItems(
+            allOf(
+                hasEntry("field", "accessToken"),
+                hasEntry("message", "액세스 토큰을 입력해주세요.")
+            ),
+            allOf(
+                hasEntry("field", "refreshToken"),
+                hasEntry("message", "리프레쉬 토큰을 입력해주세요.")
+            )
+        )));
 
   }
 
@@ -688,7 +700,7 @@ class UserControllerTest {
   void reissueTokenShouldThrowCustomExceptionWhenRefreshTokenIsEmpty() throws Exception {
     // given
     String accessToken = "Bearer access-token";
-    TokenReissueRequest request = new TokenReissueRequest("");
+    TokenReissueRequest request = new TokenReissueRequest("", "");
 
     // when & then
     mockMvc.perform(post("/api/users/reissue-token")
@@ -699,8 +711,17 @@ class UserControllerTest {
         .andExpect(jsonPath("$.errorCode").value("VALIDATION_ERROR"))
         .andExpect(jsonPath("$.message").value("입력값이 유효하지 않습니다."))
         .andExpect(jsonPath("$.path").value("/api/users/reissue-token"))
-        .andExpect(jsonPath("$.fieldErrors[0].field").value("refreshToken"))
-        .andExpect(jsonPath("$.fieldErrors[0].message").value("리프레쉬 토큰을 필수값입니다."));
+        .andExpect(jsonPath("$.fieldErrors", hasSize(2)))
+        .andExpect(jsonPath("$.fieldErrors", hasItems(
+            allOf(
+                hasEntry("field", "accessToken"),
+                hasEntry("message", "액세스 토큰을 입력해주세요.")
+            ),
+            allOf(
+                hasEntry("field", "refreshToken"),
+                hasEntry("message", "리프레쉬 토큰을 입력해주세요.")
+            )
+        )));
 
   }
 
@@ -726,8 +747,8 @@ class UserControllerTest {
 
     // when & then
     mockMvc.perform(post("/api/users/social-login")
-        .contentType(MediaType.APPLICATION_JSON)
-        .content(jsonRequest))
+            .contentType(MediaType.APPLICATION_JSON)
+            .content(jsonRequest))
         .andDo(print())
         .andExpect(jsonPath("$.email").value(tokenResponse.getEmail()))
         .andExpect(jsonPath("$.accessToken").value(tokenResponse.getAccessToken()))

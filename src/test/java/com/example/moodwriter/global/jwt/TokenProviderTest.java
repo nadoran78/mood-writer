@@ -307,7 +307,7 @@ class TokenProviderTest {
 
     // when
     ArgumentCaptor<Long> captor = ArgumentCaptor.forClass(Long.class);
-    tokenProvider.addBlackList(token, testMail);
+    tokenProvider.addBlackList(token);
 
     // then(만료시간 확인)
     verify(valueOperations).set(

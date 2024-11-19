@@ -80,11 +80,8 @@ public class UserController {
 
   @PostMapping("/reissue-token")
   public ResponseEntity<TokenResponse> reissueToken(
-      @AuthenticationPrincipal CustomUserDetails userDetails,
-      @RequestHeader("Authorization") String accessToken,
       @RequestBody @Valid TokenReissueRequest request) {
-    TokenResponse response = userService.reissueToken(userDetails.getUsername(),
-        accessToken, request);
+    TokenResponse response = userService.reissueToken(request);
     return ResponseEntity.ok(response);
   }
 
