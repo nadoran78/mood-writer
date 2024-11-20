@@ -42,6 +42,7 @@ import java.util.Arrays;
 import java.util.Collections;
 import java.util.Optional;
 import java.util.UUID;
+import java.util.stream.Collectors;
 import org.junit.jupiter.api.BeforeEach;
 import org.junit.jupiter.api.Test;
 import org.junit.jupiter.api.extension.ExtendWith;
@@ -132,7 +133,9 @@ class EmotionAnalysisServiceTest {
     // then
     assertEquals(diaryId, response.getDiaryId());
     assertEquals(diary.getDate(), response.getDate());
-    assertEquals(emotionScoreAndPrimaryEmotion.getPrimaryEmotion(),
+    assertEquals(Arrays.stream(
+        emotionScoreAndPrimaryEmotion.getPrimaryEmotion().split(","))
+            .map(String::strip).collect(Collectors.toList()),
         response.getPrimaryEmotion());
     assertEquals(emotionScoreAndPrimaryEmotion.getEmotionScore(),
         response.getEmotionScore());
@@ -194,7 +197,9 @@ class EmotionAnalysisServiceTest {
     // then
     assertEquals(diaryId, response.getDiaryId());
     assertEquals(diary.getDate(), response.getDate());
-    assertEquals(emotionScoreAndPrimaryEmotion.getPrimaryEmotion(),
+    assertEquals(Arrays.stream(
+                emotionScoreAndPrimaryEmotion.getPrimaryEmotion().split(","))
+            .map(String::strip).collect(Collectors.toList()),
         response.getPrimaryEmotion());
     assertEquals(emotionScoreAndPrimaryEmotion.getEmotionScore(),
         response.getEmotionScore());
@@ -258,7 +263,9 @@ class EmotionAnalysisServiceTest {
     assertFalse(emotionAnalysis.isDeleted());
     assertEquals(diaryId, response.getDiaryId());
     assertEquals(diary.getDate(), response.getDate());
-    assertEquals(emotionScoreAndPrimaryEmotion.getPrimaryEmotion(),
+    assertEquals(Arrays.stream(
+                emotionScoreAndPrimaryEmotion.getPrimaryEmotion().split(","))
+            .map(String::strip).collect(Collectors.toList()),
         response.getPrimaryEmotion());
     assertEquals(emotionScoreAndPrimaryEmotion.getEmotionScore(),
         response.getEmotionScore());
@@ -455,7 +462,9 @@ class EmotionAnalysisServiceTest {
     // then
     assertEquals(diaryId, response.getDiaryId());
     assertEquals(emotionAnalysis.getDate(), response.getDate());
-    assertEquals(emotionAnalysis.getPrimaryEmotion(), response.getPrimaryEmotion());
+    assertEquals(Arrays.stream(
+            emotionAnalysis.getPrimaryEmotion().split(","))
+        .map(String::strip).collect(Collectors.toList()), response.getPrimaryEmotion());
     assertEquals(emotionAnalysis.getEmotionScore(), response.getEmotionScore());
     assertEquals(analysisContent, response.getAnalysisContent());
   }
@@ -480,7 +489,7 @@ class EmotionAnalysisServiceTest {
     EmotionAnalysis emotionAnalysis = EmotionAnalysis.builder()
         .diary(diary)
         .emotionScore(0)
-        .primaryEmotion("슬픔")
+        .primaryEmotion("슬픔, 불안, 초조")
         .analysisContent("행복하십니다.")
         .date(diary.getDate())
         .isDeleted(true)
@@ -610,7 +619,9 @@ class EmotionAnalysisServiceTest {
     assertEquals(emotionAnalysisId, response.getEmotionAnalysisId());
     assertEquals(diaryId, response.getDiaryId());
     assertEquals(diary.getDate(), response.getDate());
-    assertEquals(emotionAnalysis.getPrimaryEmotion(), response.getPrimaryEmotion());
+    assertEquals(Arrays.stream(
+            emotionAnalysis.getPrimaryEmotion().split(","))
+        .map(String::strip).collect(Collectors.toList()), response.getPrimaryEmotion());
     assertEquals(emotionAnalysis.getEmotionScore(), response.getEmotionScore());
     assertEquals(emotionAnalysis.getAnalysisContent(), response.getAnalysisContent());
     assertEquals(now, response.getCreatedAt());
@@ -882,7 +893,9 @@ class EmotionAnalysisServiceTest {
         responses.getContent().get(0).getEmotionAnalysisId());
     assertEquals(diaryId, responses.getContent().get(0).getDiaryId());
     assertEquals(emotionAnalysis1.getDate(), responses.getContent().get(0).getDate());
-    assertEquals(emotionAnalysis1.getPrimaryEmotion(),
+    assertEquals(Arrays.stream(
+                emotionAnalysis1.getPrimaryEmotion().split(","))
+            .map(String::strip).collect(Collectors.toList()),
         responses.getContent().get(0).getPrimaryEmotion());
     assertEquals(emotionAnalysis1.getEmotionScore(),
         responses.getContent().get(0).getEmotionScore());
@@ -894,7 +907,9 @@ class EmotionAnalysisServiceTest {
         responses.getContent().get(1).getEmotionAnalysisId());
     assertEquals(diaryId, responses.getContent().get(1).getDiaryId());
     assertEquals(emotionAnalysis2.getDate(), responses.getContent().get(1).getDate());
-    assertEquals(emotionAnalysis2.getPrimaryEmotion(),
+    assertEquals(Arrays.stream(
+                emotionAnalysis2.getPrimaryEmotion().split(","))
+            .map(String::strip).collect(Collectors.toList()),
         responses.getContent().get(1).getPrimaryEmotion());
     assertEquals(emotionAnalysis2.getEmotionScore(),
         responses.getContent().get(1).getEmotionScore());
