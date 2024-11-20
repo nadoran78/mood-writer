@@ -1,5 +1,7 @@
 package com.example.moodwriter.domain.emotion.controller;
 
+import static org.hamcrest.Matchers.hasItem;
+import static org.hamcrest.Matchers.hasSize;
 import static org.mockito.ArgumentMatchers.any;
 import static org.mockito.ArgumentMatchers.eq;
 import static org.mockito.BDDMockito.given;
@@ -24,6 +26,7 @@ import com.fasterxml.jackson.databind.ObjectMapper;
 import java.time.LocalDate;
 import java.time.LocalDateTime;
 import java.util.Arrays;
+import java.util.List;
 import java.util.UUID;
 import org.junit.jupiter.api.BeforeEach;
 import org.junit.jupiter.api.Test;
@@ -83,7 +86,7 @@ class EmotionAnalysisControllerTest {
         .emotionAnalysisId(emotionAnalysisId)
         .diaryId(diaryId)
         .date(LocalDate.of(2024, 10, 1))
-        .primaryEmotion("행복, 감사, 만족")
+        .primaryEmotion(List.of("행복", "감사", "만족"))
         .emotionScore(8)
         .createdAt(LocalDateTime.now())
         .updatedAt(LocalDateTime.now())
@@ -102,7 +105,10 @@ class EmotionAnalysisControllerTest {
         .andExpect(jsonPath("$.emotionAnalysisId").value(emotionAnalysisId.toString()))
         .andExpect(jsonPath("$.diaryId").value(diaryId.toString()))
         .andExpect(jsonPath("$.date").value(response.getDate().toString()))
-        .andExpect(jsonPath("$.primaryEmotion").value(response.getPrimaryEmotion()))
+        .andExpect(jsonPath("$.primaryEmotion", hasSize(3)))
+        .andExpect(jsonPath("$.primaryEmotion", hasItem(response.getPrimaryEmotion().get(0))))
+        .andExpect(jsonPath("$.primaryEmotion", hasItem(response.getPrimaryEmotion().get(1))))
+        .andExpect(jsonPath("$.primaryEmotion", hasItem(response.getPrimaryEmotion().get(2))))
         .andExpect(jsonPath("$.emotionScore").value(response.getEmotionScore()))
         .andExpect(jsonPath("$.analysisContent").isEmpty())
         .andExpect(jsonPath("$.createdAt").exists())
@@ -154,7 +160,7 @@ class EmotionAnalysisControllerTest {
         .emotionAnalysisId(UUID.randomUUID())
         .diaryId(diaryId)
         .date(LocalDate.now())
-        .primaryEmotion("행복, 여유, 만족")
+        .primaryEmotion(List.of("행복", "감사", "만족"))
         .emotionScore(7)
         .analysisContent("행복하신 하루였습니다.")
         .createdAt(LocalDateTime.now())
@@ -171,7 +177,10 @@ class EmotionAnalysisControllerTest {
             response.getEmotionAnalysisId().toString()))
         .andExpect(jsonPath("$.diaryId").value(response.getDiaryId().toString()))
         .andExpect(jsonPath("$.date").value(response.getDate().toString()))
-        .andExpect(jsonPath("$.primaryEmotion").value(response.getPrimaryEmotion()))
+        .andExpect(jsonPath("$.primaryEmotion", hasSize(3)))
+        .andExpect(jsonPath("$.primaryEmotion", hasItem(response.getPrimaryEmotion().get(0))))
+        .andExpect(jsonPath("$.primaryEmotion", hasItem(response.getPrimaryEmotion().get(1))))
+        .andExpect(jsonPath("$.primaryEmotion", hasItem(response.getPrimaryEmotion().get(2))))
         .andExpect(jsonPath("$.emotionScore").value(response.getEmotionScore()))
         .andExpect(jsonPath("$.analysisContent").value(response.getAnalysisContent()))
         .andExpect(jsonPath("$.createdAt").exists())
@@ -205,7 +214,7 @@ class EmotionAnalysisControllerTest {
         .emotionAnalysisId(emotionAnalysisId1)
         .diaryId(diaryId1)
         .date(LocalDate.of(2024, 10, 1))
-        .primaryEmotion("행복, 여유, 만족")
+        .primaryEmotion(List.of("행복", "감사", "만족"))
         .emotionScore(9)
         .analysisContent("행복해보이십니다.")
         .createdAt(LocalDateTime.now())
@@ -216,7 +225,7 @@ class EmotionAnalysisControllerTest {
         .emotionAnalysisId(emotionAnalysisId2)
         .diaryId(diaryId2)
         .date(LocalDate.of(2024, 10, 10))
-        .primaryEmotion("걱정, 초조, 불안")
+        .primaryEmotion(List.of("행복", "감사", "만족"))
         .emotionScore(2)
         .analysisContent("불안해보이십니다.")
         .createdAt(LocalDateTime.now())
@@ -242,7 +251,12 @@ class EmotionAnalysisControllerTest {
         .andExpect(jsonPath("$.content[0].diaryId").value(
             diaryId1.toString()))
         .andExpect(jsonPath("$.content[0].date").value(response1.getDate().toString()))
-        .andExpect(jsonPath("$.content[0].primaryEmotion").value(response1.getPrimaryEmotion()))
+        .andExpect(jsonPath("$.content[0].primaryEmotion",
+            hasItem(response1.getPrimaryEmotion().get(0))))
+        .andExpect(jsonPath("$.content[0].primaryEmotion",
+            hasItem(response1.getPrimaryEmotion().get(1))))
+        .andExpect(jsonPath("$.content[0].primaryEmotion",
+            hasItem(response1.getPrimaryEmotion().get(2))))
         .andExpect(jsonPath("$.content[0].emotionScore").value(response1.getEmotionScore()))
         .andExpect(jsonPath("$.content[0].analysisContent").value(response1.getAnalysisContent()))
         .andExpect(jsonPath("$.content[0].createdAt").exists())
@@ -252,7 +266,12 @@ class EmotionAnalysisControllerTest {
         .andExpect(jsonPath("$.content[1].diaryId").value(
             diaryId2.toString()))
         .andExpect(jsonPath("$.content[1].date").value(response2.getDate().toString()))
-        .andExpect(jsonPath("$.content[1].primaryEmotion").value(response2.getPrimaryEmotion()))
+        .andExpect(jsonPath("$.content[1].primaryEmotion",
+            hasItem(response1.getPrimaryEmotion().get(0))))
+        .andExpect(jsonPath("$.content[1].primaryEmotion",
+            hasItem(response1.getPrimaryEmotion().get(1))))
+        .andExpect(jsonPath("$.content[1].primaryEmotion",
+            hasItem(response1.getPrimaryEmotion().get(2))))
         .andExpect(jsonPath("$.content[1].emotionScore").value(response2.getEmotionScore()))
         .andExpect(jsonPath("$.content[1].analysisContent").value(response2.getAnalysisContent()))
         .andExpect(jsonPath("$.content[1].createdAt").exists())
@@ -274,7 +293,7 @@ class EmotionAnalysisControllerTest {
         .emotionAnalysisId(emotionAnalysisId1)
         .diaryId(diaryId1)
         .date(LocalDate.of(2024, 10, 1))
-        .primaryEmotion("행복, 여유, 만족")
+        .primaryEmotion(List.of("행복", "감사", "만족"))
         .emotionScore(9)
         .analysisContent("행복해보이십니다.")
         .createdAt(LocalDateTime.now())
@@ -285,7 +304,7 @@ class EmotionAnalysisControllerTest {
         .emotionAnalysisId(emotionAnalysisId2)
         .diaryId(diaryId2)
         .date(LocalDate.of(2024, 10, 10))
-        .primaryEmotion("걱정, 초조, 불안")
+        .primaryEmotion(List.of("행복", "감사", "만족"))
         .emotionScore(2)
         .analysisContent("불안해보이십니다.")
         .createdAt(LocalDateTime.now())
@@ -314,7 +333,12 @@ class EmotionAnalysisControllerTest {
         .andExpect(jsonPath("$.content[0].diaryId").value(
             diaryId1.toString()))
         .andExpect(jsonPath("$.content[0].date").value(response1.getDate().toString()))
-        .andExpect(jsonPath("$.content[0].primaryEmotion").value(response1.getPrimaryEmotion()))
+        .andExpect(jsonPath("$.content[0].primaryEmotion",
+            hasItem(response1.getPrimaryEmotion().get(0))))
+        .andExpect(jsonPath("$.content[0].primaryEmotion",
+            hasItem(response1.getPrimaryEmotion().get(1))))
+        .andExpect(jsonPath("$.content[0].primaryEmotion",
+            hasItem(response1.getPrimaryEmotion().get(2))))
         .andExpect(jsonPath("$.content[0].emotionScore").value(response1.getEmotionScore()))
         .andExpect(jsonPath("$.content[0].analysisContent").value(response1.getAnalysisContent()))
         .andExpect(jsonPath("$.content[0].createdAt").exists())
@@ -324,7 +348,12 @@ class EmotionAnalysisControllerTest {
         .andExpect(jsonPath("$.content[1].diaryId").value(
             diaryId2.toString()))
         .andExpect(jsonPath("$.content[1].date").value(response2.getDate().toString()))
-        .andExpect(jsonPath("$.content[1].primaryEmotion").value(response2.getPrimaryEmotion()))
+        .andExpect(jsonPath("$.content[1].primaryEmotion",
+            hasItem(response1.getPrimaryEmotion().get(0))))
+        .andExpect(jsonPath("$.content[1].primaryEmotion",
+            hasItem(response1.getPrimaryEmotion().get(1))))
+        .andExpect(jsonPath("$.content[1].primaryEmotion",
+            hasItem(response1.getPrimaryEmotion().get(2))))
         .andExpect(jsonPath("$.content[1].emotionScore").value(response2.getEmotionScore()))
         .andExpect(jsonPath("$.content[1].analysisContent").value(response2.getAnalysisContent()))
         .andExpect(jsonPath("$.content[1].createdAt").exists())
