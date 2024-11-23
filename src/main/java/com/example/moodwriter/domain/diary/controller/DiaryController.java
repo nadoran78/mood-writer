@@ -4,6 +4,7 @@ import com.example.moodwriter.domain.diary.dto.DiaryAutoSaveRequest;
 import com.example.moodwriter.domain.diary.dto.DiaryCreateRequest;
 import com.example.moodwriter.domain.diary.dto.DiaryFinalSaveRequest;
 import com.example.moodwriter.domain.diary.dto.DiaryResponse;
+import com.example.moodwriter.domain.diary.dto.DiaryTempExistsResponse;
 import com.example.moodwriter.domain.diary.service.DiaryService;
 import com.example.moodwriter.global.constant.SortOrder;
 import com.example.moodwriter.global.security.dto.CustomUserDetails;
@@ -119,5 +120,15 @@ public class DiaryController {
     diaryService.deleteDiary(diaryId, userDetails.getId());
     return ResponseEntity.noContent().build();
   }
+
+  @GetMapping("/temp-exists")
+  public ResponseEntity<DiaryTempExistsResponse> checkTempExistsByDate(
+      @RequestParam LocalDate date,
+      @AuthenticationPrincipal CustomUserDetails userDetails) {
+    DiaryTempExistsResponse response = diaryService.checkTempExistsByDate(
+        date, userDetails.getId());
+    return ResponseEntity.ok(response);
+  }
+
 
 }
