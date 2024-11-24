@@ -5,6 +5,7 @@ import com.example.moodwriter.domain.diary.dto.DiaryAutoSaveRequest;
 import com.example.moodwriter.domain.diary.dto.DiaryCreateRequest;
 import com.example.moodwriter.domain.diary.dto.DiaryFinalSaveRequest;
 import com.example.moodwriter.domain.diary.dto.DiaryResponse;
+import com.example.moodwriter.domain.diary.dto.DiaryTempExistsResponse;
 import com.example.moodwriter.domain.diary.entity.Diary;
 import com.example.moodwriter.domain.diary.exception.DiaryException;
 import com.example.moodwriter.domain.emotion.dao.EmotionAnalysisRepository;
@@ -14,6 +15,7 @@ import com.example.moodwriter.domain.user.entity.User;
 import com.example.moodwriter.domain.user.exception.UserException;
 import com.example.moodwriter.global.exception.code.ErrorCode;
 import java.time.LocalDate;
+import java.util.Optional;
 import java.util.UUID;
 import lombok.RequiredArgsConstructor;
 import org.springframework.data.domain.Pageable;
@@ -177,6 +179,23 @@ public class DiaryService {
     }
 
     return diary;
+  }
+
+  @Transactional(readOnly = true)
+  public DiaryTempExistsResponse checkTempExistsByDate(LocalDate date, UUID userId) {
+    User user = userRepository.findById(userId)
+        .orElseThrow(() -> new UserException(ErrorCode.NOT_FOUND_USER));
+
+    Diary diary = diaryRepository
+        .findFirstByUserAndDateAndIsTempTrueAndIsDeletedFalseOrderByUpdatedAtDesc(
+            user, date)
+        .orElse(null);
+
+    if (diary == null) {
+      return DiaryTempExistsResponse.makeFalseResponse();
+    } else {
+      return DiaryTempExistsResponse.makeTrueResponse(diary.getId());
+    }
   }
 
 }

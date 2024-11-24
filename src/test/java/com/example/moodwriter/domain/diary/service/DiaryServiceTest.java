@@ -12,12 +12,14 @@ import static org.mockito.BDDMockito.given;
 import static org.mockito.Mockito.mock;
 import static org.mockito.Mockito.spy;
 import static org.mockito.Mockito.verify;
+import static org.mockito.Mockito.verifyNoInteractions;
 
 import com.example.moodwriter.domain.diary.dao.DiaryRepository;
 import com.example.moodwriter.domain.diary.dto.DiaryAutoSaveRequest;
 import com.example.moodwriter.domain.diary.dto.DiaryCreateRequest;
 import com.example.moodwriter.domain.diary.dto.DiaryFinalSaveRequest;
 import com.example.moodwriter.domain.diary.dto.DiaryResponse;
+import com.example.moodwriter.domain.diary.dto.DiaryTempExistsResponse;
 import com.example.moodwriter.domain.diary.entity.Diary;
 import com.example.moodwriter.domain.diary.exception.DiaryException;
 import com.example.moodwriter.domain.emotion.dao.EmotionAnalysisRepository;
@@ -953,5 +955,73 @@ class DiaryServiceTest {
         () -> diaryService.getAllMyDiaries(pageable, userId));
 
     assertEquals(ErrorCode.NOT_FOUND_USER, userException.getErrorCode());
+  }
+
+  @Test
+  void checkTempExistsByDate_shouldReturnFalseResponse_whenNoDiaryFound() {
+    // given
+    LocalDate testDate = LocalDate.of(2024, 11, 23);
+    UUID userId = UUID.randomUUID();
+    User mockUser = mock(User.class);
+
+    given(userRepository.findById(userId))
+        .willReturn(Optional.of(mockUser));
+    given(diaryRepository.findFirstByUserAndDateAndIsTempTrueAndIsDeletedFalseOrderByUpdatedAtDesc(
+            mockUser, testDate)).willReturn(Optional.empty());
+
+    // when
+    DiaryTempExistsResponse response = diaryService.checkTempExistsByDate(testDate, userId);
+
+    // then
+    assertFalse(response.isTempExists());
+    assertNull(response.getDiaryId());
+    verify(userRepository).findById(userId);
+    verify(diaryRepository).findFirstByUserAndDateAndIsTempTrueAndIsDeletedFalseOrderByUpdatedAtDesc(
+        mockUser, testDate);
+  }
+
+  @Test
+  void checkTempExistsByDate_shouldReturnTrueResponse_whenDiaryFound() {
+    // given
+    LocalDate testDate = LocalDate.of(2024, 11, 23);
+    UUID userId = UUID.randomUUID();
+    UUID diaryId = UUID.randomUUID();
+    User mockUser = mock(User.class);
+    Diary mockDiary = mock(Diary.class);
+
+    given(userRepository.findById(userId))
+        .willReturn(Optional.of(mockUser));
+    given(mockDiary.getId()).willReturn(diaryId);
+    given(diaryRepository.findFirstByUserAndDateAndIsTempTrueAndIsDeletedFalseOrderByUpdatedAtDesc(
+        mockUser, testDate)).willReturn(Optional.of(mockDiary));
+
+    // when
+    DiaryTempExistsResponse response = diaryService.checkTempExistsByDate(testDate, userId);
+
+    // then
+    assertTrue(response.isTempExists());
+    assertEquals(mockDiary.getId(), response.getDiaryId());
+    verify(userRepository).findById(userId);
+    verify(diaryRepository).findFirstByUserAndDateAndIsTempTrueAndIsDeletedFalseOrderByUpdatedAtDesc(
+        mockUser, testDate);
+  }
+
+  @Test
+  void checkTempExistsByDate_shouldThrowException_whenUserNotFound() {
+    // given
+    LocalDate testDate = LocalDate.of(2024, 11, 23);
+    UUID userId = UUID.randomUUID();
+
+    given(userRepository.findById(userId))
+        .willReturn(Optional.empty());
+
+    // when & then
+    UserException exception = assertThrows(UserException.class, () ->
+        diaryService.checkTempExistsByDate(testDate, userId)
+    );
+
+    assertEquals(ErrorCode.NOT_FOUND_USER, exception.getErrorCode());
+    verify(userRepository).findById(userId);
+    verifyNoInteractions(diaryRepository);
   }
 }

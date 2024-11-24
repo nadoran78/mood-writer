@@ -3,6 +3,7 @@ package com.example.moodwriter.domain.diary.dao;
 import com.example.moodwriter.domain.diary.entity.Diary;
 import com.example.moodwriter.domain.user.entity.User;
 import java.time.LocalDate;
+import java.util.Optional;
 import java.util.UUID;
 import org.springframework.data.domain.Pageable;
 import org.springframework.data.domain.Slice;
@@ -15,4 +16,5 @@ public interface DiaryRepository extends JpaRepository<Diary, UUID> {
   Slice<Diary> findByDateBetweenAndIsDeletedFalseAndIsTempFalseAndUser(LocalDate startDate,
       LocalDate endDate, User user, Pageable pageable);
   Slice<Diary> findAllByUserAndIsDeletedFalseAndIsTempFalse(User user, Pageable pageable);
+  Optional<Diary> findFirstByUserAndDateAndIsTempTrueAndIsDeletedFalseOrderByUpdatedAtDesc(User user, LocalDate date);
 }
