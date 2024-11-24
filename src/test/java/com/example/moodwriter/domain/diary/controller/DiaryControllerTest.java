@@ -19,6 +19,7 @@ import com.example.moodwriter.domain.diary.dto.DiaryAutoSaveRequest;
 import com.example.moodwriter.domain.diary.dto.DiaryCreateRequest;
 import com.example.moodwriter.domain.diary.dto.DiaryFinalSaveRequest;
 import com.example.moodwriter.domain.diary.dto.DiaryResponse;
+import com.example.moodwriter.domain.diary.dto.DiaryTempExistsResponse;
 import com.example.moodwriter.domain.diary.service.DiaryService;
 import com.example.moodwriter.domain.user.entity.User;
 import com.example.moodwriter.global.jwt.JwtAuthenticationToken;
@@ -780,5 +781,62 @@ class DiaryControllerTest {
         .andExpect(jsonPath("$.errorCode").value("METHOD_ARGUMENT_TYPE_MISMATCHED"))
         .andExpect(jsonPath("$.message").value("함수의 argument의 타입이 일치하지 않습니다."))
         .andExpect(jsonPath("$.path").value("/api/diaries/all"));
+  }
+
+  @Test
+  void successCheckTempExistsByDate_whenTempExists() throws Exception {
+    // given
+    LocalDate date = LocalDate.of(2024, 11, 23);
+    UUID diaryId = UUID.randomUUID();
+    DiaryTempExistsResponse response = DiaryTempExistsResponse.makeTrueResponse(diaryId);
+
+    given(diaryService.checkTempExistsByDate(date, userId))
+        .willReturn(response);
+
+    // when & then
+    mockMvc.perform(get("/api/diaries/temp-exists")
+            .param("date", date.toString()))
+        .andDo(print())
+        .andExpect(status().isOk())
+        .andExpect(jsonPath("$.tempExists").value(true))
+        .andExpect(jsonPath("$.diaryId").value(diaryId.toString()));
+  }
+
+  @Test
+  void successCheckTempExistsByDate_whenTempDoesNotExists() throws Exception {
+    // given
+    LocalDate date = LocalDate.of(2024, 11, 23);
+    DiaryTempExistsResponse response = DiaryTempExistsResponse.makeFalseResponse();
+
+    given(diaryService.checkTempExistsByDate(date, userId))
+        .willReturn(response);
+
+    // when & then
+    mockMvc.perform(get("/api/diaries/temp-exists")
+            .param("date", date.toString()))
+        .andDo(print())
+        .andExpect(status().isOk())
+        .andExpect(jsonPath("$.tempExists").value(false))
+        .andExpect(jsonPath("$.diaryId").isEmpty());
+  }
+
+  @Test
+  void checkTempExistsByDate_returnMethodArgumentTypeMismatchedException_whenInputInvalidDate()
+      throws Exception {
+    // given
+    LocalDate date = LocalDate.of(2024, 11, 23);
+    DiaryTempExistsResponse response = DiaryTempExistsResponse.makeFalseResponse();
+
+    given(diaryService.checkTempExistsByDate(date, userId))
+        .willReturn(response);
+
+    // when & then
+    mockMvc.perform(get("/api/diaries/temp-exists")
+            .param("date", "2024.11.23"))
+        .andDo(print())
+        .andExpect(status().isBadRequest())
+        .andExpect(jsonPath("$.errorCode").value("METHOD_ARGUMENT_TYPE_MISMATCHED"))
+        .andExpect(jsonPath("$.message").value("함수의 argument의 타입이 일치하지 않습니다."))
+        .andExpect(jsonPath("$.path").value("/api/diaries/temp-exists"));
   }
 }

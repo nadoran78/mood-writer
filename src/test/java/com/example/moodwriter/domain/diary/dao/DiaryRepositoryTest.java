@@ -1,6 +1,7 @@
 package com.example.moodwriter.domain.diary.dao;
 
 import static org.junit.jupiter.api.Assertions.assertEquals;
+import static org.junit.jupiter.api.Assertions.assertFalse;
 import static org.junit.jupiter.api.Assertions.assertTrue;
 
 import com.example.moodwriter.domain.diary.entity.Diary;
@@ -8,6 +9,7 @@ import com.example.moodwriter.domain.user.dao.UserRepository;
 import com.example.moodwriter.domain.user.entity.User;
 import com.fasterxml.jackson.databind.ObjectMapper;
 import java.time.LocalDate;
+import java.util.Optional;
 import org.junit.jupiter.api.BeforeEach;
 import org.junit.jupiter.api.Test;
 import org.springframework.beans.factory.annotation.Autowired;
@@ -133,5 +135,127 @@ class DiaryRepositoryTest {
     assertEquals(LocalDate.of(2024, 10, 5), diaries.getContent().get(1).getDate());
     assertEquals(LocalDate.of(2024, 10, 1), diaries.getContent().get(2).getDate());
 
+  }
+
+  @Test
+  void successFindFirstByUserAndDateAndIsTempTrueAndIsDeletedFalseOrderByUpdatedAtDesc() {
+    // given
+    LocalDate date = LocalDate.of(2024, 10, 5);
+
+    Diary diary7 = Diary.builder()
+        .date(date)
+        .user(user)
+        .isDeleted(false)
+        .isTemp(true)
+        .build();
+    diaryRepository.save(diary7);
+
+    // when
+    Optional<Diary> result = diaryRepository
+        .findFirstByUserAndDateAndIsTempTrueAndIsDeletedFalseOrderByUpdatedAtDesc(user, date);
+
+    // then
+    assertTrue(result.isPresent());
+    assertEquals(diary7, result.get());
+  }
+
+  @Test
+  void findFirstByUserAndDateAndIsTempTrueAndIsDeletedFalseOrderByUpdatedAtDesc_deleteDiaryExcluded() {
+    // given
+    LocalDate date = LocalDate.of(2024, 10, 5);
+
+    diaryRepository.deleteAll();
+
+    Diary diary = Diary.builder()
+        .date(date)
+        .user(user)
+        .isDeleted(true)
+        .isTemp(true)
+        .build();
+    diaryRepository.save(diary);
+
+    // when
+    Optional<Diary> result = diaryRepository
+        .findFirstByUserAndDateAndIsTempTrueAndIsDeletedFalseOrderByUpdatedAtDesc(user, date);
+
+    // then
+    assertFalse(result.isPresent());
+  }
+
+  @Test
+  void findFirstByUserAndDateAndIsTempTrueAndIsDeletedFalseOrderByUpdatedAtDesc_nonTempDiaryExcluded() {
+    // given
+    LocalDate date = LocalDate.of(2024, 10, 5);
+
+    diaryRepository.deleteAll();
+
+    Diary diary = Diary.builder()
+        .date(date)
+        .user(user)
+        .isDeleted(false)
+        .isTemp(false)
+        .build();
+    diaryRepository.save(diary);
+
+    // when
+    Optional<Diary> result = diaryRepository
+        .findFirstByUserAndDateAndIsTempTrueAndIsDeletedFalseOrderByUpdatedAtDesc(user, date);
+
+    // then
+    assertFalse(result.isPresent());
+  }
+
+  @Test
+  void findFirstByUserAndDateAndIsTempTrueAndIsDeletedFalseOrderByUpdatedAtDesc_dateMismatch() {
+    // given
+    LocalDate date = LocalDate.of(2024, 10, 5);
+
+    diaryRepository.deleteAll();
+
+    Diary diary = Diary.builder()
+        .date(date.minusDays(1))
+        .user(user)
+        .isDeleted(false)
+        .isTemp(true)
+        .build();
+    diaryRepository.save(diary);
+
+    // when
+    Optional<Diary> result = diaryRepository
+        .findFirstByUserAndDateAndIsTempTrueAndIsDeletedFalseOrderByUpdatedAtDesc(user, date);
+
+    // then
+    assertFalse(result.isPresent());
+  }
+
+  @Test
+  void findFirstByUserAndDateAndIsTempTrueAndIsDeletedFalseOrderByUpdatedAtDesc_userMismatch() {
+    // given
+    LocalDate date = LocalDate.of(2024, 10, 5);
+
+    diaryRepository.deleteAll();
+
+    Diary diary = Diary.builder()
+        .date(date)
+        .user(user)
+        .isDeleted(false)
+        .isTemp(true)
+        .build();
+    diaryRepository.save(diary);
+
+    User anotherUser = User.builder()
+        .email("test3@email.com")
+        .passwordHash("Password12!@")
+        .name("이름")
+        .build();
+    userRepository.save(anotherUser);
+
+
+    // when
+    Optional<Diary> result = diaryRepository
+        .findFirstByUserAndDateAndIsTempTrueAndIsDeletedFalseOrderByUpdatedAtDesc(anotherUser, date);
+
+    // then
+    assertFalse(result.isPresent());
   }
 }
