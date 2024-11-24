@@ -186,7 +186,8 @@ public class DiaryService {
     User user = userRepository.findById(userId)
         .orElseThrow(() -> new UserException(ErrorCode.NOT_FOUND_USER));
 
-    Diary diary = diaryRepository.findFirstByUserAndDateAndIsTempTrueOrderByUpdatedAtDesc(
+    Diary diary = diaryRepository
+        .findFirstByUserAndDateAndIsTempTrueAndIsDeletedFalseOrderByUpdatedAtDesc(
             user, date)
         .orElse(null);
 
