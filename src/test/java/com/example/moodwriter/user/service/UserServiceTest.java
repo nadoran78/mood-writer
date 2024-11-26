@@ -522,8 +522,6 @@ class UserServiceTest {
     assertEquals(response.getEmail(), tokenResponse.getEmail());
     assertEquals(response.getAccessToken(), tokenResponse.getAccessToken());
     assertEquals(response.getRefreshToken(), tokenResponse.getRefreshToken());
-
-    verify(tokenProvider).addBlackList(request.getAccessToken());
   }
 
   @Test

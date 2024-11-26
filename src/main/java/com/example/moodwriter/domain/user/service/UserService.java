@@ -131,10 +131,8 @@ public class UserService {
   }
 
   public TokenResponse reissueToken(TokenReissueRequest request) {
-    TokenResponse tokenResponse = tokenProvider.regenerateAccessToken(
+    return tokenProvider.regenerateAccessToken(
         request.getRefreshToken());
-    tokenProvider.addBlackList(request.getAccessToken());
-    return tokenResponse;
   }
 
   @Transactional
