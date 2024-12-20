@@ -43,6 +43,7 @@ public enum ErrorCode {
   NOT_FOUND_EMOTION_ANALYSIS(HttpStatus.NOT_FOUND, "감정분석 기록이 존재하지 않습니다."),
   ALREADY_DELETED_EMOTION_ANALYSIS(HttpStatus.FORBIDDEN, "이미 삭제된 감정분석 기록입니다."),
 
+  FCM_TOKEN_ALREADY_EXISTS(HttpStatus.CONFLICT, "이미 존재하는 fcm token 입니다."),
 
   ;
 
