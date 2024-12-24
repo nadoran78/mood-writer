@@ -1,0 +1,33 @@
+package com.example.moodwriter.domain.fcm.service;
+
+import com.example.moodwriter.domain.fcm.exception.FcmException;
+import com.example.moodwriter.global.exception.code.ErrorCode;
+import com.google.firebase.messaging.FirebaseMessaging;
+import com.google.firebase.messaging.FirebaseMessagingException;
+import com.google.firebase.messaging.Message;
+import com.google.firebase.messaging.Notification;
+import org.springframework.stereotype.Service;
+
+@Service
+public class FcmService {
+
+  // Todo 수정필요
+  public String sendNotification(String targetToken, String title, String body) {
+    try {
+      Message message = Message.builder()
+          .setToken(targetToken)
+          .setNotification(Notification.builder()
+              .setTitle(title)
+              .setBody(body)
+              .build())
+          .putData("route", "my-diaries")
+          .build();
+
+      String response = FirebaseMessaging.getInstance().send(message);
+
+      return "Notification sent successfully: " + response;
+    } catch (FirebaseMessagingException e) {
+      throw new FcmException(ErrorCode.FAIL_TO_SEND_FCM_MESSAGE);
+    }
+  }
+}

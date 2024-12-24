@@ -79,3 +79,22 @@ CREATE TABLE `fcm_token` (
                                     KEY `user_id` (`user_id`),
                                     CONSTRAINT `fcm_token_ibfk_1` FOREIGN KEY (`user_id`) REFERENCES `users` (`id`)
 ) ENGINE=InnoDB DEFAULT CHARSET=utf8mb4 COLLATE=utf8mb4_0900_ai_ci;
+
+CREATE TABLE notification (
+                                      `id` binary(16) PRIMARY KEY,
+                                      `title` VARCHAR(255) NOT NULL,
+                                      `body` TEXT NOT NULL,
+                                      `data` TEXT NOT NULL,
+                                      `created_at` datetime DEFAULT NULL,
+                                      `updated_at` datetime DEFAULT NULL
+) ENGINE=InnoDB DEFAULT CHARSET=utf8mb4 COLLATE=utf8mb4_0900_ai_ci;
+
+CREATE TABLE notification_recipient (
+                                        `id` binary(16) PRIMARY KEY,
+                                        `notification_id` binary(16) NOT NULL,
+                                        `user_id` binary(16) NOT NULL,
+                                        `is_read` BOOLEAN DEFAULT FALSE,
+                                        `read_at` TIMESTAMP NULL,
+                                        FOREIGN KEY (notification_id) REFERENCES notification(id),
+                                        FOREIGN KEY (user_id) REFERENCES users(id)
+) ENGINE=InnoDB DEFAULT CHARSET=utf8mb4 COLLATE=utf8mb4_0900_ai_ci;
