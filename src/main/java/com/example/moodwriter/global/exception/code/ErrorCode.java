@@ -46,6 +46,7 @@ public enum ErrorCode {
   FCM_TOKEN_ALREADY_EXISTS(HttpStatus.CONFLICT, "이미 존재하는 fcm token 입니다."),
 
   FAIL_TO_INITIALIZE_FIREBASE(HttpStatus.INTERNAL_SERVER_ERROR, "Firebase 초기화에 실패하였습니다."),
+  FAIL_TO_SEND_FCM_MESSAGE(HttpStatus.INTERNAL_SERVER_ERROR, "FCM 메시지 전송에 실패했습니다."),
   ;
 
   private final HttpStatus httpStatus;

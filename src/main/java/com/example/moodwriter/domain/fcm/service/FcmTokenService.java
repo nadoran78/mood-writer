@@ -4,7 +4,7 @@ import com.example.moodwriter.domain.fcm.dao.FcmTokenRepository;
 import com.example.moodwriter.domain.fcm.dto.FcmTokenRequest;
 import com.example.moodwriter.domain.fcm.dto.FcmTokenResponse;
 import com.example.moodwriter.domain.fcm.entity.FcmToken;
-import com.example.moodwriter.domain.fcm.exception.FcmTokenException;
+import com.example.moodwriter.domain.fcm.exception.FcmException;
 import com.example.moodwriter.domain.user.entity.User;
 import com.example.moodwriter.global.exception.code.ErrorCode;
 import jakarta.persistence.EntityManager;
@@ -28,7 +28,7 @@ public class FcmTokenService {
 
     if (existingToken != null) {
       if (existingToken.getFcmToken().equals(request.getFcmToken())) {
-        throw new FcmTokenException(ErrorCode.FCM_TOKEN_ALREADY_EXISTS);
+        throw new FcmException(ErrorCode.FCM_TOKEN_ALREADY_EXISTS);
       }
 
       existingToken.deactivate();
