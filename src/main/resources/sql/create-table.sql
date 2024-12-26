@@ -82,6 +82,7 @@ CREATE TABLE `fcm_token` (
 
 CREATE TABLE notification (
                                       `id` binary(16) PRIMARY KEY,
+                                      `topic` VARCHAR(55) NOT NULL,
                                       `title` VARCHAR(255) NOT NULL,
                                       `body` TEXT NOT NULL,
                                       `data` TEXT NOT NULL,
@@ -100,8 +101,12 @@ CREATE TABLE notification_recipient (
 ) ENGINE=InnoDB DEFAULT CHARSET=utf8mb4 COLLATE=utf8mb4_0900_ai_ci;
 
 CREATE TABLE notification_schedule (
-                                       `id` BINARY(16) PRIMARY KEY,
-                                       `recipient_id` BINARY(16) NOT NULL,
-                                       `scheduled_at` DATETIME NOT NULL,
+                                       id BINARY(16) PRIMARY KEY,
+                                       recipient_id BINARY(16) NOT NULL,
+                                       scheduled_time TIME NOT NULL,
+                                       is_active BOOLEAN NOT NULL DEFAULT TRUE,
+                                       `created_at` datetime DEFAULT NULL,
+                                       `updated_at` datetime DEFAULT NULL,
                                        FOREIGN KEY (recipient_id) REFERENCES notification_recipient(id)
 ) ENGINE=InnoDB DEFAULT CHARSET=utf8mb4 COLLATE=utf8mb4_0900_ai_ci;
+

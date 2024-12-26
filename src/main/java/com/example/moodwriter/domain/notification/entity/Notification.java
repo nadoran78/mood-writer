@@ -1,11 +1,14 @@
 package com.example.moodwriter.domain.notification.entity;
 
+import com.example.moodwriter.domain.notification.constant.NotificationTopic;
 import com.example.moodwriter.domain.notification.converter.MapToJsonConverter;
 import com.example.moodwriter.global.entity.BaseEntity;
 import jakarta.persistence.CascadeType;
 import jakarta.persistence.Column;
 import jakarta.persistence.Convert;
 import jakarta.persistence.Entity;
+import jakarta.persistence.EnumType;
+import jakarta.persistence.Enumerated;
 import jakarta.persistence.Id;
 import jakarta.persistence.OneToMany;
 import java.util.ArrayList;
@@ -27,6 +30,10 @@ public class Notification extends BaseEntity {
   @UuidGenerator
   @Column(columnDefinition = "BINARY(16)", updatable = false, nullable = false)
   private UUID id;
+
+  @Enumerated(EnumType.STRING)
+  @Column(name = "topic", nullable = false)
+  private NotificationTopic topic;
 
   @Column(name = "title", nullable = false, length = 255)
   private String title;
