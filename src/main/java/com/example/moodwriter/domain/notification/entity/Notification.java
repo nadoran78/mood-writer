@@ -49,7 +49,9 @@ public class Notification extends BaseEntity {
   private List<NotificationRecipient> recipients = new ArrayList<>();
 
   @Builder
-  public Notification(String title, String body, Map<String, String> data) {
+  public Notification(NotificationTopic topic, String title, String body,
+      Map<String, String> data) {
+    this.topic = topic;
     this.title = title;
     this.body = body;
     this.data = data;

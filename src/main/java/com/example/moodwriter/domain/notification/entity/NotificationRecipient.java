@@ -35,6 +35,9 @@ public class NotificationRecipient {
   @JoinColumn(name = "user_id", nullable = false)
   private User user;
 
+  @Column(name = "is_active", nullable = false)
+  private boolean isActive = true;
+
   @Column(name = "is_read", nullable = false)
   private boolean isRead = false;
 
@@ -47,9 +50,10 @@ public class NotificationRecipient {
   }
 
   @Builder
-  public NotificationRecipient(Notification notification, User user) {
+  public NotificationRecipient(Notification notification, User user, boolean isActive) {
     this.notification = notification;
     this.user = user;
+    this.isActive = isActive;
   }
 
 }

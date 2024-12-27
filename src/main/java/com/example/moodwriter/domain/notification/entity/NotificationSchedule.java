@@ -32,15 +32,10 @@ public class NotificationSchedule extends BaseEntity {
   @Column(name = "scheduled_time", nullable = false)
   private LocalTime scheduledTime;
 
-  @Column(name = "is_active", nullable = false)
-  private boolean isActive;
-
   @Builder
-  public NotificationSchedule(NotificationRecipient recipient, LocalTime scheduledTime,
-      boolean isActive) {
+  public NotificationSchedule(NotificationRecipient recipient, LocalTime scheduledTime) {
     this.recipient = recipient;
     this.scheduledTime = scheduledTime;
-    this.isActive = isActive;
   }
 
 }
