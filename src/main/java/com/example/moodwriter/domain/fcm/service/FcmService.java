@@ -6,13 +6,14 @@ import com.google.firebase.messaging.FirebaseMessaging;
 import com.google.firebase.messaging.FirebaseMessagingException;
 import com.google.firebase.messaging.Message;
 import com.google.firebase.messaging.Notification;
+import java.util.Map;
 import org.springframework.stereotype.Service;
 
 @Service
 public class FcmService {
 
-  // Todo 수정필요
-  public String sendNotification(String targetToken, String title, String body) {
+  public String sendNotificationByToken(String targetToken, String title, String body,
+      Map<String, String> data) {
     try {
       Message message = Message.builder()
           .setToken(targetToken)
@@ -20,7 +21,7 @@ public class FcmService {
               .setTitle(title)
               .setBody(body)
               .build())
-          .putData("route", "my-diaries")
+          .putAllData(data)
           .build();
 
       String response = FirebaseMessaging.getInstance().send(message);
