@@ -109,3 +109,21 @@ CREATE TABLE notification_schedule (
                                        `updated_at` datetime DEFAULT NULL,
                                        FOREIGN KEY (recipient_id) REFERENCES notification_recipient(id)
 ) ENGINE=InnoDB DEFAULT CHARSET=utf8mb4 COLLATE=utf8mb4_0900_ai_ci;
+
+INSERT INTO notification (
+    id,
+    topic,
+    title,
+    body,
+    data,
+    created_at,
+    updated_at
+) VALUES (
+             UNHEX(REPLACE(UUID(), '-', '')), -- UUID를 BINARY(16) 형식으로 변환
+             'daily_reminders',              -- topic
+             '일기를 작성해보세요!',          -- title
+             '오늘 하루의 기분과 생각을 일기에 적어보세요.', -- body
+             '{"route":"my-diaries"}', -- data (JSON 형식의 문자열)
+             NOW(),                          -- created_at
+             NOW()                           -- updated_at
+         );
