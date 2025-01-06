@@ -56,4 +56,20 @@ public class NotificationRecipient {
     this.isActive = isActive;
   }
 
+  public static NotificationRecipient from(Notification notification, User user) {
+    return NotificationRecipient.builder()
+        .notification(notification)
+        .user(user)
+        .isActive(true)
+        .build();
+  }
+
+  public void activate() {
+    this.isActive = true;
+  }
+
+  public void deactivate() {
+    this.isActive = false;
+  }
+
 }

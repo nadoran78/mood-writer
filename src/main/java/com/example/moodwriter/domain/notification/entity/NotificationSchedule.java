@@ -38,4 +38,8 @@ public class NotificationSchedule extends BaseEntity {
     this.scheduledTime = scheduledTime;
   }
 
+  public void updateScheduledTime(LocalTime newScheduledTime) {
+    this.scheduledTime = newScheduledTime;
+  }
+
 }
