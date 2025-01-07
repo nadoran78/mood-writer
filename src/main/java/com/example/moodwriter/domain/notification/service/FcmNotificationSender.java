@@ -27,7 +27,8 @@ public class FcmNotificationSender implements NotificationSender {
     Notification notification = recipient.getNotification();
 
     for (FcmToken fcmToken : fcmTokens) {
-      fcmService.sendNotificationByToken(fcmToken.getFcmToken(), notification.getTitle(),
+      fcmService.sendNotificationByToken(fcmToken.getFcmToken(),
+          notification.getTitle(),
           notification.getBody(), notification.getData());
     }
   }

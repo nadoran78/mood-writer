@@ -8,6 +8,7 @@ import lombok.RequiredArgsConstructor;
 import org.springframework.http.ResponseEntity;
 import org.springframework.security.core.annotation.AuthenticationPrincipal;
 import org.springframework.web.bind.annotation.PostMapping;
+import org.springframework.web.bind.annotation.RequestBody;
 import org.springframework.web.bind.annotation.RequestMapping;
 import org.springframework.web.bind.annotation.RestController;
 
@@ -19,9 +20,9 @@ public class NotificationSettingController {
   private final NotificationSettingService notificationSettingService;
 
   @PostMapping("/activate/daily-reminder")
-  public ResponseEntity<Void> activateDailyReminder(DailyReminderRequest request,
+  public ResponseEntity<Void> activateDailyReminder(@RequestBody DailyReminderRequest request,
       @AuthenticationPrincipal CustomUserDetails userDetails) {
-
+    notificationSettingService.activateDailyReminder(request, userDetails.getId());
     return ResponseEntity.ok().build();
   }
 
