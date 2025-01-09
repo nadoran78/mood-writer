@@ -68,9 +68,8 @@ class FcmServiceTest {
         mock(FirebaseMessagingException.class));
 
     // When & Then
-    FcmException exception = assertThrows(FcmException.class, () -> {
-      fcmService.sendNotificationByToken(targetToken, title, body, data);
-    });
+    FcmException exception = assertThrows(FcmException.class, () ->
+      fcmService.sendNotificationByToken(targetToken, title, body, data));
 
     assertEquals(ErrorCode.FAIL_TO_SEND_FCM_MESSAGE, exception.getErrorCode());
     verify(firebaseMessaging, times(1)).send(any(Message.class));
