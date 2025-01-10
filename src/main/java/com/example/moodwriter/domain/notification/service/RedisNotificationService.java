@@ -3,6 +3,7 @@ package com.example.moodwriter.domain.notification.service;
 import com.example.moodwriter.domain.notification.entity.NotificationSchedule;
 import java.time.LocalTime;
 import java.util.Set;
+import java.util.UUID;
 import lombok.RequiredArgsConstructor;
 import org.springframework.data.redis.core.RedisTemplate;
 import org.springframework.stereotype.Service;
@@ -43,8 +44,8 @@ public class RedisNotificationService {
    *
    * @param notificationScheduleId 알림 ID
    */
-  public void removeSentNotification(String notificationScheduleId) {
-    redisTemplate.opsForZSet().remove(REDIS_NOTIFICATION_KEY, notificationScheduleId);
+  public void removeSentNotification(UUID notificationScheduleId) {
+    redisTemplate.opsForZSet().remove(REDIS_NOTIFICATION_KEY, notificationScheduleId.toString());
   }
 
 
