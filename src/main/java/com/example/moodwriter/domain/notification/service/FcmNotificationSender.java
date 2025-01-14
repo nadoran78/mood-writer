@@ -8,8 +8,11 @@ import com.example.moodwriter.domain.notification.entity.NotificationRecipient;
 import com.example.moodwriter.domain.notification.entity.NotificationSchedule;
 import java.util.List;
 import lombok.RequiredArgsConstructor;
+import lombok.extern.slf4j.Slf4j;
+import org.springframework.scheduling.annotation.Async;
 import org.springframework.stereotype.Service;
 
+@Slf4j
 @Service
 @RequiredArgsConstructor
 public class FcmNotificationSender implements NotificationSender {
@@ -18,7 +21,10 @@ public class FcmNotificationSender implements NotificationSender {
   private final FcmTokenRepository fcmTokenRepository;
 
   @Override
+  @Async("notificationTaskExecutor")
   public void sendBySchedule(NotificationSchedule schedule) {
+    log.info("Sending notification by schedule: {}", schedule.getId());
+
     NotificationRecipient recipient = schedule.getRecipient();
 
     List<FcmToken> fcmTokens = fcmTokenRepository.findAllByUserAndIsActiveTrue(
