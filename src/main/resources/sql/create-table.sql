@@ -79,3 +79,51 @@ CREATE TABLE `fcm_token` (
                                     KEY `user_id` (`user_id`),
                                     CONSTRAINT `fcm_token_ibfk_1` FOREIGN KEY (`user_id`) REFERENCES `users` (`id`)
 ) ENGINE=InnoDB DEFAULT CHARSET=utf8mb4 COLLATE=utf8mb4_0900_ai_ci;
+
+CREATE TABLE notification (
+                                      `id` binary(16) PRIMARY KEY,
+                                      `topic` VARCHAR(55) NOT NULL,
+                                      `title` VARCHAR(255) NOT NULL,
+                                      `body` TEXT NOT NULL,
+                                      `data` TEXT NOT NULL,
+                                      `created_at` datetime DEFAULT NULL,
+                                      `updated_at` datetime DEFAULT NULL
+) ENGINE=InnoDB DEFAULT CHARSET=utf8mb4 COLLATE=utf8mb4_0900_ai_ci;
+
+CREATE TABLE notification_recipient (
+                                        `id` binary(16) PRIMARY KEY,
+                                        `notification_id` binary(16) NOT NULL,
+                                        `user_id` binary(16) NOT NULL,
+                                        `is_active` BOOLEAN NOT NULL DEFAULT TRUE,
+                                        `is_read` BOOLEAN DEFAULT FALSE,
+                                        `read_at` TIMESTAMP NULL,
+                                        FOREIGN KEY (notification_id) REFERENCES notification(id),
+                                        FOREIGN KEY (user_id) REFERENCES users(id)
+) ENGINE=InnoDB DEFAULT CHARSET=utf8mb4 COLLATE=utf8mb4_0900_ai_ci;
+
+CREATE TABLE notification_schedule (
+                                       id BINARY(16) PRIMARY KEY,
+                                       recipient_id BINARY(16) NOT NULL,
+                                       scheduled_time TIME NOT NULL,
+                                       `created_at` datetime DEFAULT NULL,
+                                       `updated_at` datetime DEFAULT NULL,
+                                       FOREIGN KEY (recipient_id) REFERENCES notification_recipient(id)
+) ENGINE=InnoDB DEFAULT CHARSET=utf8mb4 COLLATE=utf8mb4_0900_ai_ci;
+
+INSERT INTO notification (
+    id,
+    topic,
+    title,
+    body,
+    data,
+    created_at,
+    updated_at
+) VALUES (
+             UNHEX(REPLACE(UUID(), '-', '')), -- UUID를 BINARY(16) 형식으로 변환
+             'daily_reminders',              -- topic
+             '일기를 작성해보세요!',          -- title
+             '오늘 하루의 기분과 생각을 일기에 적어보세요.', -- body
+             '{"route":"my-diaries"}', -- data (JSON 형식의 문자열)
+             NOW(),                          -- created_at
+             NOW()                           -- updated_at
+         );

@@ -54,6 +54,9 @@ public class SecurityConfig {
             .requestMatchers("/api/diaries/**").hasRole(Role.ROLE_USER.getRole())
             .requestMatchers("/api/emotion-analysis/**").hasRole(Role.ROLE_USER.getRole())
 
+            .requestMatchers("/api/notifications/**").hasRole(Role.ROLE_USER.getRole())
+            .requestMatchers("/api/fcm-token/**").hasRole(Role.ROLE_USER.getRole())
+
             .anyRequest().authenticated())
 
         .exceptionHandling(exception -> {

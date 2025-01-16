@@ -50,6 +50,11 @@ dependencies {
     testImplementation 'com.squareup.okhttp3:mockwebserver'
 
     testImplementation 'com.h2database:h2'
+
+    implementation 'com.google.firebase:firebase-admin:9.2.0'
+
+    testImplementation 'org.testcontainers:testcontainers:1.19.0'
+    testImplementation 'org.testcontainers:junit-jupiter:1.19.0'
 }
 
 tasks.named('test') {

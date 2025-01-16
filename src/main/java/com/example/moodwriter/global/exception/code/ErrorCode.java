@@ -45,6 +45,12 @@ public enum ErrorCode {
 
   FCM_TOKEN_ALREADY_EXISTS(HttpStatus.CONFLICT, "이미 존재하는 fcm token 입니다."),
 
+  FAIL_TO_INITIALIZE_FIREBASE(HttpStatus.INTERNAL_SERVER_ERROR, "Firebase 초기화에 실패하였습니다."),
+  FAIL_TO_SEND_FCM_MESSAGE(HttpStatus.INTERNAL_SERVER_ERROR, "FCM 메시지 전송에 실패했습니다."),
+
+  NOT_FOUND_NOTIFICATION(HttpStatus.NOT_FOUND, "TOPIC 과 일치하는 알림이 존재하지 않습니다."),
+  NOT_FOUND_NOTIFICATION_SCHEDULE(HttpStatus.NOT_FOUND, "해당 알림 스케쥴이 존재하지 않습니다."),
+  NOT_FOUND_NOTIFICATION_RECIPIENT(HttpStatus.NOT_FOUND, "알림 수신자가 존재하지 않습니다."),
   ;
 
   private final HttpStatus httpStatus;

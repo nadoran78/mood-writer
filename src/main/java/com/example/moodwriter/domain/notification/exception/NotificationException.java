@@ -1,11 +1,13 @@
-package com.example.moodwriter.domain.fcm.exception;
+package com.example.moodwriter.domain.notification.exception;
 
 import com.example.moodwriter.global.exception.CustomException;
 import com.example.moodwriter.global.exception.code.ErrorCode;
+import lombok.Getter;
 
-public class FcmTokenException extends CustomException {
+@Getter
+public class NotificationException extends CustomException {
 
-  public FcmTokenException(
+  public NotificationException(
       ErrorCode errorCode) {
     super(errorCode);
   }
