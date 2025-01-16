@@ -16,14 +16,16 @@ public class FirebaseConfig {
   @PostConstruct
   public void initializeFirebaseApp() {
     try {
-      ClassPathResource resource =
-          new ClassPathResource("moodwriterFirebaseKey.json");
+      if (FirebaseApp.getApps().isEmpty()) {
+        ClassPathResource resource =
+            new ClassPathResource("moodwriterFirebaseKey.json");
 
-      FirebaseOptions options = FirebaseOptions.builder()
-          .setCredentials(GoogleCredentials.fromStream(resource.getInputStream()))
-          .build();
+        FirebaseOptions options = FirebaseOptions.builder()
+            .setCredentials(GoogleCredentials.fromStream(resource.getInputStream()))
+            .build();
 
-      FirebaseApp.initializeApp(options);
+        FirebaseApp.initializeApp(options);
+      }
     } catch (IOException e) {
       throw new CustomException(ErrorCode.FAIL_TO_INITIALIZE_FIREBASE);
     }
