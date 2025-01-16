@@ -28,6 +28,12 @@ spring:
   jwt:
     secret-key: ${JWT_SECRET_KEY}
 
+  rabbitmq:
+    host: localhost
+    port: 5672
+    username: ${RABBIT_MQ_USERNAME}
+    password: ${RABBIT_MQ_PASSWORD}
+
 cloud:
   aws:
     s3:
