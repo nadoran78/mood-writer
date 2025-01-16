@@ -1,6 +1,7 @@
 package com.example.moodwriter.domain.notification.service;
 
 import com.example.moodwriter.domain.notification.dao.NotificationScheduleRepository;
+import com.example.moodwriter.domain.notification.dto.NotificationScheduleDto;
 import java.time.LocalTime;
 import java.util.Set;
 import java.util.UUID;
@@ -28,7 +29,8 @@ public class NotificationScheduler {
 
     for (String id : notificationIds) {
       notificationScheduleRepository.findById(UUID.fromString(id))
-          .ifPresent(notificationSender::sendBySchedule);
+          .ifPresent(schedule -> notificationSender.sendBySchedule(
+              NotificationScheduleDto.from(schedule)));
       log.info("notification is sent. Notification id : {}", id);
     }
 

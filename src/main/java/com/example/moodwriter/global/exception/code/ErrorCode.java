@@ -50,6 +50,7 @@ public enum ErrorCode {
 
   NOT_FOUND_NOTIFICATION(HttpStatus.NOT_FOUND, "TOPIC 과 일치하는 알림이 존재하지 않습니다."),
   NOT_FOUND_NOTIFICATION_SCHEDULE(HttpStatus.NOT_FOUND, "해당 알림 스케쥴이 존재하지 않습니다."),
+  NOT_FOUND_NOTIFICATION_RECIPIENT(HttpStatus.NOT_FOUND, "알림 수신자가 존재하지 않습니다."),
   ;
 
   private final HttpStatus httpStatus;
