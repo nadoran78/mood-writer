@@ -1,5 +1,8 @@
 package com.example.moodwriter.domain.notification.service;
 
+import static org.junit.jupiter.api.Assertions.assertEquals;
+import static org.junit.jupiter.api.Assertions.assertThrows;
+import static org.mockito.ArgumentMatchers.any;
 import static org.mockito.ArgumentMatchers.anyMap;
 import static org.mockito.ArgumentMatchers.anyString;
 import static org.mockito.ArgumentMatchers.eq;
@@ -14,14 +17,20 @@ import static org.mockito.Mockito.verifyNoMoreInteractions;
 import com.example.moodwriter.domain.fcm.dao.FcmTokenRepository;
 import com.example.moodwriter.domain.fcm.entity.FcmToken;
 import com.example.moodwriter.domain.fcm.service.FcmService;
+import com.example.moodwriter.domain.notification.dao.NotificationRecipientRepository;
+import com.example.moodwriter.domain.notification.dto.NotificationScheduleDto;
 import com.example.moodwriter.domain.notification.entity.Notification;
 import com.example.moodwriter.domain.notification.entity.NotificationRecipient;
 import com.example.moodwriter.domain.notification.entity.NotificationSchedule;
+import com.example.moodwriter.domain.notification.exception.NotificationException;
 import com.example.moodwriter.domain.user.entity.User;
+import com.example.moodwriter.global.exception.code.ErrorCode;
 import java.time.LocalTime;
 import java.util.Collections;
 import java.util.List;
 import java.util.Map;
+import java.util.Optional;
+import java.util.UUID;
 import org.junit.jupiter.api.BeforeEach;
 import org.junit.jupiter.api.Test;
 import org.junit.jupiter.api.extension.ExtendWith;
@@ -37,6 +46,9 @@ class FcmNotificationSenderTest {
 
   @Mock
   private FcmTokenRepository fcmTokenRepository;
+
+  @Mock
+  private NotificationRecipientRepository notificationRecipientRepository;
 
   @InjectMocks
   private FcmNotificationSender fcmNotificationSender;
@@ -83,11 +95,14 @@ class FcmNotificationSenderTest {
         .build());
 
     fcmTokens = List.of(token1, token2);
+    given(recipient.getId()).willReturn(UUID.randomUUID());
   }
 
   @Test
   void sendBySchedule_shouldSendNotificationToAllTokens() {
     // Arrange
+    given(notificationRecipientRepository.findById(any(UUID.class)))
+        .willReturn(Optional.of(recipient));
     given(fcmTokenRepository.findAllByUserAndIsActiveTrue(recipient.getUser()))
         .willReturn(fcmTokens);
 
@@ -96,7 +111,7 @@ class FcmNotificationSenderTest {
     Map<String, String> notificationData = notification.getData();
 
     // Act
-    fcmNotificationSender.sendBySchedule(schedule);
+    fcmNotificationSender.sendBySchedule(NotificationScheduleDto.from(schedule));
 
     // Assert
     for (FcmToken token : fcmTokens) {
@@ -114,15 +129,32 @@ class FcmNotificationSenderTest {
   @Test
   void sendBySchedule_shouldHandleEmptyFcmTokens() {
     // Arrange
+    given(notificationRecipientRepository.findById(any(UUID.class)))
+        .willReturn(Optional.of(recipient));
     given(fcmTokenRepository.findAllByUserAndIsActiveTrue(recipient.getUser()))
         .willReturn(Collections.emptyList());
 
     // Act
-    fcmNotificationSender.sendBySchedule(schedule);
+    fcmNotificationSender.sendBySchedule(NotificationScheduleDto.from(schedule));
 
     // Assert
     verify(fcmService, never()).sendNotificationByToken(anyString(), anyString(),
         anyString(), anyMap());
+  }
+
+  @Test
+  void sendBySchedule_shouldThrowException_whenNotificationRecipientIsNotExist() {
+    // Arrange
+    given(notificationRecipientRepository.findById(any(UUID.class)))
+        .willReturn(Optional.empty());
+
+    // Act & Assert
+    NotificationException notificationException = assertThrows(
+        NotificationException.class, () -> fcmNotificationSender.sendBySchedule(
+            NotificationScheduleDto.from(schedule)));
+
+    assertEquals(ErrorCode.NOT_FOUND_NOTIFICATION_RECIPIENT,
+        notificationException.getErrorCode());
   }
 
 }

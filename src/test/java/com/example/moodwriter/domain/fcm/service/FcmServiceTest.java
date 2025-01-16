@@ -15,11 +15,13 @@ import com.google.firebase.messaging.FirebaseMessaging;
 import com.google.firebase.messaging.FirebaseMessagingException;
 import com.google.firebase.messaging.Message;
 import java.util.Map;
+import org.junit.jupiter.api.AfterEach;
 import org.junit.jupiter.api.BeforeEach;
 import org.junit.jupiter.api.Test;
 import org.junit.jupiter.api.extension.ExtendWith;
 import org.mockito.InjectMocks;
 import org.mockito.Mock;
+import org.mockito.MockedStatic;
 import org.mockito.junit.jupiter.MockitoExtension;
 
 @ExtendWith(MockitoExtension.class)
@@ -31,10 +33,18 @@ class FcmServiceTest {
   @InjectMocks
   private FcmService fcmService;
 
+  private MockedStatic<FirebaseMessaging> mockedFirebaseMessaging;
+
   @BeforeEach
-  void setUp() {
-    mockStatic(FirebaseMessaging.class).when(FirebaseMessaging::getInstance)
+  public void setUp() {
+    mockedFirebaseMessaging = mockStatic(FirebaseMessaging.class);
+    mockedFirebaseMessaging.when(FirebaseMessaging::getInstance)
         .thenReturn(firebaseMessaging);
+  }
+
+  @AfterEach
+  public void tearDown() {
+    mockedFirebaseMessaging.close();
   }
 
   @Test
@@ -69,7 +79,7 @@ class FcmServiceTest {
 
     // When & Then
     FcmException exception = assertThrows(FcmException.class, () ->
-      fcmService.sendNotificationByToken(targetToken, title, body, data));
+        fcmService.sendNotificationByToken(targetToken, title, body, data));
 
     assertEquals(ErrorCode.FAIL_TO_SEND_FCM_MESSAGE, exception.getErrorCode());
     verify(firebaseMessaging, times(1)).send(any(Message.class));
