@@ -7,7 +7,6 @@ import com.example.moodwriter.domain.notification.dao.NotificationRecipientRepos
 import com.example.moodwriter.domain.notification.dto.NotificationScheduleDto;
 import com.example.moodwriter.domain.notification.entity.Notification;
 import com.example.moodwriter.domain.notification.entity.NotificationRecipient;
-import com.example.moodwriter.domain.notification.entity.NotificationSchedule;
 import com.example.moodwriter.domain.notification.exception.NotificationException;
 import com.example.moodwriter.global.exception.code.ErrorCode;
 import java.util.List;
