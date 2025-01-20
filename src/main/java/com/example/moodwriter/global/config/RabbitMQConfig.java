@@ -29,7 +29,8 @@ public class RabbitMQConfig {
   }
 
   @Bean
-  public RabbitListenerContainerFactory<?> rabbitListenerContainerFactory(ConnectionFactory connectionFactory) {
+  public RabbitListenerContainerFactory<?> rabbitListenerContainerFactory(
+      ConnectionFactory connectionFactory) {
     SimpleRabbitListenerContainerFactory factory = new SimpleRabbitListenerContainerFactory();
     factory.setConnectionFactory(connectionFactory);
     factory.setMessageConverter(jsonMessageConverter());
@@ -52,7 +53,8 @@ public class RabbitMQConfig {
   }
 
   @Bean
-  public Binding notificationBinding(Queue notificationQueue, TopicExchange notificationExchange) {
+  public Binding notificationBinding(Queue notificationQueue,
+      TopicExchange notificationExchange) {
     return BindingBuilder.bind(notificationQueue)
         .to(notificationExchange)
         .with(NOTIFICATION_ROUTING_KEY);
