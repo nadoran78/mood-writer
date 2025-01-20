@@ -2,6 +2,7 @@ package com.example.moodwriter.domain.notification.service;
 
 import static org.junit.jupiter.api.Assertions.assertEquals;
 import static org.mockito.ArgumentMatchers.any;
+import static org.mockito.ArgumentMatchers.eq;
 import static org.mockito.BDDMockito.given;
 import static org.mockito.Mockito.mock;
 import static org.mockito.Mockito.spy;
@@ -64,17 +65,17 @@ class NotificationSchedulerTest {
     Set<String> notificationIds = Set.of(notification1Id.toString(),
         notification2Id.toString());
 
-    given(
-        redisNotificationService.getNotificationsToSend(any(LocalTime.class))).willReturn(
-        notificationIds);
-    given(notificationScheduleRepository.findById(notification1Id)).willReturn(
-        Optional.of(schedule1));
-    given(notificationScheduleRepository.findById(notification2Id)).willReturn(
-        Optional.of(schedule2));
     given(recipient1.getId()).willReturn(recipient1Id);
     given(recipient2.getId()).willReturn(recipient2Id);
     given(schedule1.getId()).willReturn(schedule1Id);
     given(schedule2.getId()).willReturn(schedule2Id);
+    given(
+        redisNotificationService.getNotificationsToSend(any(LocalTime.class))).willReturn(
+        notificationIds);
+    given(notificationScheduleRepository.findById(eq(notification1Id))).willReturn(
+        Optional.of(schedule1));
+    given(notificationScheduleRepository.findById(eq(notification2Id))).willReturn(
+        Optional.of(schedule2));
 
     // Act
     notificationScheduler.processNotifications();
@@ -95,8 +96,6 @@ class NotificationSchedulerTest {
 
     NotificationScheduleDto scheduleDto1 = capturedDtos.get(0);
     NotificationScheduleDto scheduleDto2 = capturedDtos.get(1);
-    assertEquals(scheduleDto1.getId(), schedule1.getId());
-    assertEquals(scheduleDto2.getId(), schedule2.getId());
     assertEquals(scheduleDto1.getRecipientId(), recipient1Id);
     assertEquals(scheduleDto2.getRecipientId(), recipient2Id);
     assertEquals(scheduleDto1.getId(), schedule1.getId());
