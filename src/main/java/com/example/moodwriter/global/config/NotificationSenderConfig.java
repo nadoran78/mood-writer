@@ -32,17 +32,4 @@ public class NotificationSenderConfig {
       return new FcmNotificationSender(fcmService, fcmTokenRepository, notificationRecipientRepository);
     }
   }
-//
-//  @Bean
-//  @ConditionalOnProperty(name = "spring.fcm.enabled", havingValue = "true", matchIfMissing = true)
-//  public NotificationSender fcmNotificationSender() {
-//    return new FcmNotificationSender(fcmService, fcmTokenRepository,
-//        notificationRecipientRepository);
-//  }
-//
-//  @Bean
-//  public NotificationSender notificationSender(RabbitTemplate rabbitTemplate) {
-//    return new RabbitMQNotificationSender(rabbitTemplate);
-//  }
-
 }
