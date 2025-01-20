@@ -5,4 +5,6 @@ spring:
   # default
   profiles:
     active: local
+    include:
+      - rabbitmq
 

@@ -28,12 +28,6 @@ spring:
   jwt:
     secret-key: ${JWT_SECRET_KEY}
 
-  rabbitmq:
-    host: localhost
-    port: 5672
-    username: ${RABBIT_MQ_USERNAME}
-    password: ${RABBIT_MQ_PASSWORD}
-
 cloud:
   aws:
     s3:
@@ -50,3 +44,6 @@ cloud:
   open-ai:
     url: https://api.openai.com/v1/chat/completions
     secret-key: ${OPEN_AI_SECRET_KEY}
+
+notification:
+  sender: fcm
