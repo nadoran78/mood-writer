@@ -44,3 +44,6 @@ cloud:
   open-ai:
     url: https://api.openai.com/v1/chat/completions
     secret-key: ${OPEN_AI_SECRET_KEY}
+
+notification:
+  sender: fcm
