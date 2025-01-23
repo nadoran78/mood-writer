@@ -15,17 +15,10 @@ import static org.mockito.Mockito.never;
 import static org.mockito.Mockito.spy;
 import static org.mockito.Mockito.verify;
 
-import com.example.moodwriter.domain.user.dto.SocialLoginRequest;
-import com.example.moodwriter.domain.user.service.UserService;
-import com.example.moodwriter.global.constant.FilePath;
-import com.example.moodwriter.global.constant.Role;
-import com.example.moodwriter.global.constant.SocialProvider;
-import com.example.moodwriter.global.s3.dto.FileDto;
-import com.example.moodwriter.global.exception.code.ErrorCode;
-import com.example.moodwriter.global.jwt.TokenProvider;
-import com.example.moodwriter.global.jwt.dto.TokenResponse;
-import com.example.moodwriter.global.s3.service.S3FileService;
+import com.example.moodwriter.domain.notification.dto.DailyReminderRequest;
+import com.example.moodwriter.domain.notification.service.NotificationSettingService;
 import com.example.moodwriter.domain.user.dao.UserRepository;
+import com.example.moodwriter.domain.user.dto.SocialLoginRequest;
 import com.example.moodwriter.domain.user.dto.TokenReissueRequest;
 import com.example.moodwriter.domain.user.dto.UserLoginRequest;
 import com.example.moodwriter.domain.user.dto.UserRegisterRequest;
@@ -33,6 +26,15 @@ import com.example.moodwriter.domain.user.dto.UserResponse;
 import com.example.moodwriter.domain.user.dto.UserUpdateRequest;
 import com.example.moodwriter.domain.user.entity.User;
 import com.example.moodwriter.domain.user.exception.UserException;
+import com.example.moodwriter.domain.user.service.UserService;
+import com.example.moodwriter.global.constant.FilePath;
+import com.example.moodwriter.global.constant.Role;
+import com.example.moodwriter.global.constant.SocialProvider;
+import com.example.moodwriter.global.exception.code.ErrorCode;
+import com.example.moodwriter.global.jwt.TokenProvider;
+import com.example.moodwriter.global.jwt.dto.TokenResponse;
+import com.example.moodwriter.global.s3.dto.FileDto;
+import com.example.moodwriter.global.s3.service.S3FileService;
 import java.time.LocalDateTime;
 import java.util.ArrayList;
 import java.util.Collections;
@@ -63,6 +65,8 @@ class UserServiceTest {
 
   @Mock
   private TokenProvider tokenProvider;
+  @Mock
+  private NotificationSettingService notificationSettingService;
 
   @InjectMocks
   private UserService userService;
@@ -505,7 +509,8 @@ class UserServiceTest {
   void successReissueToken() {
     // given
     String email = "test@example.com";
-    TokenReissueRequest request = new TokenReissueRequest("access-token", "refresh-token");
+    TokenReissueRequest request = new TokenReissueRequest("access-token",
+        "refresh-token");
     TokenResponse response = TokenResponse.builder()
         .email(email)
         .accessToken("new-access-token")
@@ -557,6 +562,7 @@ class UserServiceTest {
     // then
     assertEquals(response, tokenResponse);
     verify(userRepository).findByEmail(request.getEmail());
+    verify(notificationSettingService, never()).activateDailyReminder(any(), any());
     verify(tokenProvider).generateTokenResponse(user.getEmail(),
         List.of(user.getRole().toString()));
 
@@ -591,6 +597,8 @@ class UserServiceTest {
     assertEquals(response, tokenResponse);
     verify(userRepository).findByEmail(request.getEmail());
     verify(userRepository).save(any(User.class));
+    verify(notificationSettingService).activateDailyReminder(
+        any(DailyReminderRequest.class), any());
     verify(tokenProvider).generateTokenResponse(request.getEmail(),
         List.of(Role.ROLE_USER.toString()));
 
