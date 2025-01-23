@@ -1,5 +1,7 @@
 package com.example.moodwriter.domain.user.service;
 
+import com.example.moodwriter.domain.notification.dto.DailyReminderRequest;
+import com.example.moodwriter.domain.notification.service.NotificationSettingService;
 import com.example.moodwriter.domain.user.dao.UserRepository;
 import com.example.moodwriter.domain.user.dto.SocialLoginRequest;
 import com.example.moodwriter.global.constant.FilePath;
@@ -31,6 +33,7 @@ public class UserService {
   private final PasswordEncoder passwordEncoder;
   private final S3FileService s3FileService;
   private final TokenProvider tokenProvider;
+  private final NotificationSettingService notificationSettingService;
 
   @Transactional
   public UserResponse registerUser(UserRegisterRequest request) {
@@ -138,9 +141,20 @@ public class UserService {
   @Transactional
   public TokenResponse loginBySocialProvider(SocialLoginRequest request) {
     User user = userRepository.findByEmail(request.getEmail())
-        .orElse(User.from(request));
+        .orElse(null);
+
+    boolean isFirst = false;
+    if (user == null) {
+      user = User.from(request);
+      isFirst = true;
+    }
 
     User savedUser = userRepository.save(user);
+
+    if (isFirst) {
+      notificationSettingService.activateDailyReminder(
+          DailyReminderRequest.firstRequest(), savedUser.getId());
+    }
 
     return tokenProvider.generateTokenResponse(savedUser.getEmail(),
         List.of(savedUser.getRole().toString()));

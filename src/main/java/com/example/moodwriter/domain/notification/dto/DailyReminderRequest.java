@@ -16,4 +16,11 @@ public class DailyReminderRequest {
 
   @NotNull
   private LocalTime remindTime;
+
+  public static DailyReminderRequest firstRequest() {
+    return DailyReminderRequest.builder()
+        .isActivate(true)
+        .remindTime(LocalTime.of(18, 0))
+        .build();
+  }
 }
