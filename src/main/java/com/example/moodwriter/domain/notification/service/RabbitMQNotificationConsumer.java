@@ -10,6 +10,7 @@ import com.example.moodwriter.domain.notification.entity.NotificationRecipient;
 import com.example.moodwriter.domain.notification.exception.NotificationException;
 import com.example.moodwriter.global.config.RabbitMQConfig;
 import com.example.moodwriter.global.exception.code.ErrorCode;
+import java.time.LocalDateTime;
 import java.util.List;
 import lombok.RequiredArgsConstructor;
 import lombok.extern.slf4j.Slf4j;
@@ -43,9 +44,11 @@ public class RabbitMQNotificationConsumer {
     Notification notification = recipient.getNotification();
 
     for (FcmToken fcmToken : fcmTokens) {
+      fcmToken.setLastUsedAt(LocalDateTime.now());
       fcmService.sendNotificationByToken(fcmToken.getFcmToken(),
           notification.getTitle(),
           notification.getBody(), notification.getData());
+      fcmTokenRepository.save(fcmToken);
     }
   }
 

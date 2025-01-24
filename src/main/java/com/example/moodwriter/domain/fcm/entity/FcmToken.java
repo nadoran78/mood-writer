@@ -79,4 +79,8 @@ public class FcmToken extends BaseEntity {
     this.fcmToken = request.getFcmToken();
     this.deviceType = request.getDeviceType();
   }
+
+  public void setLastUsedAt(LocalDateTime lastUsedAt) {
+    this.lastUsedAt = lastUsedAt;
+  }
 }
