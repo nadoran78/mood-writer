@@ -8,6 +8,7 @@ import com.example.moodwriter.domain.notification.service.NotificationSender;
 import com.example.moodwriter.domain.notification.service.RabbitMQNotificationSender;
 import lombok.extern.slf4j.Slf4j;
 import org.springframework.amqp.rabbit.core.RabbitTemplate;
+import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.beans.factory.annotation.Value;
 import org.springframework.context.annotation.Bean;
 import org.springframework.context.annotation.Configuration;
@@ -23,7 +24,7 @@ public class NotificationSenderConfig {
   public NotificationSender notificationSender(FcmService fcmService,
       FcmTokenRepository fcmTokenRepository,
       NotificationRecipientRepository notificationRecipientRepository,
-      RabbitTemplate rabbitTemplate) {
+      @Autowired(required = false) RabbitTemplate rabbitTemplate) {
     if (sender.equals("rabbitmq")) {
       log.info("notification sender is ready to work by rabbitmq sender");
       return new RabbitMQNotificationSender(rabbitTemplate);
