@@ -72,4 +72,11 @@ public class FcmToken extends BaseEntity {
         .isActive(true)
         .build();
   }
+
+  public void update(FcmTokenRequest request) {
+    this.isActive = true;
+    this.deviceId = request.getDeviceId();
+    this.fcmToken = request.getFcmToken();
+    this.deviceType = request.getDeviceType();
+  }
 }

@@ -28,11 +28,12 @@ public class FcmTokenService {
 
     if (existingToken != null) {
       if (existingToken.getFcmToken().equals(request.getFcmToken())) {
-        throw new FcmException(ErrorCode.FCM_TOKEN_ALREADY_EXISTS);
+        return FcmTokenResponse.from(existingToken);
       }
 
-      existingToken.deactivate();
-      fcmTokenRepository.save(existingToken);
+      existingToken.update(request);
+      FcmToken updatedToken = fcmTokenRepository.save(existingToken);
+      return FcmTokenResponse.from(updatedToken);
     }
 
     User userProxy = entityManager.getReference(User.class, userId);
