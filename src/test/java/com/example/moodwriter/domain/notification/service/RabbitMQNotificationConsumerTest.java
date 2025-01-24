@@ -1,6 +1,7 @@
 package com.example.moodwriter.domain.notification.service;
 
 import static org.junit.jupiter.api.Assertions.*;
+import static org.mockito.ArgumentMatchers.eq;
 import static org.mockito.BDDMockito.given;
 import static org.mockito.Mockito.mock;
 import static org.mockito.Mockito.times;
@@ -75,16 +76,24 @@ class RabbitMQNotificationConsumerTest {
         .build();
     given(recipient.getNotification()).willReturn(notification);
 
+    String notificationTitle = notification.getTitle();
+    String notificationBody = notification.getBody();
+    Map<String, String> notificationData = notification.getData();
+
     // when
     consumer.processNotification(schedule);
 
     // then
-    verify(fcmService, times(1))
-        .sendNotificationByToken(fcmToken1.getFcmToken(), notification.getTitle(),
-            notification.getBody(), notification.getData());
-    verify(fcmService, times(1))
-        .sendNotificationByToken(fcmToken2.getFcmToken(), notification.getTitle(),
-            notification.getBody(), notification.getData());
+    for (FcmToken token : fcmTokens) {
+      verify(fcmService, times(1)).sendNotificationByToken(
+          eq(token.getFcmToken()),
+          eq(notificationTitle),
+          eq(notificationBody),
+          eq(notificationData)
+      );
+      assertNotNull(token.getLastUsedAt());
+      verify(fcmTokenRepository).save(token);
+    }
   }
 
   @Test
@@ -98,8 +107,6 @@ class RabbitMQNotificationConsumerTest {
         .recipientId(recipientId)
         .scheduledTime(LocalTime.of(10, 0))
         .build();
-
-    NotificationRecipient recipient = mock(NotificationRecipient.class);
 
     given(notificationRecipientRepository.findById(recipientId))
         .willReturn(Optional.empty());
