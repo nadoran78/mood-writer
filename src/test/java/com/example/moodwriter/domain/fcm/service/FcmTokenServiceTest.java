@@ -1,13 +1,12 @@
 package com.example.moodwriter.domain.fcm.service;
 
 import static org.junit.jupiter.api.Assertions.assertEquals;
-import static org.junit.jupiter.api.Assertions.assertFalse;
-import static org.junit.jupiter.api.Assertions.assertThrows;
 import static org.junit.jupiter.api.Assertions.assertTrue;
 import static org.mockito.AdditionalAnswers.returnsFirstArg;
 import static org.mockito.ArgumentMatchers.any;
 import static org.mockito.BDDMockito.given;
 import static org.mockito.Mockito.mock;
+import static org.mockito.Mockito.never;
 import static org.mockito.Mockito.times;
 import static org.mockito.Mockito.verify;
 
@@ -15,9 +14,7 @@ import com.example.moodwriter.domain.fcm.dao.FcmTokenRepository;
 import com.example.moodwriter.domain.fcm.dto.FcmTokenRequest;
 import com.example.moodwriter.domain.fcm.dto.FcmTokenResponse;
 import com.example.moodwriter.domain.fcm.entity.FcmToken;
-import com.example.moodwriter.domain.fcm.exception.FcmException;
 import com.example.moodwriter.domain.user.entity.User;
-import com.example.moodwriter.global.exception.code.ErrorCode;
 import jakarta.persistence.EntityManager;
 import java.util.Optional;
 import java.util.UUID;
@@ -68,7 +65,7 @@ class FcmTokenServiceTest {
   }
 
   @Test
-  void successSaveFcmToken_whenExistingTokenIsDifferent_DeactivateAndSaveNewToken() {
+  void successSaveFcmToken_UpdateToken_whenExistingTokenIsDifferentFromRequestedToken() {
     // given
     UUID userId = UUID.randomUUID();
     FcmTokenRequest request = FcmTokenRequest.builder()
@@ -84,12 +81,8 @@ class FcmTokenServiceTest {
         .isActive(true)
         .build();
 
-    User userProxy = mock(User.class);
-
     given(fcmTokenRepository.findByDeviceIdAndUserId(request.getDeviceId(), userId))
         .willReturn(Optional.of(existingToken));
-    given(entityManager.getReference(User.class, userId))
-        .willReturn(userProxy);
     given(fcmTokenRepository.save(any(FcmToken.class))).will(returnsFirstArg());
 
     // when
@@ -100,12 +93,11 @@ class FcmTokenServiceTest {
     assertEquals(request.getFcmToken(), response.getFcmToken());
     assertEquals(request.getDeviceType(), response.getDeviceType());
     assertTrue(response.isActive());
-    assertFalse(existingToken.isActive());
-    verify(fcmTokenRepository, times(2)).save(any(FcmToken.class));
+    verify(fcmTokenRepository, times(1)).save(any(FcmToken.class));
   }
 
   @Test
-  void saveFcmToken_WhenExistingTokenIsSame_ThrowFcmTokenException() {
+  void saveFcmToken_WhenExistingTokenIsSameAsRequestedToken() {
     // given
     UUID userId = UUID.randomUUID();
     FcmTokenRequest request = FcmTokenRequest.builder()
@@ -124,11 +116,15 @@ class FcmTokenServiceTest {
     given(fcmTokenRepository.findByDeviceIdAndUserId(request.getDeviceId(), userId))
         .willReturn(Optional.of(existingToken));
 
-    // when & then
-    FcmException fcmException = assertThrows(FcmException.class,
-        () -> fcmTokenService.saveFcmToken(request, userId));
+    // when
+    FcmTokenResponse response = fcmTokenService.saveFcmToken(request, userId);
 
-    assertEquals(ErrorCode.FCM_TOKEN_ALREADY_EXISTS, fcmException.getErrorCode());
+    // then
+    assertEquals(request.getDeviceId(), response.getDeviceId());
+    assertEquals(request.getFcmToken(), response.getFcmToken());
+    assertEquals(request.getDeviceType(), response.getDeviceType());
+    assertTrue(response.isActive());
+    verify(fcmTokenRepository, never()).save(any(FcmToken.class));
   }
 
 
