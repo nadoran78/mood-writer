@@ -44,7 +44,7 @@ public class RedisNotificationService {
    *
    * @param notificationScheduleId 알림 ID
    */
-  public void removeSentNotification(UUID notificationScheduleId) {
+  public void removeScheduledNotification(UUID notificationScheduleId) {
     redisTemplate.opsForZSet().remove(REDIS_NOTIFICATION_KEY, notificationScheduleId.toString());
   }
 

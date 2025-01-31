@@ -84,7 +84,7 @@ class RedisNotificationServiceTest {
     UUID notificationScheduleId = UUID.randomUUID();
 
     // Act
-    redisNotificationService.removeSentNotification(notificationScheduleId);
+    redisNotificationService.removeScheduledNotification(notificationScheduleId);
 
     // Assert
     verify(zSetOperations, times(1)).remove(REDIS_NOTIFICATION_KEY,
