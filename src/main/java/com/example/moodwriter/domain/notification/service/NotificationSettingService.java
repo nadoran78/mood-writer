@@ -47,8 +47,6 @@ public class NotificationSettingService {
           .scheduledTime(request.getRemindTime())
           .build();
     } else {
-      recipient.activate();
-
       schedule = notificationScheduleRepository.findByRecipient(recipient)
           .orElseThrow(
               () -> new NotificationException(ErrorCode.NOT_FOUND_NOTIFICATION_SCHEDULE));
@@ -56,9 +54,16 @@ public class NotificationSettingService {
       schedule.updateScheduledTime(request.getRemindTime());
     }
 
-    notificationRecipientRepository.save(recipient);
     NotificationSchedule savedSchedule = notificationScheduleRepository.save(schedule);
 
-    redisNotificationService.scheduleNotification(savedSchedule);
+    if (request.isActivate()) {
+      recipient.activate();
+      redisNotificationService.scheduleNotification(savedSchedule);
+    } else {
+      recipient.deactivate();
+      redisNotificationService.removeScheduledNotification(savedSchedule.getId());
+    }
+
+    notificationRecipientRepository.save(recipient);
   }
 }
