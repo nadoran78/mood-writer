@@ -18,12 +18,11 @@ public class RedisNotificationService {
   /**
    * 알림 스케줄을 Redis Sorted Set에 추가
    *
-   * @param schedule 알림 스케줄 객체
    */
-  public void scheduleNotification(NotificationSchedule schedule) {
-    double score = schedule.getScheduledTime().toSecondOfDay();
+  public void scheduleNotification(LocalTime scheduledTime, UUID notificationScheduleId) {
+    double score = scheduledTime.toSecondOfDay();
     redisTemplate.opsForZSet()
-        .add(REDIS_NOTIFICATION_KEY, schedule.getId().toString(), score);
+        .add(REDIS_NOTIFICATION_KEY, notificationScheduleId.toString(), score);
   }
 
   /**

@@ -58,7 +58,8 @@ public class NotificationSettingService {
 
     if (request.isActivate()) {
       recipient.activate();
-      redisNotificationService.scheduleNotification(savedSchedule);
+      redisNotificationService.scheduleNotification(savedSchedule.getScheduledTime(),
+          savedSchedule.getId());
     } else {
       recipient.deactivate();
       redisNotificationService.removeScheduledNotification(savedSchedule.getId());
