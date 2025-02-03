@@ -46,12 +46,10 @@ class RedisNotificationServiceTest {
         .build());
     UUID scheduleId = UUID.randomUUID();
 
-    given(schedule.getId()).willReturn(scheduleId);
-
     double expectedScore = schedule.getScheduledTime().toSecondOfDay();
 
     // Act
-    redisNotificationService.scheduleNotification(schedule);
+    redisNotificationService.scheduleNotification(schedule.getScheduledTime(), scheduleId);
 
     // Assert
     verify(zSetOperations, times(1))
@@ -84,7 +82,7 @@ class RedisNotificationServiceTest {
     UUID notificationScheduleId = UUID.randomUUID();
 
     // Act
-    redisNotificationService.removeSentNotification(notificationScheduleId);
+    redisNotificationService.removeScheduledNotification(notificationScheduleId);
 
     // Assert
     verify(zSetOperations, times(1)).remove(REDIS_NOTIFICATION_KEY,
