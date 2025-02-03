@@ -58,7 +58,7 @@ class RedisNotificationServiceContainerTest {
     given(schedule.getId()).willReturn(notificationScheduleId);
 
     // When
-    redisNotificationService.scheduleNotification(schedule);
+    redisNotificationService.scheduleNotification(scheduledTime, notificationScheduleId);
 
     // Then
     Set<String> scheduledNotifications = redisTemplate.opsForZSet()

@@ -35,6 +35,7 @@ import org.mockito.junit.jupiter.MockitoExtension;
 
 @ExtendWith(MockitoExtension.class)
 class NotificationSettingServiceTest {
+
   @Mock
   private RedisNotificationService redisNotificationService;
 
@@ -58,11 +59,13 @@ class NotificationSettingServiceTest {
   private NotificationRecipient recipient;
   private NotificationSchedule schedule;
   private User user;
+  private UUID scheduleId;
 
   @BeforeEach
   void setUp(TestInfo testInfo) {
     userId = UUID.randomUUID();
     UUID notificationId = UUID.randomUUID();
+    scheduleId = UUID.randomUUID();
 
     user = mock(User.class);
 
@@ -82,13 +85,9 @@ class NotificationSettingServiceTest {
         .scheduledTime(LocalTime.of(8, 0))
         .build());
 
-    if (testInfo.getDisplayName().contains("예외처리")) {
-      return;
+    if (!testInfo.getDisplayName().contains("예외처리")) {
+      given(notification.getId()).willReturn(notificationId);
     }
-
-    given(user.getId()).willReturn(userId);
-    given(notification.getId()).willReturn(notificationId);
-
   }
 
   @Test
@@ -101,23 +100,35 @@ class NotificationSettingServiceTest {
 
     given(notificationRepository.findByTopic(NotificationTopic.DAILY_REMINDER))
         .willReturn(Optional.of(notification));
-    given(notificationRecipientRepository.findByUserIdAndNotificationId(userId, notification.getId()))
+    given(notificationRecipientRepository.findByUserIdAndNotificationId(userId,
+        notification.getId()))
         .willReturn(Optional.empty());
     given(entityManager.getReference(User.class, userId))
         .willReturn(user);
+    given(user.getId()).willReturn(userId);
     given(notificationScheduleRepository.save(any(NotificationSchedule.class)))
-        .will(returnsFirstArg());
+        .will(invocation -> {
+          NotificationSchedule savedSchedule = invocation.getArgument(0);
+
+          NotificationSchedule spySchedule = spy(savedSchedule);
+          given(spySchedule.getId()).willReturn(scheduleId);
+
+          return spySchedule;
+        });
 
     // Act
     notificationSettingService.activateDailyReminder(request, userId);
 
     // Assert
-    ArgumentCaptor<NotificationRecipient> recipientCaptor = ArgumentCaptor.forClass(NotificationRecipient.class);
-    ArgumentCaptor<NotificationSchedule> scheduleCaptor = ArgumentCaptor.forClass(NotificationSchedule.class);
+    ArgumentCaptor<NotificationRecipient> recipientCaptor = ArgumentCaptor.forClass(
+        NotificationRecipient.class);
+    ArgumentCaptor<NotificationSchedule> scheduleCaptor = ArgumentCaptor.forClass(
+        NotificationSchedule.class);
 
     verify(notificationRecipientRepository).save(recipientCaptor.capture());
-    verify(notificationScheduleRepository).save(any(NotificationSchedule.class));
-    verify(redisNotificationService).scheduleNotification(scheduleCaptor.capture());
+    verify(notificationScheduleRepository).save(scheduleCaptor.capture());
+    verify(redisNotificationService)
+        .scheduleNotification(request.getRemindTime(), scheduleId);
 
     NotificationRecipient savedRecipient = recipientCaptor.getValue();
     NotificationSchedule savedSchedule = scheduleCaptor.getValue();
@@ -143,34 +154,67 @@ class NotificationSettingServiceTest {
 
     given(notificationRepository.findByTopic(NotificationTopic.DAILY_REMINDER))
         .willReturn(Optional.of(notification));
-    given(notificationRecipientRepository.findByUserIdAndNotificationId(userId, notification.getId()))
+    given(notificationRecipientRepository.findByUserIdAndNotificationId(userId,
+        notification.getId()))
         .willReturn(Optional.of(recipient));
     given(notificationScheduleRepository.findByRecipient(recipient))
         .willReturn(Optional.of(schedule));
+    given(schedule.getId()).willReturn(scheduleId);
     given(notificationScheduleRepository.save(any(NotificationSchedule.class)))
         .will(returnsFirstArg());
+    given(user.getId()).willReturn(userId);
 
     // Act
     notificationSettingService.activateDailyReminder(request, userId);
 
     // Assert
-    ArgumentCaptor<NotificationRecipient> recipientCaptor = ArgumentCaptor.forClass(NotificationRecipient.class);
-    ArgumentCaptor<NotificationSchedule> scheduleCaptor = ArgumentCaptor.forClass(NotificationSchedule.class);
+    ArgumentCaptor<NotificationRecipient> recipientCaptor = ArgumentCaptor.forClass(
+        NotificationRecipient.class);
 
     verify(notificationRecipientRepository).save(recipientCaptor.capture());
     verify(notificationScheduleRepository).save(schedule);
-    verify(redisNotificationService).scheduleNotification(scheduleCaptor.capture());
+    verify(redisNotificationService)
+        .scheduleNotification(request.getRemindTime(), scheduleId);
 
     NotificationRecipient savedRecipient = recipientCaptor.getValue();
-    NotificationSchedule savedSchedule = scheduleCaptor.getValue();
 
     assertEquals(notification, savedRecipient.getNotification());
     assertEquals(userId, savedRecipient.getUser().getId());
     assertTrue(savedRecipient.isActive());
     assertFalse(savedRecipient.isRead());
     assertNull(savedRecipient.getReadAt());
-    assertEquals(savedRecipient, savedSchedule.getRecipient());
-    assertEquals(request.getRemindTime(), savedSchedule.getScheduledTime());
+    assertEquals(savedRecipient, schedule.getRecipient());
+    assertEquals(request.getRemindTime(), schedule.getScheduledTime());
+  }
+
+  @Test
+  void activateDailyReminder_shouldDeactivateDailyReminder() {
+    // given
+    DailyReminderRequest request = DailyReminderRequest.builder()
+        .isActivate(false)
+        .remindTime(LocalTime.of(10, 0))
+        .build();
+
+    given(notificationRepository.findByTopic(NotificationTopic.DAILY_REMINDER))
+        .willReturn(Optional.of(notification));
+    given(notificationRecipientRepository.findByUserIdAndNotificationId(userId,
+        notification.getId()))
+        .willReturn(Optional.of(recipient));
+    given(notificationScheduleRepository.findByRecipient(recipient))
+        .willReturn(Optional.of(schedule));
+    given(notificationScheduleRepository.save(any(NotificationSchedule.class)))
+        .will(returnsFirstArg());
+
+    // when
+    notificationSettingService.activateDailyReminder(request, userId);
+
+    // then
+    verify(notificationScheduleRepository).findByRecipient(recipient);
+    verify(redisNotificationService).removeScheduledNotification(schedule.getId());
+    verify(notificationScheduleRepository).save(schedule);
+    verify(notificationRecipientRepository).save(recipient);
+
+    assertFalse(recipient.isActive());
   }
 
   @Test
@@ -205,7 +249,8 @@ class NotificationSettingServiceTest {
 
     given(notificationRepository.findByTopic(NotificationTopic.DAILY_REMINDER))
         .willReturn(Optional.of(notification));
-    given(notificationRecipientRepository.findByUserIdAndNotificationId(userId, notification.getId()))
+    given(notificationRecipientRepository.findByUserIdAndNotificationId(userId,
+        notification.getId()))
         .willReturn(Optional.of(recipient));
     given(notificationScheduleRepository.findByRecipient(recipient))
         .willReturn(Optional.empty());
