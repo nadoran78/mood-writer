@@ -5,6 +5,7 @@ import com.example.moodwriter.domain.notification.dao.NotificationRecipientRepos
 import com.example.moodwriter.domain.notification.dao.NotificationRepository;
 import com.example.moodwriter.domain.notification.dao.NotificationScheduleRepository;
 import com.example.moodwriter.domain.notification.dto.DailyReminderRequest;
+import com.example.moodwriter.domain.notification.dto.DailyReminderResponse;
 import com.example.moodwriter.domain.notification.entity.Notification;
 import com.example.moodwriter.domain.notification.entity.NotificationRecipient;
 import com.example.moodwriter.domain.notification.entity.NotificationSchedule;
@@ -66,5 +67,23 @@ public class NotificationSettingService {
     }
 
     notificationRecipientRepository.save(recipient);
+  }
+
+  @Transactional(readOnly = true)
+  public DailyReminderResponse getDailyReminder(UUID userId) {
+    Notification notification = notificationRepository.findByTopic(
+            NotificationTopic.DAILY_REMINDER)
+        .orElseThrow(() -> new NotificationException(ErrorCode.NOT_FOUND_NOTIFICATION));
+
+    NotificationRecipient recipient = notificationRecipientRepository
+        .findByUserIdAndNotificationId(userId, notification.getId())
+        .orElseThrow(() -> new NotificationException(ErrorCode.NOT_FOUND_NOTIFICATION_RECIPIENT));
+
+    NotificationSchedule schedule = notificationScheduleRepository.findByRecipient(
+            recipient)
+        .orElseThrow(
+            () -> new NotificationException(ErrorCode.NOT_FOUND_NOTIFICATION_SCHEDULE));
+
+    return DailyReminderResponse.from(recipient.isActive(), schedule.getScheduledTime());
   }
 }
