@@ -2,15 +2,18 @@ package com.example.moodwriter.domain.notification.controller;
 
 import static org.junit.jupiter.api.Assertions.assertEquals;
 import static org.mockito.ArgumentMatchers.eq;
+import static org.mockito.BDDMockito.given;
 import static org.mockito.Mockito.mock;
 import static org.mockito.Mockito.verify;
 import static org.mockito.Mockito.when;
+import static org.springframework.test.web.servlet.request.MockMvcRequestBuilders.get;
 import static org.springframework.test.web.servlet.request.MockMvcRequestBuilders.post;
 import static org.springframework.test.web.servlet.result.MockMvcResultHandlers.print;
 import static org.springframework.test.web.servlet.result.MockMvcResultMatchers.jsonPath;
 import static org.springframework.test.web.servlet.result.MockMvcResultMatchers.status;
 
 import com.example.moodwriter.domain.notification.dto.DailyReminderRequest;
+import com.example.moodwriter.domain.notification.dto.DailyReminderResponse;
 import com.example.moodwriter.domain.notification.service.NotificationSettingService;
 import com.example.moodwriter.domain.user.entity.User;
 import com.example.moodwriter.global.jwt.JwtAuthenticationToken;
@@ -91,7 +94,8 @@ public class NotificationSettingControllerTest {
   }
 
   @Test
-  void activateDailyReminder_shouldReturnBadRequest_whenRequestIsInvalid() throws Exception {
+  void activateDailyReminder_shouldReturnBadRequest_whenRequestIsInvalid()
+      throws Exception {
     // Given
     DailyReminderRequest request = DailyReminderRequest.builder()
         .isActivate(true)
@@ -110,5 +114,24 @@ public class NotificationSettingControllerTest {
         .andExpect(jsonPath("$.path").value("/api/notifications/activate/daily-reminder"))
         .andExpect(jsonPath("$.fieldErrors[0].field").value("remindTime"))
         .andExpect(jsonPath("$.fieldErrors[0].message").value("must not be null"));
+  }
+
+  @Test
+  void success_getDailyReminder() throws Exception {
+    // given
+    DailyReminderResponse response = DailyReminderResponse.builder()
+        .isActive(false)
+        .remindTime(LocalTime.of(10, 0))
+        .build();
+
+    given(notificationSettingService.getDailyReminder(userId)).willReturn(response);
+
+    // when & then
+    mockMvc.perform(get("/api/notifications/daily-reminder"))
+        .andDo(print())
+        .andExpect(status().isOk())
+        .andExpect(jsonPath("$.active").value(false))
+        .andExpect(jsonPath("$.remindTime").value("10:00:00"));
+
   }
 }
