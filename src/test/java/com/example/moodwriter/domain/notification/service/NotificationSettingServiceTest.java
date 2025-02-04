@@ -13,6 +13,7 @@ import com.example.moodwriter.domain.notification.dao.NotificationRecipientRepos
 import com.example.moodwriter.domain.notification.dao.NotificationRepository;
 import com.example.moodwriter.domain.notification.dao.NotificationScheduleRepository;
 import com.example.moodwriter.domain.notification.dto.DailyReminderRequest;
+import com.example.moodwriter.domain.notification.dto.DailyReminderResponse;
 import com.example.moodwriter.domain.notification.entity.Notification;
 import com.example.moodwriter.domain.notification.entity.NotificationRecipient;
 import com.example.moodwriter.domain.notification.entity.NotificationSchedule;
@@ -260,6 +261,81 @@ class NotificationSettingServiceTest {
         notificationSettingService.activateDailyReminder(request, userId));
 
     assertEquals(ErrorCode.NOT_FOUND_NOTIFICATION_SCHEDULE, exception.getErrorCode());
+  }
+
+  @Test
+  void successGetDailyReminder() {
+    // given
+    given(notificationRepository.findByTopic(NotificationTopic.DAILY_REMINDER))
+        .willReturn(Optional.of(notification));
+    given(notificationRecipientRepository.findByUserIdAndNotificationId(userId,
+        notification.getId()))
+        .willReturn(Optional.of(recipient));
+    given(notificationScheduleRepository.findByRecipient(recipient))
+        .willReturn(Optional.of(schedule));
+
+    // when
+    DailyReminderResponse response = notificationSettingService.getDailyReminder(
+        userId);
+
+    // then
+    assertEquals(recipient.isActive(), response.isActive());
+    assertEquals(schedule.getScheduledTime(), response.getRemindTime());
+  }
+
+  @Test
+  @DisplayName("daily reminder 조회: Notification 엔티티 부존재 시 예외처리")
+  void getDailyReminder_NotificationNotFound() {
+    // given
+    given(notificationRepository.findByTopic(NotificationTopic.DAILY_REMINDER))
+        .willReturn(Optional.empty());
+
+    // when & then
+    NotificationException notificationException = assertThrows(
+        NotificationException.class,
+        () -> notificationSettingService.getDailyReminder(userId));
+
+    assertEquals(ErrorCode.NOT_FOUND_NOTIFICATION, notificationException.getErrorCode());
+  }
+
+  @Test
+  @DisplayName("daily reminder 조회: NotificationRecipient 엔티티 부존재 시 예외처리")
+  void getDailyReminder_NotificationRecipientNotFound() {
+    // given
+    given(notificationRepository.findByTopic(NotificationTopic.DAILY_REMINDER))
+        .willReturn(Optional.of(notification));
+    given(notificationRecipientRepository.findByUserIdAndNotificationId(userId,
+        notification.getId()))
+        .willReturn(Optional.empty());
+
+    // when & then
+    NotificationException notificationException = assertThrows(
+        NotificationException.class,
+        () -> notificationSettingService.getDailyReminder(userId));
+
+    assertEquals(ErrorCode.NOT_FOUND_NOTIFICATION_RECIPIENT,
+        notificationException.getErrorCode());
+  }
+
+  @Test
+  @DisplayName("daily reminder 조회: NotificationSchedule 엔티티 부존재 시 예외처리")
+  void getDailyReminder_NotificationScheduleNotFound() {
+    // given
+    given(notificationRepository.findByTopic(NotificationTopic.DAILY_REMINDER))
+        .willReturn(Optional.of(notification));
+    given(notificationRecipientRepository.findByUserIdAndNotificationId(userId,
+        notification.getId()))
+        .willReturn(Optional.of(recipient));
+    given(notificationScheduleRepository.findByRecipient(recipient))
+        .willReturn(Optional.empty());
+
+    // when & then
+    NotificationException notificationException = assertThrows(
+        NotificationException.class,
+        () -> notificationSettingService.getDailyReminder(userId));
+
+    assertEquals(ErrorCode.NOT_FOUND_NOTIFICATION_SCHEDULE,
+        notificationException.getErrorCode());
   }
 
 
