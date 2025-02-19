@@ -1,6 +1,7 @@
 package com.example.moodwriter.global.security.filter;
 
 import com.example.moodwriter.global.jwt.TokenProvider;
+import com.example.moodwriter.global.security.dto.CustomUserDetails;
 import jakarta.servlet.FilterChain;
 import jakarta.servlet.ServletException;
 import jakarta.servlet.http.HttpServletRequest;
@@ -29,10 +30,11 @@ public class JwtAuthenticationFilter extends OncePerRequestFilter {
     String token = tokenProvider.resolveTokenFromRequest(request.getHeader(TOKEN_HEADER));
 
     if (tokenProvider.validateToken(token) && !tokenProvider.isAccessTokenDenied(token)) {
-      if (tokenProvider.checkUserIsDeletedByToken(token)) {
+      CustomUserDetails userDetails = tokenProvider.getCustomUserDetailsByToken(token);
+      if (userDetails.isDeleted()) {
         request.setAttribute("deactivatedUser", true);
       } else {
-        Authentication authentication = tokenProvider.getAuthentication(token);
+        Authentication authentication = tokenProvider.getAuthentication(userDetails);
         SecurityContextHolder.getContext().setAuthentication(authentication);
       }
     } else {

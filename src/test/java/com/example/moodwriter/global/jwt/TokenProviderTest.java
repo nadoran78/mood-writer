@@ -1,6 +1,7 @@
 package com.example.moodwriter.global.jwt;
 
 import static org.junit.jupiter.api.Assertions.assertEquals;
+import static org.junit.jupiter.api.Assertions.assertFalse;
 import static org.junit.jupiter.api.Assertions.assertNotNull;
 import static org.junit.jupiter.api.Assertions.assertThrows;
 import static org.junit.jupiter.api.Assertions.assertTrue;
@@ -10,6 +11,7 @@ import static org.mockito.ArgumentMatchers.anyString;
 import static org.mockito.ArgumentMatchers.eq;
 import static org.mockito.BDDMockito.given;
 import static org.mockito.Mockito.doNothing;
+import static org.mockito.Mockito.spy;
 import static org.mockito.Mockito.verify;
 
 import com.example.moodwriter.global.constant.Role;
@@ -26,6 +28,7 @@ import java.nio.charset.StandardCharsets;
 import java.util.Base64;
 import java.util.Date;
 import java.util.List;
+import java.util.UUID;
 import java.util.concurrent.TimeUnit;
 import org.junit.jupiter.api.BeforeEach;
 import org.junit.jupiter.api.Test;
@@ -210,22 +213,45 @@ class TokenProviderTest {
   }
 
   @Test
-  void successGetAuthentication() {
+  void successGetCustomUserDetailsByToken() {
     //given
     given(redisTemplate.opsForValue()).willReturn(valueOperations);
 
     TokenResponse tokenResponse = tokenProvider.generateTokenResponse(testMail, roles);
 
+    UUID userId = UUID.randomUUID();
+
+    User user = spy(User.builder()
+        .email(this.testMail)
+        .role(Role.ROLE_USER)
+        .isDeleted(false)
+        .build());
+    given(user.getId()).willReturn(userId);
+    UserDetails userDetails = new CustomUserDetails(user);
+    
+    given(customUserDetailService.loadUserByUsername(testMail)).willReturn(userDetails);
+
+    //when
+    CustomUserDetails response = tokenProvider.getCustomUserDetailsByToken(
+        tokenResponse.getAccessToken());
+    //then
+    assertEquals(userId, response.getId());
+    assertEquals(testMail, response.getUsername());
+    assertEquals(Role.ROLE_USER.toString(), response.getRole());
+    assertFalse(response.isDeleted());
+  }
+
+  @Test
+  void successGetAuthentication() {
+    //given
     User user = User.builder()
         .email(this.testMail)
         .role(Role.ROLE_USER)
         .build();
     UserDetails userDetails = new CustomUserDetails(user);
 
-    given(customUserDetailService.loadUserByUsername(testMail)).willReturn(userDetails);
     //when
-    Authentication authentication = tokenProvider.getAuthentication(
-        tokenResponse.getAccessToken());
+    Authentication authentication = tokenProvider.getAuthentication(userDetails);
     //then
     assertEquals(authentication.getPrincipal(), userDetails);
     assertEquals(authentication.getAuthorities(), userDetails.getAuthorities());

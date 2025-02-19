@@ -1,5 +1,6 @@
 package com.example.moodwriter.global.config;
 
+import static org.mockito.ArgumentMatchers.any;
 import static org.mockito.ArgumentMatchers.anyString;
 import static org.mockito.BDDMockito.given;
 import static org.springframework.test.web.servlet.request.MockMvcRequestBuilders.get;
@@ -47,11 +48,16 @@ class SecurityConfigTest {
 
   @Test
   void successCustomAuthenticationEntryPointWithDeletedUser() throws Exception {
+    User user = User.builder()
+        .isDeleted(true)
+        .role(Role.ROLE_USER)
+        .build();
+    CustomUserDetails userDetails = new CustomUserDetails(user);
 
     given(tokenProvider.resolveTokenFromRequest(anyString())).willReturn("valid-token");
     given(tokenProvider.validateToken(anyString())).willReturn(true);
     given(tokenProvider.isAccessTokenDenied(anyString())).willReturn(false);
-    given(tokenProvider.checkUserIsDeletedByToken(anyString())).willReturn(true);
+    given(tokenProvider.getCustomUserDetailsByToken(anyString())).willReturn(userDetails);
 
     ResultActions resultActions = mockMvc.perform(get("/api/users")
         .contentType(MediaType.APPLICATION_JSON)
@@ -111,15 +117,15 @@ class SecurityConfigTest {
         .role(Role.ROLE_ADMIN)
         .isDeleted(false)
         .build();
-    UserDetails userDetails = new CustomUserDetails(user);
+    CustomUserDetails userDetails = new CustomUserDetails(user);
     Authentication authentication = new JwtAuthenticationToken(userDetails, "",
         userDetails.getAuthorities());
 
     given(tokenProvider.resolveTokenFromRequest(anyString())).willReturn("valid-token");
     given(tokenProvider.validateToken(anyString())).willReturn(true);
     given(tokenProvider.isAccessTokenDenied(anyString())).willReturn(false);
-    given(tokenProvider.checkUserIsDeletedByToken(anyString())).willReturn(false);
-    given(tokenProvider.getAuthentication(anyString())).willReturn(authentication);
+    given(tokenProvider.getCustomUserDetailsByToken(anyString())).willReturn(userDetails);
+    given(tokenProvider.getAuthentication(any(UserDetails.class))).willReturn(authentication);
 
     ResultActions resultActions = mockMvc.perform(get("/api/users")
         .contentType(MediaType.APPLICATION_JSON)
