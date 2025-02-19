@@ -111,14 +111,12 @@ public class TokenProvider {
         .build();
   }
 
-  public boolean checkUserIsDeletedByToken(String token) {
+  public CustomUserDetails getCustomUserDetailsByToken(String token) {
     Claims claims = Jwts.parser().setSigningKey(secretKey).parseClaimsJws(token)
         .getBody();
 
-    CustomUserDetails userDetails = (CustomUserDetails) customUserDetailService.loadUserByUsername(
+    return (CustomUserDetails) customUserDetailService.loadUserByUsername(
         claims.getSubject());
-
-    return userDetails.isDeleted();
   }
 
   public boolean validateToken(String token) {
@@ -135,11 +133,7 @@ public class TokenProvider {
     }
   }
 
-  public Authentication getAuthentication(String token) {
-    String email = Jwts.parser().setSigningKey(secretKey).parseClaimsJws(token)
-        .getBody().getSubject();
-    UserDetails userDetails = customUserDetailService.loadUserByUsername(email);
-
+  public Authentication getAuthentication(UserDetails userDetails) {
     return new JwtAuthenticationToken(userDetails, "",
         userDetails.getAuthorities());
   }
