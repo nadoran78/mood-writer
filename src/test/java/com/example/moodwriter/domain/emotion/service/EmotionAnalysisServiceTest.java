@@ -24,9 +24,7 @@ import com.example.moodwriter.domain.emotion.dto.EmotionAnalysisResponse;
 import com.example.moodwriter.domain.emotion.entity.EmotionAnalysis;
 import com.example.moodwriter.domain.emotion.exception.EmotionAnalysisException;
 import com.example.moodwriter.domain.emotion.service.EmotionAnalysisService.EmotionScoreAndPrimaryEmotion;
-import com.example.moodwriter.domain.user.dao.UserRepository;
 import com.example.moodwriter.domain.user.entity.User;
-import com.example.moodwriter.domain.user.exception.UserException;
 import com.example.moodwriter.global.constant.OpenAIModel;
 import com.example.moodwriter.global.exception.CustomException;
 import com.example.moodwriter.global.exception.code.ErrorCode;
@@ -36,6 +34,7 @@ import com.example.moodwriter.global.openAI.dto.OpenAIResponse.Message;
 import com.example.moodwriter.global.openAI.service.OpenAIClient;
 import com.fasterxml.jackson.core.JsonProcessingException;
 import com.fasterxml.jackson.databind.ObjectMapper;
+import jakarta.persistence.EntityManager;
 import java.time.LocalDate;
 import java.time.LocalDateTime;
 import java.util.Arrays;
@@ -62,7 +61,7 @@ class EmotionAnalysisServiceTest {
   @Mock
   private EmotionAnalysisRepository emotionAnalysisRepository;
   @Mock
-  private UserRepository userRepository;
+  private EntityManager entityManager;
   @Mock
   private OpenAIClient openAIClient;
   @Mock
@@ -876,7 +875,7 @@ class EmotionAnalysisServiceTest {
     given(emotionAnalysis1.getUpdatedAt()).willReturn(now);
     given(emotionAnalysis2.getCreatedAt()).willReturn(now);
     given(emotionAnalysis2.getUpdatedAt()).willReturn(now);
-    given(userRepository.findById(userId)).willReturn(Optional.of(user));
+    given(entityManager.getReference(User.class, userId)).willReturn(user);
     given(
         emotionAnalysisRepository.findByDateBetweenAndIsDeletedFalseAndUser(startDate,
             endDate, user, pageable))
@@ -938,22 +937,4 @@ class EmotionAnalysisServiceTest {
         emotionAnalysisException.getErrorCode());
   }
 
-  @Test
-  void getDiariesByDateRange_shouldReturnUserException_whenUserIsNotExist() {
-    // given
-    LocalDate startDate = LocalDate.of(2024, 10, 1);
-    LocalDate endDate = LocalDate.of(2024, 10, 10);
-
-    Pageable pageable = mock(Pageable.class);
-    UUID userId = mock(UUID.class);
-
-    given(userRepository.findById(userId)).willReturn(Optional.empty());
-
-    // when & then
-    UserException userException = assertThrows(UserException.class,
-        () -> emotionAnalysisService.getEmotionAnalysisByDateRange(startDate, endDate,
-            userId, pageable));
-
-    assertEquals(ErrorCode.NOT_FOUND_USER, userException.getErrorCode());
-  }
 }

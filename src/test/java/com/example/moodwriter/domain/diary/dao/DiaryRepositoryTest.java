@@ -8,8 +8,10 @@ import com.example.moodwriter.domain.diary.entity.Diary;
 import com.example.moodwriter.domain.user.dao.UserRepository;
 import com.example.moodwriter.domain.user.entity.User;
 import com.fasterxml.jackson.databind.ObjectMapper;
+import jakarta.persistence.EntityManager;
 import java.time.LocalDate;
 import java.util.Optional;
+import java.util.UUID;
 import org.junit.jupiter.api.BeforeEach;
 import org.junit.jupiter.api.Test;
 import org.springframework.beans.factory.annotation.Autowired;
@@ -33,9 +35,13 @@ class DiaryRepositoryTest {
   @Autowired
   private UserRepository userRepository;
 
+  @Autowired
+  private EntityManager entityManager;
+
   @MockBean
   private ObjectMapper objectMapper;
   private User user;
+  private UUID userId;
 
   @BeforeEach
   void setUp() {
@@ -45,13 +51,14 @@ class DiaryRepositoryTest {
         .name("이름")
         .build();
     user = userRepository.save(user);
+    userId = user.getId();
 
     User anotherUser = User.builder()
         .email("test2@email.com")
         .passwordHash("Password12!@")
         .name("이름")
         .build();
-    userRepository.save(anotherUser);
+    anotherUser = userRepository.save(anotherUser);
 
     Diary diary1 = Diary.builder()
         .date(LocalDate.of(2024, 10, 1))
@@ -108,8 +115,10 @@ class DiaryRepositoryTest {
     LocalDate endDate = LocalDate.of(2024, 10, 10);
     Pageable pageable = PageRequest.of(0, 10, Sort.by("date").descending());
 
+    User userProxy = entityManager.getReference(User.class, userId);
+
     Slice<Diary> diaries = diaryRepository.findByDateBetweenAndIsDeletedFalseAndIsTempFalseAndUser(
-        startDate, endDate, user, pageable);
+        startDate, endDate, userProxy, pageable);
 
     assertEquals(2, diaries.getContent().size());
     assertTrue(diaries.getContent().stream().noneMatch(Diary::isDeleted));
@@ -124,8 +133,10 @@ class DiaryRepositoryTest {
   void successFindAllByUserAndIsDeletedFalseAndIsTempFalse() {
     Pageable pageable = PageRequest.of(0, 10, Sort.by("date").descending());
 
+    User userProxy = entityManager.getReference(User.class, userId);
+
     Slice<Diary> diaries = diaryRepository.findAllByUserAndIsDeletedFalseAndIsTempFalse(
-        user, pageable);
+        userProxy, pageable);
 
     assertEquals(3, diaries.getContent().size());
     assertTrue(diaries.getContent().stream().noneMatch(Diary::isDeleted));
@@ -142,9 +153,11 @@ class DiaryRepositoryTest {
     // given
     LocalDate date = LocalDate.of(2024, 10, 5);
 
+    User userProxy = entityManager.getReference(User.class, userId);
+
     Diary diary7 = Diary.builder()
         .date(date)
-        .user(user)
+        .user(userProxy)
         .isDeleted(false)
         .isTemp(true)
         .build();
@@ -152,7 +165,7 @@ class DiaryRepositoryTest {
 
     // when
     Optional<Diary> result = diaryRepository
-        .findFirstByUserAndDateAndIsTempTrueAndIsDeletedFalseOrderByUpdatedAtDesc(user, date);
+        .findFirstByUserAndDateAndIsTempTrueAndIsDeletedFalseOrderByUpdatedAtDesc(userProxy, date);
 
     // then
     assertTrue(result.isPresent());
@@ -166,9 +179,11 @@ class DiaryRepositoryTest {
 
     diaryRepository.deleteAll();
 
+    User userProxy = entityManager.getReference(User.class, userId);
+
     Diary diary = Diary.builder()
         .date(date)
-        .user(user)
+        .user(userProxy)
         .isDeleted(true)
         .isTemp(true)
         .build();
@@ -176,7 +191,7 @@ class DiaryRepositoryTest {
 
     // when
     Optional<Diary> result = diaryRepository
-        .findFirstByUserAndDateAndIsTempTrueAndIsDeletedFalseOrderByUpdatedAtDesc(user, date);
+        .findFirstByUserAndDateAndIsTempTrueAndIsDeletedFalseOrderByUpdatedAtDesc(userProxy, date);
 
     // then
     assertFalse(result.isPresent());

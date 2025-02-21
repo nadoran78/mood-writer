@@ -10,12 +10,11 @@ import com.example.moodwriter.domain.diary.entity.Diary;
 import com.example.moodwriter.domain.diary.exception.DiaryException;
 import com.example.moodwriter.domain.emotion.dao.EmotionAnalysisRepository;
 import com.example.moodwriter.domain.emotion.entity.EmotionAnalysis;
-import com.example.moodwriter.domain.user.dao.UserRepository;
 import com.example.moodwriter.domain.user.entity.User;
 import com.example.moodwriter.domain.user.exception.UserException;
 import com.example.moodwriter.global.exception.code.ErrorCode;
+import jakarta.persistence.EntityManager;
 import java.time.LocalDate;
-import java.util.Optional;
 import java.util.UUID;
 import lombok.RequiredArgsConstructor;
 import org.springframework.data.domain.Pageable;
@@ -27,16 +26,15 @@ import org.springframework.transaction.annotation.Transactional;
 @RequiredArgsConstructor
 public class DiaryService {
 
-  private final UserRepository userRepository;
   private final DiaryRepository diaryRepository;
   private final EmotionAnalysisRepository emotionAnalysisRepository;
+  private final EntityManager entityManager;
 
   @Transactional
   public DiaryResponse createDiary(UUID userId, DiaryCreateRequest request) {
-    User user = userRepository.findById(userId)
-        .orElseThrow(() -> new UserException(ErrorCode.NOT_FOUND_USER));
+    User userProxy = entityManager.getReference(User.class, userId);
 
-    Diary diary = Diary.from(user, request);
+    Diary diary = Diary.from(userProxy, request);
 
     Diary savedDiary = diaryRepository.save(diary);
 
@@ -107,11 +105,10 @@ public class DiaryService {
       throw new DiaryException(ErrorCode.START_DATE_MUST_BE_BEFORE_END_DATE);
     }
 
-    User user = userRepository.findById(userId)
-        .orElseThrow(() -> new UserException(ErrorCode.NOT_FOUND_USER));
+    User userProxy = entityManager.getReference(User.class, userId);
 
     Slice<Diary> diaries = diaryRepository.findByDateBetweenAndIsDeletedFalseAndIsTempFalseAndUser(
-        startDate, endDate, user, pageable);
+        startDate, endDate, userProxy, pageable);
 
     return diaries.map(diary -> {
       boolean haveEmotionAnalysis =
@@ -122,11 +119,10 @@ public class DiaryService {
 
   @Transactional(readOnly = true)
   public Slice<DiaryResponse> getAllMyDiaries(Pageable pageable, UUID userId) {
-    User user = userRepository.findById(userId)
-        .orElseThrow(() -> new UserException(ErrorCode.NOT_FOUND_USER));
+    User userProxy = entityManager.getReference(User.class, userId);
 
     Slice<Diary> diaries = diaryRepository.findAllByUserAndIsDeletedFalseAndIsTempFalse(
-        user, pageable);
+        userProxy, pageable);
 
     return diaries.map(diary -> {
       boolean haveEmotionAnalysis =
@@ -183,12 +179,11 @@ public class DiaryService {
 
   @Transactional(readOnly = true)
   public DiaryTempExistsResponse checkTempExistsByDate(LocalDate date, UUID userId) {
-    User user = userRepository.findById(userId)
-        .orElseThrow(() -> new UserException(ErrorCode.NOT_FOUND_USER));
+    User userProxy = entityManager.getReference(User.class, userId);
 
     Diary diary = diaryRepository
         .findFirstByUserAndDateAndIsTempTrueAndIsDeletedFalseOrderByUpdatedAtDesc(
-            user, date)
+            userProxy, date)
         .orElse(null);
 
     if (diary == null) {
