@@ -14,14 +14,12 @@ import com.example.moodwriter.domain.diary.dto.DiaryImageUploadResponse;
 import com.example.moodwriter.domain.diary.entity.Diary;
 import com.example.moodwriter.domain.diary.entity.DiaryMedia;
 import com.example.moodwriter.domain.diary.exception.DiaryException;
-import com.example.moodwriter.domain.diary.service.DiaryMediaService;
-import com.example.moodwriter.domain.user.dao.UserRepository;
 import com.example.moodwriter.domain.user.entity.User;
-import com.example.moodwriter.domain.user.exception.UserException;
 import com.example.moodwriter.global.constant.FilePath;
-import com.example.moodwriter.global.s3.dto.FileDto;
 import com.example.moodwriter.global.exception.code.ErrorCode;
+import com.example.moodwriter.global.s3.dto.FileDto;
 import com.example.moodwriter.global.s3.service.S3FileService;
+import jakarta.persistence.EntityManager;
 import java.util.List;
 import java.util.Optional;
 import java.util.UUID;
@@ -40,7 +38,7 @@ class DiaryMediaServiceTest {
   private S3FileService s3FileService;
 
   @Mock
-  private UserRepository userRepository;
+  private EntityManager entityManager;
 
   @Mock
   private DiaryMediaRepository diaryMediaRepository;
@@ -67,7 +65,7 @@ class DiaryMediaServiceTest {
         new FileDto("https://example.com/image1", "image1.jpg", "image/jpeg"),
         new FileDto("https://example.com/image2", "image2.jpg", "image/jpeg"));
 
-    given(userRepository.findById(userId)).willReturn(Optional.of(user));
+    given(entityManager.getReference(User.class, userId)).willReturn(user);
     given(diaryRepository.findById(diaryId)).willReturn(Optional.of(diary));
     given(s3FileService.uploadManyFiles(List.of(mockImage1, mockImage2), FilePath.DIARY))
         .willReturn(fileDtoList);
@@ -97,24 +95,6 @@ class DiaryMediaServiceTest {
     assertEquals("image/jpeg", diaryMedia2.getFileType());
   }
 
-  @Test
-  void uploadDiaryImages_shouldReturnUserException_whenUserIsNotExist() {
-    // given
-    UUID userId = UUID.randomUUID();
-    UUID diaryId = UUID.randomUUID();
-
-    MockMultipartFile mockImage1 = mock(MockMultipartFile.class);
-    MockMultipartFile mockImage2 = mock(MockMultipartFile.class);
-
-    given(userRepository.findById(userId)).willReturn(Optional.empty());
-
-    // when & then
-    UserException userException = assertThrows(UserException.class,
-        () -> diaryMediaService.uploadDiaryImages(
-            diaryId, userId, List.of(mockImage1, mockImage2)));
-
-    assertEquals(ErrorCode.NOT_FOUND_USER, userException.getErrorCode());
-  }
 
   @Test
   void uploadDiaryImages_shouldReturnDiaryException_whenDiaryIsNotExist() {
@@ -127,7 +107,7 @@ class DiaryMediaServiceTest {
     MockMultipartFile mockImage1 = mock(MockMultipartFile.class);
     MockMultipartFile mockImage2 = mock(MockMultipartFile.class);
 
-    given(userRepository.findById(userId)).willReturn(Optional.of(user));
+    given(entityManager.getReference(User.class, userId)).willReturn(user);
     given(diaryRepository.findById(diaryId)).willReturn(Optional.empty());
 
     // when & then
