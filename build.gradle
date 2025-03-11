@@ -57,6 +57,13 @@ dependencies {
     testImplementation 'org.testcontainers:junit-jupiter:1.19.0'
 
     implementation 'org.springframework.boot:spring-boot-starter-amqp'
+
+    implementation 'com.amazonaws.serverless:aws-serverless-java-container-springboot3:2.0.1'
+    implementation 'com.amazonaws:aws-lambda-java-core:1.2.3'
+    implementation 'com.amazonaws:aws-lambda-java-events:3.11.2'
+
+    // AWS Lambda 실행을 위한 추가 의존성
+    runtimeOnly 'com.amazonaws:aws-lambda-java-runtime-interface-client:2.3.0'
 }
 
 tasks.named('test') {
