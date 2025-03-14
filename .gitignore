@@ -37,3 +37,6 @@ out/
 
 ### VS Code ###
 .vscode/
+
+template.yaml
+TestController.java
