@@ -1,4 +1,6 @@
 spring:
+  application:
+    name: mood-writer
 
   datasource:
     url: ${MYSQL_URL}
