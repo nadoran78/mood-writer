@@ -25,6 +25,9 @@ jobs:
           java-version: '17'
           distribution: 'oracle'
 
+      - name: Create Firebase Key File
+        run: echo "${{secrets.FIREBASE_KEY_JSON}}" > src/main/resources/moodwriterFirebaseKey.json
+
       - name: Build with Gradle
         uses: gradle/gradle-build-action@bd5760595778326ba7f1441bcf7e88b49de61a25 # v2.6.0
         with:
