@@ -22,7 +22,7 @@ spring:
       max-request-size: 5MB
 
   jwt:
-    secret-key: mocking
+    secret-key: testfejoncdkgnoiegndklvnwioejklddxciowedcnendkjaeigbucneskasjdkj
 
 cloud:
   aws:
