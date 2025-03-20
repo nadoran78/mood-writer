@@ -8,9 +8,11 @@ import com.google.firebase.FirebaseOptions;
 import jakarta.annotation.PostConstruct;
 import java.io.IOException;
 import org.springframework.context.annotation.Configuration;
+import org.springframework.context.annotation.Profile;
 import org.springframework.core.io.ClassPathResource;
 
 @Configuration
+@Profile("!test")
 public class FirebaseConfig {
 
   @PostConstruct
