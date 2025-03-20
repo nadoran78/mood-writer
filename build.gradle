@@ -29,6 +29,45 @@ dependencies {
     annotationProcessor 'org.projectlombok:lombok'
     testImplementation 'org.springframework.boot:spring-boot-starter-test'
     testRuntimeOnly 'org.junit.platform:junit-platform-launcher'
+
+    implementation 'com.mysql:mysql-connector-j'
+    implementation 'org.springframework.boot:spring-boot-starter-data-jpa'
+    implementation 'org.springframework.data:spring-data-redis'
+    implementation 'io.lettuce:lettuce-core'
+    implementation 'org.springframework.boot:spring-boot-starter-validation'
+
+    implementation 'com.amazonaws:aws-java-sdk-s3:1.12.268'
+
+    implementation 'org.springframework.boot:spring-boot-starter-security'
+    implementation 'io.jsonwebtoken:jjwt:0.9.1'
+    testImplementation 'org.springframework.security:spring-security-test'
+
+    implementation 'com.sun.xml.bind:jaxb-impl'
+    implementation 'com.sun.xml.bind:jaxb-core'
+    implementation 'javax.xml.bind:jaxb-api:2.3.0'
+
+    implementation 'com.squareup.okhttp3:okhttp'
+    testImplementation 'com.squareup.okhttp3:mockwebserver'
+
+    testImplementation 'com.h2database:h2'
+
+    implementation 'com.google.firebase:firebase-admin:9.2.0'
+
+    testImplementation 'org.testcontainers:testcontainers:1.19.0'
+    testImplementation 'org.testcontainers:junit-jupiter:1.19.0'
+
+    implementation 'org.springframework.boot:spring-boot-starter-amqp'
+
+    implementation 'com.amazonaws.serverless:aws-serverless-java-container-springboot3:2.0.1'
+    implementation 'com.amazonaws:aws-lambda-java-core:1.2.3'
+    implementation 'com.amazonaws:aws-lambda-java-events:3.11.2'
+
+    // AWS Lambda 실행을 위한 추가 의존성
+    runtimeOnly 'com.amazonaws:aws-lambda-java-runtime-interface-client:2.3.0'
+}
+
+bootJar {
+    duplicatesStrategy = DuplicatesStrategy.EXCLUDE
 }
 
 tasks.named('test') {

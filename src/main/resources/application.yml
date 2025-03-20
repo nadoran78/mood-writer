@@ -1,0 +1,10 @@
+spring:
+  application:
+    name: mood-writer
+
+  # default
+  profiles:
+    active: local
+    include:
+
+
