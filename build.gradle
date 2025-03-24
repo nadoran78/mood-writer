@@ -68,6 +68,11 @@ dependencies {
 
 bootJar {
     duplicatesStrategy = DuplicatesStrategy.EXCLUDE
+    enabled = true
+}
+
+tasks.named('jar') {
+    enabled = false
 }
 
 tasks.named('test') {
