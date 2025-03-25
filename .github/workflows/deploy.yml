@@ -56,7 +56,7 @@ jobs:
           aws-region: ${{ secrets.AWS_REGION }}
 
       - name: Upload Zip to S3
-        run: aws s3 cp build/generated/mood-writer-0.0.1-SNAPSHOT.zip s3://${{ secrets.S3_BUCKET_NAME }}/mood-writer-0.0.1-SNAPSHOT.zip
+        run: aws s3 cp build/distributions/mood-writer-0.0.1-SNAPSHOT.zip s3://${{ secrets.S3_BUCKET_NAME }}/mood-writer-0.0.1-SNAPSHOT.zip
 
       - name: Deploy to AWS Lambda
         env:
