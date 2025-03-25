@@ -49,6 +49,21 @@ jobs:
             --s3-bucket ${{ secrets.S3_BUCKET_NAME }} \
             --s3-key mood-writer-0.0.1-SNAPSHOT.zip
 
+      - name: Check Lambda Update Status
+        env:
+          AWS_LAMBDA_FUNCTION_NAME: ${{ secrets.AWS_LAMBDA_FUNCTION_NAME }}
+        run: |
+          while true; do
+            STATUS=$(aws lambda get-function-configuration --function-name "$AWS_LAMBDA_FUNCTION_NAME" --query "State" --output text)
+            if [ "$STATUS" == "Active" ]; then
+              echo "✅ Lambda function is ready for configuration update."
+              break
+            else
+              echo "⏳ Lambda function is still updating. Waiting for 5 seconds..."
+              sleep 5
+            fi
+          done
+
       - name: Update Lambda Environment Variables
         env:
           AWS_LAMBDA_FUNCTION_NAME: ${{ secrets.AWS_LAMBDA_FUNCTION_NAME }}
