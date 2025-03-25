@@ -66,13 +66,22 @@ dependencies {
     runtimeOnly 'com.amazonaws:aws-lambda-java-runtime-interface-client:2.3.0'
 }
 
-bootJar {
-    duplicatesStrategy = DuplicatesStrategy.EXCLUDE
-    enabled = true
-}
+//bootJar {
+//    duplicatesStrategy = DuplicatesStrategy.EXCLUDE
+//    enabled = true
+//}
+//
+//tasks.named('jar') {
+//    enabled = false
+//}
 
-tasks.named('jar') {
-    enabled = false
+task buildZip(type: Zip) {
+    duplicatesStrategy = DuplicatesStrategy.EXCLUDE
+
+    into('lib') {
+        from(jar)
+        from(configurations.runtimeClasspath)
+    }
 }
 
 tasks.named('test') {
