@@ -50,6 +50,8 @@ jobs:
             --s3-key mood-writer-0.0.1-SNAPSHOT.zip
 
       - name: Update Lambda Environment Variables
+        env:
+          AWS_LAMBDA_FUNCTION_NAME: ${{ secrets.AWS_LAMBDA_FUNCTION_NAME }}
         run: |
           aws lambda update-function-configuration --function-name "$AWS_LAMBDA_FUNCTION_NAME" \
             --environment "Variables={
