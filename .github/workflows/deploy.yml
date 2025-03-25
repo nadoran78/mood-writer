@@ -58,8 +58,8 @@ jobs:
           aws-secret-access-key: ${{ secrets.AWS_SECRET_ACCESS_KEY }}
           aws-region: ${{ secrets.AWS_REGION }}
 
-      - name: Upload to S3
-        run: aws s3 cp lambda.zip s3://${{ secrets.S3_BUCKET_NAME }}/lambda.zip
+      - name: Upload JAR to S3
+        run: aws s3 cp build/libs/mood-writer-0.0.1-SNAPSHOT.jar s3://${{ secrets.S3_BUCKET_NAME }}/mood-writer-0.0.1-SNAPSHOT.jar
 
       - name: Deploy to AWS Lambda
         env:
@@ -67,7 +67,4 @@ jobs:
         run: |
           aws lambda update-function-code --function-name "$AWS_LAMBDA_FUNCTION_NAME" \
             --s3-bucket ${{ secrets.S3_BUCKET_NAME }} \
-            --s3-key lambda.zip
-          
-          aws lambda update-function-configuration --function-name "$AWS_LAMBDA_FUNCTION_NAME" \
-            --environment-variables-overrides TZ=Asia/Seoul,SPRING_PROFILES_ACTIVE=prod,S3_BUCKET_NAME=${{ secrets.S3_BUCKET_NAME }},AWS_ACCESS_KEY_ID=${{ secrets.AWS_ACCESS_KEY_ID }},AWS_SECRET_ACCESS_KEY=${{ secrets.AWS_SECRET_ACCESS_KEY }},AWS_REGION=${{ secrets.AWS_REGION }},JWT_SECRET_KEY=${{ secrets.JWT_SECRET_KEY }},OPEN_AI_URL=${{ secrets.OPEN_AI_URL }},OPEN_AI_SECRET_KEY=${{ secrets.OPEN_AI_SECRET_KEY }},RABBIT_MQ_HOST=${{ secrets.RABBIT_MQ_HOST }},RABBIT_MQ_USERNAME=${{ secrets.RABBIT_MQ_USERNAME }},RABBIT_MQ_PASSWORD=${{ secrets.RABBIT_MQ_PASSWORD }},MYSQL_URL=${{ secrets.MYSQL_URL }},MYSQL_USERNAME=${{ secrets.MYSQL_USERNAME }},MYSQL_PASSWORD=${{ secrets.MYSQL_PASSWORD }},REDIS_HOST=${{ secrets.REDIS_HOST }},NOTIFICATION_SENDER=${{secrets.NOTIFICATION_SENDER}}
+            --s3-key mood-writer-0.0.1-SNAPSHOT.jar
