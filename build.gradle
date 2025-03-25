@@ -75,6 +75,16 @@ tasks.named('jar') {
     enabled = false
 }
 
+task buildZip(type: Zip) {
+    duplicatesStrategy = DuplicatesStrategy.EXCLUDE
+
+    from compileJava
+    from processResources
+    into('lib') {
+        from configurations.runtimeClasspath
+    }
+}
+
 tasks.named('test') {
     useJUnitPlatform()
 }

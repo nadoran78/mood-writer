@@ -46,10 +46,7 @@ jobs:
           MYSQL_PASSWORD: ${{secrets.MYSQL_PASSWORD}}
           REDIS_HOST: ${{secrets.REDIS_HOST}}
           NOTIFICATION_SENDER: ${{secrets.NOTIFICATION_SENDER}}
-        run: ./gradlew clean build -x test
-
-      - name: Zip the package
-        run: zip -r lambda.zip build/libs/*.jar
+        run: ./gradlew buildZip
 
       - name: Configure AWS credentials
         uses: aws-actions/configure-aws-credentials@v2
@@ -58,8 +55,8 @@ jobs:
           aws-secret-access-key: ${{ secrets.AWS_SECRET_ACCESS_KEY }}
           aws-region: ${{ secrets.AWS_REGION }}
 
-      - name: Upload JAR to S3
-        run: aws s3 cp build/libs/mood-writer-0.0.1-SNAPSHOT.jar s3://${{ secrets.S3_BUCKET_NAME }}/mood-writer-0.0.1-SNAPSHOT.jar
+      - name: Upload Zip to S3
+        run: aws s3 cp build/distributions/mood-writer-0.0.1-SNAPSHOT.zip s3://${{ secrets.S3_BUCKET_NAME }}/mood-writer-0.0.1-SNAPSHOT.zip
 
       - name: Deploy to AWS Lambda
         env:
@@ -67,4 +64,4 @@ jobs:
         run: |
           aws lambda update-function-code --function-name "$AWS_LAMBDA_FUNCTION_NAME" \
             --s3-bucket ${{ secrets.S3_BUCKET_NAME }} \
-            --s3-key mood-writer-0.0.1-SNAPSHOT.jar
+            --s3-key mood-writer-0.0.1-SNAPSHOT.zip
