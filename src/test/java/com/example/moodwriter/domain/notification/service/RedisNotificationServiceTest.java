@@ -60,8 +60,8 @@ class RedisNotificationServiceTest {
   void getNotificationsToSend_shouldReturnIds() {
     // Arrange
     LocalTime currentTime = LocalTime.of(9, 0);
-    double currentScore = currentTime.toSecondOfDay();
-    double previousScore = currentTime.minusHours(1).plusMinutes(1).toSecondOfDay();
+    double currentScore = currentTime.plusMinutes(30).toSecondOfDay();
+    double previousScore = currentTime.minusMinutes(30).toSecondOfDay();
 
     Set<String> mockIds = Set.of("id1", "id2");
     given(zSetOperations.rangeByScore(REDIS_NOTIFICATION_KEY, previousScore,
