@@ -1,6 +1,5 @@
 package com.example.moodwriter.domain.notification.service;
 
-import com.example.moodwriter.domain.notification.entity.NotificationSchedule;
 import java.time.LocalTime;
 import java.util.Set;
 import java.util.UUID;
@@ -17,7 +16,6 @@ public class RedisNotificationService {
 
   /**
    * 알림 스케줄을 Redis Sorted Set에 추가
-   *
    */
   public void scheduleNotification(LocalTime scheduledTime, UUID notificationScheduleId) {
     double score = scheduledTime.toSecondOfDay();
@@ -32,8 +30,8 @@ public class RedisNotificationService {
    * @return 알림 ID 목록
    */
   public Set<String> getNotificationsToSend(LocalTime currentTime) {
-    double currentScore = currentTime.toSecondOfDay();
-    double previousScore = currentTime.minusHours(1).plusMinutes(1).toSecondOfDay();
+    double currentScore = currentTime.plusMinutes(30).toSecondOfDay();
+    double previousScore = currentTime.minusMinutes(30).toSecondOfDay();
     return redisTemplate.opsForZSet()
         .rangeByScore(REDIS_NOTIFICATION_KEY, previousScore, currentScore);
   }
@@ -44,7 +42,8 @@ public class RedisNotificationService {
    * @param notificationScheduleId 알림 ID
    */
   public void removeScheduledNotification(UUID notificationScheduleId) {
-    redisTemplate.opsForZSet().remove(REDIS_NOTIFICATION_KEY, notificationScheduleId.toString());
+    redisTemplate.opsForZSet()
+        .remove(REDIS_NOTIFICATION_KEY, notificationScheduleId.toString());
   }
 
 

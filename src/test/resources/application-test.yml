@@ -43,3 +43,7 @@ cloud:
 
 notification:
   sender: fcm
+
+firebase:
+  key:
+    path: key_path
