@@ -47,3 +47,7 @@ cloud:
 
 notification:
   sender: ${NOTIFICATION_SENDER}
+
+firebase:
+  key:
+    path: ${FIREBASE_KEY_PATH}
