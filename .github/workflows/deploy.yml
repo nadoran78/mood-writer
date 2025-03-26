@@ -84,5 +84,6 @@ jobs:
               MYSQL_USERNAME=${{ secrets.MYSQL_USERNAME }},
               MYSQL_PASSWORD=${{ secrets.MYSQL_PASSWORD }},
               REDIS_HOST=${{ secrets.REDIS_HOST }},
-              NOTIFICATION_SENDER=${{ secrets.NOTIFICATION_SENDER }}
+              NOTIFICATION_SENDER=${{ secrets.NOTIFICATION_SENDER }},
+              FIREBASE_KEY_PATH=${{ secrets.FIREBASE_KEY_PATH }}
             }"

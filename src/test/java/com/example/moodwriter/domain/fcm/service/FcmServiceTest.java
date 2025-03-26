@@ -10,6 +10,7 @@ import static org.mockito.Mockito.times;
 import static org.mockito.Mockito.verify;
 
 import com.example.moodwriter.domain.fcm.exception.FcmException;
+import com.example.moodwriter.global.config.FirebaseConfig;
 import com.example.moodwriter.global.exception.code.ErrorCode;
 import com.google.firebase.messaging.FirebaseMessaging;
 import com.google.firebase.messaging.FirebaseMessagingException;
@@ -29,6 +30,9 @@ class FcmServiceTest {
 
   @Mock
   private FirebaseMessaging firebaseMessaging;
+
+  @Mock
+  private FirebaseConfig firebaseConfig;
 
   @InjectMocks
   private FcmService fcmService;
