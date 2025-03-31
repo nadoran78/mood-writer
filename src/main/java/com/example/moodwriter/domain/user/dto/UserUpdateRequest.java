@@ -6,12 +6,16 @@ import com.example.moodwriter.global.validation.annotation.ValidFile;
 import jakarta.validation.constraints.Pattern;
 import jakarta.validation.constraints.Size;
 import java.util.List;
+import lombok.AllArgsConstructor;
 import lombok.Builder;
 import lombok.Getter;
+import org.springframework.validation.annotation.Validated;
 import org.springframework.web.multipart.MultipartFile;
 
 @Getter
 @Builder
+@AllArgsConstructor
+@Validated
 public class UserUpdateRequest {
 
   @Pattern(regexp = RegexPattern.NAME, message = "이름의 시작, 끝, 전체를 공백으로 입력할 수 없습니다.")

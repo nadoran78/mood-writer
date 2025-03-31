@@ -5,6 +5,7 @@ import com.example.moodwriter.global.exception.code.ErrorCode;
 import com.example.moodwriter.global.exception.response.ErrorResponse;
 import com.fasterxml.jackson.core.io.JsonEOFException;
 import jakarta.servlet.http.HttpServletRequest;
+import jakarta.validation.ConstraintViolationException;
 import java.util.List;
 import lombok.extern.slf4j.Slf4j;
 import org.springframework.http.HttpStatus;
@@ -61,6 +62,21 @@ public class GlobalExceptionHandler {
 
     return ResponseEntity
         .status(e.getStatusCode())
+        .body(errorResponse);
+  }
+
+  @ExceptionHandler(ConstraintViolationException.class)
+  public ResponseEntity<ErrorResponse> handleConstraintViolationException(
+      ConstraintViolationException e, HttpServletRequest request) {
+    log.error("ConstraintViolationException[{}] is occurred. uri : {}",
+        e.getMessage(), request.getRequestURI());
+
+    ErrorResponse errorResponse = ErrorResponse.of(ErrorCode.VALIDATION_ERROR,
+        request.getRequestURI());
+    errorResponse.addConstraintViolations(e.getConstraintViolations());
+
+    return ResponseEntity
+        .status(HttpStatus.BAD_REQUEST)
         .body(errorResponse);
   }
 

@@ -7,12 +7,17 @@ import jakarta.validation.constraints.NotBlank;
 import jakarta.validation.constraints.Pattern;
 import jakarta.validation.constraints.Size;
 import java.util.List;
+import javax.annotation.Nullable;
+import lombok.AllArgsConstructor;
 import lombok.Builder;
 import lombok.Getter;
+import org.springframework.validation.annotation.Validated;
 import org.springframework.web.multipart.MultipartFile;
 
 @Getter
 @Builder
+@AllArgsConstructor
+@Validated
 public class UserRegisterRequest {
 
   @NotBlank(message = "이메일은 반드시 입력해야 합니다.")

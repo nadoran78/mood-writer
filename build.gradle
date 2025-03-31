@@ -71,10 +71,6 @@ bootJar {
     enabled = true
 }
 
-tasks.named('jar') {
-    enabled = false
-}
-
 task buildZip(type: Zip) {
     duplicatesStrategy = DuplicatesStrategy.EXCLUDE
 
