@@ -3,8 +3,10 @@ package com.example.moodwriter.global.exception.response;
 import com.example.moodwriter.global.exception.code.ErrorCode;
 import com.fasterxml.jackson.annotation.JsonInclude;
 import com.fasterxml.jackson.annotation.JsonInclude.Include;
+import jakarta.validation.ConstraintViolation;
 import java.util.ArrayList;
 import java.util.List;
+import java.util.Set;
 import java.util.stream.Collectors;
 import lombok.AllArgsConstructor;
 import lombok.Builder;
@@ -25,6 +27,7 @@ public class ErrorResponse {
   private String path;
   private List<FieldValidationError> fieldErrors;
   private List<ParameterValidationError> parameterErrors;
+
 
   public static ErrorResponse of(ErrorCode errorCode, String path) {
     return ErrorResponse.builder()
@@ -58,9 +61,17 @@ public class ErrorResponse {
       this.parameterErrors.add(new ParameterValidationError(
           error.getMethodParameter().getParameterName(),
           error.getResolvableErrors().stream()
-              .map(MessageSourceResolvable::getDefaultMessage).collect(Collectors.toList())
+              .map(MessageSourceResolvable::getDefaultMessage)
+              .collect(Collectors.toList())
       ));
     }
+  }
+
+  public void addConstraintViolations(Set<ConstraintViolation<?>> violations) {
+    this.fieldErrors = violations.stream().map(
+        violation -> new FieldValidationError(violation.getPropertyPath().toString(),
+            violation.getMessage())).collect(
+        Collectors.toList());
   }
 
   @JsonInclude(Include.NON_NULL)
