@@ -42,6 +42,7 @@ public class NotificationSettingService {
     if (recipient == null) {
       User userProxy = entityManager.getReference(User.class, userId);
       recipient = NotificationRecipient.from(notification, userProxy);
+      notificationRecipientRepository.save(recipient);
 
       schedule = NotificationSchedule.builder()
           .recipient(recipient)

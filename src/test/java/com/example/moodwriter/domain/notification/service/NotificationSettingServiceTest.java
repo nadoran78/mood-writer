@@ -6,6 +6,7 @@ import static org.mockito.ArgumentMatchers.any;
 import static org.mockito.BDDMockito.given;
 import static org.mockito.Mockito.mock;
 import static org.mockito.Mockito.spy;
+import static org.mockito.Mockito.times;
 import static org.mockito.Mockito.verify;
 
 import com.example.moodwriter.domain.notification.constant.NotificationTopic;
@@ -126,7 +127,7 @@ class NotificationSettingServiceTest {
     ArgumentCaptor<NotificationSchedule> scheduleCaptor = ArgumentCaptor.forClass(
         NotificationSchedule.class);
 
-    verify(notificationRecipientRepository).save(recipientCaptor.capture());
+    verify(notificationRecipientRepository, times(2)).save(recipientCaptor.capture());
     verify(notificationScheduleRepository).save(scheduleCaptor.capture());
     verify(redisNotificationService)
         .scheduleNotification(request.getRemindTime(), scheduleId);
