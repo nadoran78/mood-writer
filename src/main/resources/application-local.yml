@@ -33,10 +33,10 @@ cloud:
     s3:
       bucket: ${S3_BUCKET_NAME}
     credentials:
-      access-key: ${AWS_ACCESS_KEY_ID}
-      secret-key: ${AWS_SECRET_ACCESS_KEY}
+      access-key: ${AWS_ACCESS_KEY}
+      secret-key: ${AWS_SECRET_KEY}
     region:
-      static: ${AWS_REGION}
+      static: ${AWS_APPLY_REGION}
       auto: false
     stack:
       auto: false
