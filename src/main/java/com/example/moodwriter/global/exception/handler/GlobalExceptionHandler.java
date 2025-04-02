@@ -1,6 +1,7 @@
 package com.example.moodwriter.global.exception.handler;
 
 import com.example.moodwriter.global.exception.CustomException;
+import com.example.moodwriter.global.exception.TokenException;
 import com.example.moodwriter.global.exception.code.ErrorCode;
 import com.example.moodwriter.global.exception.response.ErrorResponse;
 import com.fasterxml.jackson.core.io.JsonEOFException;
@@ -26,6 +27,17 @@ public class GlobalExceptionHandler {
   public ResponseEntity<ErrorResponse> handleCustomException(CustomException e,
       HttpServletRequest request) {
     log.error("[CustomException] {} is occurred. uri : {}", e.getErrorCode(),
+        request.getRequestURI());
+
+    return ResponseEntity
+        .status(e.getErrorCode().getHttpStatus())
+        .body(ErrorResponse.of(e.getErrorCode(), request.getRequestURI()));
+  }
+
+  @ExceptionHandler(TokenException.class)
+  public ResponseEntity<ErrorResponse> handleTokenException(TokenException e,
+      HttpServletRequest request) {
+    log.error("[TokenException] {} is occurred. uri : {}", e.getErrorCode(),
         request.getRequestURI());
 
     return ResponseEntity
