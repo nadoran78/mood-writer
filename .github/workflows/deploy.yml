@@ -34,9 +34,9 @@ jobs:
       - name: Configure AWS credentials
         uses: aws-actions/configure-aws-credentials@v2
         with:
-          aws-access-key-id: ${{ secrets.AWS_ACCESS_KEY_ID }}
-          aws-secret-access-key: ${{ secrets.AWS_SECRET_ACCESS_KEY }}
-          aws-region: ${{ secrets.AWS_REGION }}
+          aws-access-key-id: ${{ secrets.ACCESS_KEY }}
+          aws-secret-access-key: ${{ secrets.SECRET_KEY }}
+          aws-region: ${{ secrets.REGION }}
 
       - name: Upload Zip to S3
         run: aws s3 cp build/distributions/mood-writer-0.0.1-SNAPSHOT.zip s3://${{ secrets.S3_BUCKET_NAME }}/mood-writer-0.0.1-SNAPSHOT.zip
@@ -85,5 +85,8 @@ jobs:
               MYSQL_PASSWORD=${{ secrets.MYSQL_PASSWORD }},
               REDIS_HOST=${{ secrets.REDIS_HOST }},
               NOTIFICATION_SENDER=${{ secrets.NOTIFICATION_SENDER }},
-              FIREBASE_KEY_PATH=${{ secrets.FIREBASE_KEY_PATH }}
+              FIREBASE_KEY_PATH=${{ secrets.FIREBASE_KEY_PATH }},
+              ACCESS_KEY=${{ secrets.ACCESS_KEY }},
+              SECRET_KEY=${{ secrets.SECRET_KEY }},
+              REGION=${{ secrets.REGION }}
             }"

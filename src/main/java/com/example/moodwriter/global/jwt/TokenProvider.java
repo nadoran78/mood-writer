@@ -1,6 +1,6 @@
 package com.example.moodwriter.global.jwt;
 
-import com.example.moodwriter.global.exception.CustomException;
+import com.example.moodwriter.global.exception.TokenException;
 import com.example.moodwriter.global.exception.code.ErrorCode;
 import com.example.moodwriter.global.jwt.dto.TokenResponse;
 import com.example.moodwriter.global.security.dto.CustomUserDetails;
@@ -86,7 +86,7 @@ public class TokenProvider {
 
   public TokenResponse regenerateAccessToken(String refreshToken) {
     if (!validateToken(refreshToken)) {
-      throw new CustomException(ErrorCode.INVALID_TOKEN);
+      throw new TokenException(ErrorCode.INVALID_TOKEN);
     }
     Claims claims = Jwts.parser().setSigningKey(secretKey).parseClaimsJws(refreshToken)
         .getBody();
@@ -95,11 +95,11 @@ public class TokenProvider {
 
     String findToken = redisTemplate.opsForValue().get(KEY_REFRESH_TOKEN + email);
     if (findToken == null) {
-      throw new CustomException(ErrorCode.NOT_FOUND_REFRESH_TOKEN);
+      throw new TokenException(ErrorCode.NOT_FOUND_REFRESH_TOKEN);
     }
 
     if (!refreshToken.equals(findToken)) {
-      throw new CustomException(ErrorCode.UNMATCHED_SAVED_REFRESH_TOKEN);
+      throw new TokenException(ErrorCode.UNMATCHED_SAVED_REFRESH_TOKEN);
     }
 
     String accessToken = generateToken(claims, ACCESS_TOKEN_EXPIRE_TIME);
@@ -129,7 +129,7 @@ public class TokenProvider {
 
       return !claims.getBody().getExpiration().before(new Date());
     } catch (ExpiredJwtException | MalformedJwtException | SignatureException e) {
-      throw new CustomException(ErrorCode.INVALID_TOKEN);
+      throw new TokenException(ErrorCode.INVALID_TOKEN);
     }
   }
 
@@ -157,7 +157,7 @@ public class TokenProvider {
     String savedRefreshToken = redisTemplate.opsForValue().get(KEY_REFRESH_TOKEN + email);
 
     if (savedRefreshToken == null) {
-      throw new CustomException(ErrorCode.NOT_FOUND_REFRESH_TOKEN);
+      throw new TokenException(ErrorCode.NOT_FOUND_REFRESH_TOKEN);
     } else {
       redisTemplate.delete(KEY_REFRESH_TOKEN + email);
     }

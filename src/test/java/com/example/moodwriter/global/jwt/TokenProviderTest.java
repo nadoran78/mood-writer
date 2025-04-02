@@ -14,13 +14,13 @@ import static org.mockito.Mockito.doNothing;
 import static org.mockito.Mockito.spy;
 import static org.mockito.Mockito.verify;
 
+import com.example.moodwriter.domain.user.entity.User;
 import com.example.moodwriter.global.constant.Role;
-import com.example.moodwriter.global.exception.CustomException;
+import com.example.moodwriter.global.exception.TokenException;
 import com.example.moodwriter.global.exception.code.ErrorCode;
 import com.example.moodwriter.global.jwt.dto.TokenResponse;
 import com.example.moodwriter.global.security.dto.CustomUserDetails;
 import com.example.moodwriter.global.security.service.CustomUserDetailService;
-import com.example.moodwriter.domain.user.entity.User;
 import io.jsonwebtoken.Claims;
 import io.jsonwebtoken.Jwts;
 import io.jsonwebtoken.SignatureAlgorithm;
@@ -143,11 +143,11 @@ class TokenProviderTest {
     given(valueOperations.get(anyString())).willReturn(null);
 
     // when & then
-    CustomException customException = assertThrows(CustomException.class,
+    TokenException tokenException = assertThrows(TokenException.class,
         () -> tokenProvider.regenerateAccessToken(tokenResponse.getRefreshToken()));
 
     // then
-    assertEquals(ErrorCode.NOT_FOUND_REFRESH_TOKEN, customException.getErrorCode());
+    assertEquals(ErrorCode.NOT_FOUND_REFRESH_TOKEN, tokenException.getErrorCode());
   }
 
   @Test
@@ -160,11 +160,11 @@ class TokenProviderTest {
     given(valueOperations.get(anyString())).willReturn("unmatchedToken");
 
     // when & then
-    CustomException customException = assertThrows(CustomException.class,
+    TokenException tokenException = assertThrows(TokenException.class,
         () -> tokenProvider.regenerateAccessToken(tokenResponse.getRefreshToken()));
 
     // then
-    assertEquals(ErrorCode.UNMATCHED_SAVED_REFRESH_TOKEN, customException.getErrorCode());
+    assertEquals(ErrorCode.UNMATCHED_SAVED_REFRESH_TOKEN, tokenException.getErrorCode());
   }
 
   @Test
@@ -173,11 +173,11 @@ class TokenProviderTest {
     String refreshToken = "invalidToken";
 
     // when & then
-    CustomException customException = assertThrows(CustomException.class,
+    TokenException tokenException = assertThrows(TokenException.class,
         () -> tokenProvider.regenerateAccessToken(refreshToken));
 
     // then
-    assertEquals(ErrorCode.INVALID_TOKEN, customException.getErrorCode());
+    assertEquals(ErrorCode.INVALID_TOKEN, tokenException.getErrorCode());
   }
 
   @Test
@@ -206,10 +206,10 @@ class TokenProviderTest {
             .encodeToString(secretKey.getBytes(StandardCharsets.UTF_8)))
         .compact();
     //when
-    CustomException customException = assertThrows(CustomException.class,
+    TokenException tokenException = assertThrows(TokenException.class,
         () -> tokenProvider.validateToken(token));
     //then
-    assertEquals(customException.getErrorCode(), ErrorCode.INVALID_TOKEN);
+    assertEquals(tokenException.getErrorCode(), ErrorCode.INVALID_TOKEN);
   }
 
   @Test
@@ -304,11 +304,11 @@ class TokenProviderTest {
     given(valueOperations.get(anyString())).willReturn(null);
 
     // when
-    CustomException customException = assertThrows(CustomException.class,
+    TokenException tokenException = assertThrows(TokenException.class,
         () -> tokenProvider.deleteRefreshToken("refreshToken"));
 
     // then
-    assertEquals(ErrorCode.NOT_FOUND_REFRESH_TOKEN, customException.getErrorCode());
+    assertEquals(ErrorCode.NOT_FOUND_REFRESH_TOKEN, tokenException.getErrorCode());
   }
 
   @Test
