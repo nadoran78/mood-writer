@@ -21,7 +21,6 @@ public class NotificationScheduler {
   private final NotificationScheduleRepository notificationScheduleRepository;
 
   @Transactional
-  @Scheduled(cron = "0 0 0/1 * * *")
   public void processNotifications() {
     log.info("Notification Scheduler start!");
     LocalTime now = LocalTime.now();

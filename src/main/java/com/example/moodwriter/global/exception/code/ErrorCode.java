@@ -53,6 +53,7 @@ public enum ErrorCode {
   NOT_FOUND_NOTIFICATION_RECIPIENT(HttpStatus.NOT_FOUND, "알림 수신자가 존재하지 않습니다."),
 
   FAIL_INITIALIZE_APPLICATION(HttpStatus.INTERNAL_SERVER_ERROR, "Lambda를 통해 애플리케이션을 초기화하는데 실패했습니다."),
+  INVALID_REQUEST_RECEIVED(HttpStatus.BAD_REQUEST, "유효하지 않은 요청입니다."),
   ;
 
   private final HttpStatus httpStatus;
