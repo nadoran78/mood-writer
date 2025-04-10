@@ -12,6 +12,8 @@ import com.example.moodwriter.global.exception.LambdaException;
 import com.example.moodwriter.global.exception.code.ErrorCode;
 import com.example.moodwriter.global.util.BeanUtils;
 import com.fasterxml.jackson.databind.ObjectMapper;
+import java.io.ByteArrayInputStream;
+import java.io.ByteArrayOutputStream;
 import java.io.IOException;
 import java.io.InputStream;
 import java.io.OutputStream;
@@ -37,20 +39,31 @@ public class SpringBootLambdaHandler implements RequestStreamHandler {
   public void handleRequest(InputStream input, OutputStream output, Context context)
       throws IOException {
     ObjectMapper objectMapper = BeanUtils.getBean(ObjectMapper.class);
-    Map<String, Object> map = objectMapper.readValue(input, Map.class);
+    Map<String, Object> map;
 
-    if (map.containsKey("eventType")) {
+    byte[] inputBytes = inputStreamToByteArray(input);
+
+    map = objectMapper.readValue(inputBytes, Map.class);
+
+    if (map != null && map.containsKey("eventType")) {
       handleEvent(map);
     } else {
-      handler.proxyStream(input, output, context);
+      ByteArrayInputStream copyInputStream = new ByteArrayInputStream(inputBytes);
+
+      handler.proxyStream(copyInputStream, output, context);
     }
+  }
+  private byte[] inputStreamToByteArray(InputStream input) throws IOException {
+    ByteArrayOutputStream byteArrayOutputStream = new ByteArrayOutputStream();
+    byte[] buffer = new byte[1024];
+    int bytesRead;
+    while ((bytesRead = input.read(buffer)) != -1) {
+      byteArrayOutputStream.write(buffer, 0, bytesRead);
+    }
+    return byteArrayOutputStream.toByteArray();
   }
 
   public void handleEvent(Map<String, Object> event) {
-
-    NotificationScheduler notificationScheduler = BeanUtils.getBean(
-        NotificationScheduler.class);
-    log.info("NotificationScheduler DI completed");
 
     log.info("Received event: {}", event);
 
@@ -60,6 +73,10 @@ public class SpringBootLambdaHandler implements RequestStreamHandler {
       log.info("Lambda keep-alive trigger: {}", event.get("message"));
 
     } else if ("ScheduledNotification".equals(eventType)) {
+      NotificationScheduler notificationScheduler = BeanUtils.getBean(
+          NotificationScheduler.class);
+
+      log.info("NotificationScheduler DI completed");
       log.info("Scheduled Notification trigger: {}", event.get("message"));
 
       notificationScheduler.processNotifications();
