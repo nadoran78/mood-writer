@@ -5,24 +5,23 @@ import com.amazonaws.serverless.proxy.model.AwsProxyRequest;
 import com.amazonaws.serverless.proxy.model.AwsProxyResponse;
 import com.amazonaws.serverless.proxy.spring.SpringBootLambdaContainerHandler;
 import com.amazonaws.services.lambda.runtime.Context;
-import com.amazonaws.services.lambda.runtime.RequestHandler;
 import com.amazonaws.services.lambda.runtime.RequestStreamHandler;
 import com.example.moodwriter.MoodWriterApplication;
 import com.example.moodwriter.domain.notification.service.NotificationScheduler;
 import com.example.moodwriter.global.exception.LambdaException;
 import com.example.moodwriter.global.exception.code.ErrorCode;
+import com.example.moodwriter.global.util.BeanUtils;
+import com.fasterxml.jackson.databind.ObjectMapper;
 import java.io.IOException;
 import java.io.InputStream;
 import java.io.OutputStream;
 import java.util.Map;
-import lombok.RequiredArgsConstructor;
+import lombok.NoArgsConstructor;
 import lombok.extern.slf4j.Slf4j;
 
 @Slf4j
-@RequiredArgsConstructor
-public class SpringBootLambdaHandler implements RequestStreamHandler, RequestHandler<Map<String, Object>, String> {
-
-  private final NotificationScheduler notificationScheduler;
+@NoArgsConstructor
+public class SpringBootLambdaHandler implements RequestStreamHandler {
   private static final SpringBootLambdaContainerHandler<AwsProxyRequest, AwsProxyResponse> handler;
 
   static {
@@ -37,11 +36,21 @@ public class SpringBootLambdaHandler implements RequestStreamHandler, RequestHan
   @Override
   public void handleRequest(InputStream input, OutputStream output, Context context)
       throws IOException {
-    handler.proxyStream(input, output, context);
+    ObjectMapper objectMapper = BeanUtils.getBean(ObjectMapper.class);
+    Map<String, Object> map = objectMapper.readValue(input, Map.class);
+
+    if (map.containsKey("eventType")) {
+      handleEvent(map);
+    } else {
+      handler.proxyStream(input, output, context);
+    }
   }
 
-  @Override
-  public String handleRequest(Map<String, Object> event, Context context) {
+  public void handleEvent(Map<String, Object> event) {
+
+    NotificationScheduler notificationScheduler = BeanUtils.getBean(
+        NotificationScheduler.class);
+    log.info("NotificationScheduler DI completed");
 
     log.info("Received event: {}", event);
 
@@ -50,13 +59,10 @@ public class SpringBootLambdaHandler implements RequestStreamHandler, RequestHan
     if ("KeepAlive".equals(eventType)) {
       log.info("Lambda keep-alive trigger: {}", event.get("message"));
 
-      return "Keep-alive trigger processed successfully.";
-
     } else if ("ScheduledNotification".equals(eventType)) {
       log.info("Scheduled Notification trigger: {}", event.get("message"));
 
       notificationScheduler.processNotifications();
-      return "Scheduled notification processed successfully.";
 
     } else {
 
