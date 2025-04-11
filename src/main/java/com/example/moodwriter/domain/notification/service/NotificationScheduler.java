@@ -22,9 +22,10 @@ public class NotificationScheduler {
 
   @Transactional
   public void processNotifications() {
-    log.info("Notification Scheduler start!");
     LocalTime now = LocalTime.now();
+    log.info("Notification Scheduler start at {}", now);
     Set<String> notificationIds = redisNotificationService.getNotificationsToSend(now);
+    log.info("Notification Schedule Task {}", notificationIds.size());
 
     for (String id : notificationIds) {
       notificationScheduleRepository.findById(UUID.fromString(id))
