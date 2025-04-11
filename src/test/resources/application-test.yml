@@ -47,3 +47,6 @@ notification:
 firebase:
   key:
     path: key_path
+
+async:
+  enabled: true
