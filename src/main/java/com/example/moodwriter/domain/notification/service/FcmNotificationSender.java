@@ -50,5 +50,6 @@ public class FcmNotificationSender implements NotificationSender {
           notification.getBody(), notification.getData());
       fcmTokenRepository.save(fcmToken);
     }
+    log.info("Sending notification is finished!: {}", schedule.getId());
   }
 }
