@@ -2,7 +2,6 @@ package com.example.moodwriter;
 
 import jakarta.annotation.PostConstruct;
 import java.time.LocalDateTime;
-import java.time.ZoneId;
 import java.util.TimeZone;
 import lombok.extern.slf4j.Slf4j;
 import org.springframework.boot.SpringApplication;
