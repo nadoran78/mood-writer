@@ -41,3 +41,4 @@ out/
 template.yaml
 .aws-sam/
 event.json
+firebase_key_base64.txt

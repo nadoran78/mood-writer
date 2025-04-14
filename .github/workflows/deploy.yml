@@ -26,7 +26,7 @@ jobs:
         run: chmod +x gradlew
 
       - name: Create Firebase Key File
-        run: echo "${{secrets.FIREBASE_KEY_JSON}}" > src/main/resources/moodwriterFirebaseKey.json
+        run: echo "${{secrets.FIREBASE_KEY_JSON}}" | base64 -d > src/main/resources/moodwriterFirebaseKey.json
 
       - name: Build with Gradle
         run: ./gradlew buildZip
