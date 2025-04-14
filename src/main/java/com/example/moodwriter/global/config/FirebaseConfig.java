@@ -5,6 +5,8 @@ import com.example.moodwriter.global.exception.code.ErrorCode;
 import com.google.auth.oauth2.GoogleCredentials;
 import com.google.firebase.FirebaseApp;
 import com.google.firebase.FirebaseOptions;
+import java.io.File;
+import java.io.FileInputStream;
 import java.io.IOException;
 import java.io.InputStream;
 import java.util.concurrent.atomic.AtomicBoolean;
@@ -27,12 +29,10 @@ public class FirebaseConfig {
     try {
       if (FirebaseApp.getApps().isEmpty()) {
         log.info(path);
-        InputStream serviceAccount = getClass().getClassLoader().getResourceAsStream(path);
 
-        if (serviceAccount == null) {
-          log.info("THERE IS NO FIREBASE KEY FILE.");
-          return;
-        }
+        File file = new File(path);
+        InputStream serviceAccount = new FileInputStream(file);
+        log.info("THERE IS FIREBASE KEY FILE.");
 
         FirebaseOptions options = FirebaseOptions.builder()
             .setCredentials(GoogleCredentials.fromStream(serviceAccount))
