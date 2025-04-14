@@ -37,12 +37,14 @@ public class FirebaseConfig {
         FirebaseOptions options = FirebaseOptions.builder()
             .setCredentials(GoogleCredentials.fromStream(serviceAccount))
             .build();
+        log.info("SUCCESS FIREBASE OPTIONS BUILD");
 
         FirebaseApp.initializeApp(options);
         initialized.set(true);
         log.info("✅ Firebase initialized successfully.");
       }
-    } catch (IOException e) {
+    } catch (Exception e) {
+      log.error("🔥 Firebase 초기화 중 에러 발생: {}", e.getMessage(), e);
       throw new CustomException(ErrorCode.FAIL_TO_INITIALIZE_FIREBASE);
     }
   }
