@@ -110,6 +110,8 @@ public class UserService {
       user.updateProfileImage(fileDtoList);
 
       s3FileService.deleteManyFile(oldImages);
+
+      userRepository.save(user);
     }
 
     return UserResponse.fromEntity(user);
