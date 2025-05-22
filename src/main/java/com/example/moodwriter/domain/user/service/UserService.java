@@ -101,19 +101,7 @@ public class UserService {
       user.updateName(request.getName());
     }
 
-    if (request.getProfileImages() != null && !request.getProfileImages().isEmpty()) {
-      List<FileDto> oldImages = user.getProfilePictureUrl();
-      List<FileDto> fileDtoList = s3FileService.uploadManyFiles(
-          request.getProfileImages(),
-          FilePath.PROFILE);
-
-      user.updateProfileImage(fileDtoList);
-
-      s3FileService.deleteManyFile(oldImages);
-
-      userRepository.save(user);
-    }
-
+    userRepository.save(user);
     return UserResponse.fromEntity(user);
   }
 
