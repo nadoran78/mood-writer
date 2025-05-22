@@ -9,7 +9,6 @@ import static org.junit.jupiter.api.Assertions.assertThrows;
 import static org.junit.jupiter.api.Assertions.assertTrue;
 import static org.mockito.AdditionalAnswers.returnsFirstArg;
 import static org.mockito.ArgumentMatchers.any;
-import static org.mockito.ArgumentMatchers.anyList;
 import static org.mockito.BDDMockito.given;
 import static org.mockito.Mockito.never;
 import static org.mockito.Mockito.spy;
@@ -36,7 +35,6 @@ import com.example.moodwriter.global.jwt.dto.TokenResponse;
 import com.example.moodwriter.global.s3.dto.FileDto;
 import com.example.moodwriter.global.s3.service.S3FileService;
 import java.time.LocalDateTime;
-import java.util.ArrayList;
 import java.util.Collections;
 import java.util.List;
 import java.util.Optional;
@@ -49,7 +47,6 @@ import org.mockito.Mock;
 import org.mockito.junit.jupiter.MockitoExtension;
 import org.springframework.mock.web.MockMultipartFile;
 import org.springframework.security.crypto.password.PasswordEncoder;
-import org.springframework.web.multipart.MultipartFile;
 
 @ExtendWith(MockitoExtension.class)
 class UserServiceTest {
@@ -359,10 +356,6 @@ class UserServiceTest {
     UUID userId = UUID.randomUUID();
     String newName = "UpdatedName";
 
-    List<MultipartFile> profileImages = new ArrayList<>();
-    profileImages.add(new MockMultipartFile("image.jpg", "image.jpg",
-        "image/jpeg", "image content".getBytes()));
-
     User user = User.builder()
         .name("oldName")
         .profilePictureUrl(Collections.emptyList())
@@ -370,28 +363,15 @@ class UserServiceTest {
 
     UserUpdateRequest request = UserUpdateRequest.builder()
         .name(newName)
-        .profileImages(profileImages)
         .build();
 
     given(userRepository.findById(userId)).willReturn(Optional.of(user));
-
-    List<FileDto> uploadedFiles = Collections.singletonList(
-        new FileDto("url-to-uploaded-image", "image1.jpg", "image/jpeg"));
-    given(s3FileService.uploadManyFiles(anyList(), any(FilePath.class))).willReturn(
-        uploadedFiles);
 
     // when
     UserResponse response = userService.updateUser(userId, request);
 
     // then
     assertEquals(newName, response.getName());
-    assertEquals(uploadedFiles.get(0).getUrl(),
-        response.getProfilePictureUrl().get(0).getUrl());
-    assertEquals(uploadedFiles.get(0).getFilename(),
-        response.getProfilePictureUrl().get(0).getFilename());
-
-    verify(s3FileService).uploadManyFiles(anyList(), any(FilePath.class));
-    verify(s3FileService).deleteManyFile(anyList());
   }
 
   @Test
@@ -412,7 +392,7 @@ class UserServiceTest {
   }
 
   @Test
-  void successUpdateUserWhenNameAndProfileImagesAreNull() {
+  void successUpdateUserWhenNameIsNull() {
     // given
     UUID userId = UUID.randomUUID();
 
@@ -430,9 +410,6 @@ class UserServiceTest {
 
     // then
     assertEquals("oldName", response.getName());
-    assertEquals(Collections.emptyList(), response.getProfilePictureUrl());
-    verify(s3FileService, never()).uploadManyFiles(anyList(), any(FilePath.class));
-    verify(s3FileService, never()).deleteManyFile(anyList());
   }
 
   @Test

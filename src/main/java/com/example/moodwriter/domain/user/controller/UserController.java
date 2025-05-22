@@ -76,15 +76,7 @@ public class UserController {
   @PatchMapping
   public ResponseEntity<UserResponse> updateUserInfo(
       @AuthenticationPrincipal CustomUserDetails userDetails,
-      @RequestParam(required = false) String name,
-      @RequestParam(required = false) List<MultipartFile> profileImages) {
-    UserUpdateRequest request = new UserUpdateRequest(name, profileImages);
-
-    Set<ConstraintViolation<UserUpdateRequest>> violations = validator.validate(request);
-    if (!violations.isEmpty()) {
-      throw new ConstraintViolationException(violations);
-    }
-
+      @Valid @RequestBody UserUpdateRequest request) {
     UserResponse response = userService.updateUser(userDetails.getId(), request);
     return ResponseEntity.ok(response);
   }
