@@ -12,6 +12,7 @@ import static org.mockito.Mockito.when;
 import static org.springframework.security.test.web.servlet.request.SecurityMockMvcRequestPostProcessors.csrf;
 import static org.springframework.test.web.servlet.request.MockMvcRequestBuilders.delete;
 import static org.springframework.test.web.servlet.request.MockMvcRequestBuilders.get;
+import static org.springframework.test.web.servlet.request.MockMvcRequestBuilders.patch;
 import static org.springframework.test.web.servlet.request.MockMvcRequestBuilders.post;
 import static org.springframework.test.web.servlet.result.MockMvcResultHandlers.print;
 import static org.springframework.test.web.servlet.result.MockMvcResultMatchers.jsonPath;
@@ -390,6 +391,8 @@ class UserControllerTest {
     String updateName = "NewName";
     String filename = "profileImage.jpg";
 
+    UserUpdateRequest request = new UserUpdateRequest(updateName);
+
     UserResponse userResponse = UserResponse.builder()
         .id(userId)
         .name(updateName)
@@ -401,9 +404,9 @@ class UserControllerTest {
         .willReturn(userResponse);
 
     // when & then
-    mockMvc.perform(MockMvcRequestBuilders.multipart(HttpMethod.PATCH, "/api/users")
-            .part(new MockPart("name", updateName.getBytes()))
-            .file(createMockImage(filename))
+    mockMvc.perform(patch("/api/users")
+            .contentType(MediaType.APPLICATION_JSON)
+            .content(objectMapper.writeValueAsString(request))
             .with(csrf()))
         .andDo(print())
         .andExpect(status().isOk())
@@ -420,6 +423,8 @@ class UserControllerTest {
     String oldName = "oldName";
     String filename = "profileImage.jpg";
 
+    UserUpdateRequest request = new UserUpdateRequest();
+
     UserResponse userResponse = UserResponse.builder()
         .id(userId)
         .name(oldName)
@@ -431,8 +436,9 @@ class UserControllerTest {
         .willReturn(userResponse);
 
     // when & then
-    mockMvc.perform(MockMvcRequestBuilders.multipart(HttpMethod.PATCH, "/api/users")
-            .file(createMockImage(filename))
+    mockMvc.perform(patch("/api/users")
+            .contentType(MediaType.APPLICATION_JSON)
+            .content(objectMapper.writeValueAsString(request))
             .with(csrf()))
         .andDo(print())
         .andExpect(status().isOk())
@@ -442,72 +448,16 @@ class UserControllerTest {
                 userResponse.getProfilePictureUrl().get(0).getUrl()))
         .andExpect(jsonPath("$.profilePictureUrl[0].filename").value(filename));
   }
-
-  @Test
-  void successUpdateUserInfoWithFileIsNull() throws Exception {
-    // given
-    String updateName = "NewName";
-    String oldFilename = "profileImage.jpg";
-
-    UserResponse userResponse = UserResponse.builder()
-        .id(userId)
-        .name(updateName)
-        .profilePictureUrl(
-            List.of(new FileDto("https://image.url", oldFilename, "image/jpeg")))
-        .build();
-
-    given(userService.updateUser(any(UUID.class), any(UserUpdateRequest.class)))
-        .willReturn(userResponse);
-
-    // when & then
-    mockMvc.perform(MockMvcRequestBuilders.multipart(HttpMethod.PATCH, "/api/users")
-            .part(new MockPart("name", updateName.getBytes()))
-            .with(csrf()))
-        .andDo(print())
-        .andExpect(status().isOk())
-        .andExpect(jsonPath("$.name").value(updateName))
-        .andExpect(
-            jsonPath("$.profilePictureUrl[0].url").value(
-                userResponse.getProfilePictureUrl().get(0).getUrl()))
-        .andExpect(jsonPath("$.profilePictureUrl[0].filename").value(oldFilename));
-  }
-
-  @Test
-  void successUpdateUserInfoWithNameAndFileIsNull() throws Exception {
-    // given
-    String oldName = "oldName";
-    String oldFilename = "profileImage.jpg";
-
-    UserResponse userResponse = UserResponse.builder()
-        .id(userId)
-        .name(oldName)
-        .profilePictureUrl(
-            List.of(new FileDto("https://image.url", oldFilename, "image/jpeg")))
-        .build();
-
-    given(userService.updateUser(any(UUID.class), any(UserUpdateRequest.class)))
-        .willReturn(userResponse);
-
-    // when & then
-    mockMvc.perform(MockMvcRequestBuilders.multipart(HttpMethod.PATCH, "/api/users")
-            .with(csrf()))
-        .andDo(print())
-        .andExpect(status().isOk())
-        .andExpect(jsonPath("$.name").value(oldName))
-        .andExpect(
-            jsonPath("$.profilePictureUrl[0].url").value(
-                userResponse.getProfilePictureUrl().get(0).getUrl()))
-        .andExpect(jsonPath("$.profilePictureUrl[0].filename").value(oldFilename));
-  }
-
   @Test
   void failUpdateUserInfoWithNameIsEmptyString() throws Exception {
     // given
     String emptyName = "";
+    UserUpdateRequest request = new UserUpdateRequest(emptyName);
 
     // when & then
-    mockMvc.perform(MockMvcRequestBuilders.multipart(HttpMethod.PATCH, "/api/users")
-            .part(new MockPart("name", emptyName.getBytes()))
+    mockMvc.perform(patch("/api/users")
+            .contentType(MediaType.APPLICATION_JSON)
+            .content(objectMapper.writeValueAsString(request))
             .with(csrf()))
         .andDo(print())
         .andExpect(status().isBadRequest())
@@ -522,10 +472,12 @@ class UserControllerTest {
   void failUpdateUserInfoWithNameStartsWithSpace() throws Exception {
     // given
     String invalidName = " 이름";
+    UserUpdateRequest request = new UserUpdateRequest(invalidName);
 
     // when & then
-    mockMvc.perform(MockMvcRequestBuilders.multipart(HttpMethod.PATCH, "/api/users")
-            .part(new MockPart("name", invalidName.getBytes()))
+    mockMvc.perform(patch("/api/users")
+            .contentType(MediaType.APPLICATION_JSON)
+            .content(objectMapper.writeValueAsString(request))
             .with(csrf()))
         .andDo(print())
         .andExpect(status().isBadRequest())
@@ -540,10 +492,12 @@ class UserControllerTest {
   void failUpdateUserInfoWithNameEndsWithSpace() throws Exception {
     // given
     String invalidName = "이름 ";
+    UserUpdateRequest request = new UserUpdateRequest(invalidName);
 
     // when & then
-    mockMvc.perform(MockMvcRequestBuilders.multipart(HttpMethod.PATCH, "/api/users")
-            .part(new MockPart("name", invalidName.getBytes()))
+    mockMvc.perform(patch("/api/users")
+            .contentType(MediaType.APPLICATION_JSON)
+            .content(objectMapper.writeValueAsString(request))
             .with(csrf()))
         .andDo(print())
         .andExpect(status().isBadRequest())
@@ -558,10 +512,12 @@ class UserControllerTest {
   void failUpdateUserInfoWithNameIsOnlySpace() throws Exception {
     // given
     String invalidName = "   ";
+    UserUpdateRequest request = new UserUpdateRequest(invalidName);
 
     // when & then
-    mockMvc.perform(MockMvcRequestBuilders.multipart(HttpMethod.PATCH, "/api/users")
-            .part(new MockPart("name", invalidName.getBytes()))
+    mockMvc.perform(patch("/api/users")
+            .contentType(MediaType.APPLICATION_JSON)
+            .content(objectMapper.writeValueAsString(request))
             .with(csrf()))
         .andDo(print())
         .andExpect(status().isBadRequest())
@@ -576,10 +532,12 @@ class UserControllerTest {
   void failUpdateUserInfoWithNameIsOver10() throws Exception {
     // given
     String invalidName = "12345678910";
+    UserUpdateRequest request = new UserUpdateRequest(invalidName);
 
     // when & then
-    mockMvc.perform(MockMvcRequestBuilders.multipart(HttpMethod.PATCH, "/api/users")
-            .part(new MockPart("name", invalidName.getBytes()))
+    mockMvc.perform(patch("/api/users")
+            .contentType(MediaType.APPLICATION_JSON)
+            .content(objectMapper.writeValueAsString(request))
             .with(csrf()))
         .andDo(print())
         .andExpect(status().isBadRequest())
@@ -588,35 +546,6 @@ class UserControllerTest {
             jsonPath("$.fieldErrors[0].message").value(
                 "이름은 10자 이하여야 합니다."));
 
-  }
-
-  @Test
-  void failUpdateUserWithInvalidFile() throws Exception {
-    mockMvc.perform(
-            MockMvcRequestBuilders.multipart(HttpMethod.PATCH, "/api/users")
-                .file(new MockMultipartFile("profileImages", "invalid-file.txt", "text/txt",
-                    "invalid-file".getBytes()))
-                .with(csrf()))
-        .andExpect(status().isBadRequest())
-        .andDo(print())
-        .andExpect(jsonPath("$.fieldErrors[0].field").value("profileImages"))
-        .andExpect(
-            jsonPath("$.fieldErrors[0].message").value(
-                "유효한 파일이 아닙니다."));
-  }
-
-  @Test
-  void failUpdateUserWithFileSizeIsOver2() throws Exception {
-    mockMvc.perform(
-            MockMvcRequestBuilders.multipart(HttpMethod.PATCH, "/api/users")
-                .file(createMockImage("profileImage1.jpg"))
-                .file(createMockImage("profileImage2.jpg"))
-                .with(csrf()))
-        .andExpect(status().isBadRequest())
-        .andDo(print())
-        .andExpect(jsonPath("$.fieldErrors[0].field").value("profileImages"))
-        .andExpect(
-            jsonPath("$.fieldErrors[0].message").value("프로필 이미지는 1장만 업데이트 가능합니다."));
   }
 
   @Test

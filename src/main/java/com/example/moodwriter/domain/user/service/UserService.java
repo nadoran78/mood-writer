@@ -4,12 +4,6 @@ import com.example.moodwriter.domain.notification.dto.DailyReminderRequest;
 import com.example.moodwriter.domain.notification.service.NotificationSettingService;
 import com.example.moodwriter.domain.user.dao.UserRepository;
 import com.example.moodwriter.domain.user.dto.SocialLoginRequest;
-import com.example.moodwriter.global.constant.FilePath;
-import com.example.moodwriter.global.s3.dto.FileDto;
-import com.example.moodwriter.global.exception.code.ErrorCode;
-import com.example.moodwriter.global.jwt.TokenProvider;
-import com.example.moodwriter.global.jwt.dto.TokenResponse;
-import com.example.moodwriter.global.s3.service.S3FileService;
 import com.example.moodwriter.domain.user.dto.TokenReissueRequest;
 import com.example.moodwriter.domain.user.dto.UserLoginRequest;
 import com.example.moodwriter.domain.user.dto.UserRegisterRequest;
@@ -17,6 +11,12 @@ import com.example.moodwriter.domain.user.dto.UserResponse;
 import com.example.moodwriter.domain.user.dto.UserUpdateRequest;
 import com.example.moodwriter.domain.user.entity.User;
 import com.example.moodwriter.domain.user.exception.UserException;
+import com.example.moodwriter.global.constant.FilePath;
+import com.example.moodwriter.global.exception.code.ErrorCode;
+import com.example.moodwriter.global.jwt.TokenProvider;
+import com.example.moodwriter.global.jwt.dto.TokenResponse;
+import com.example.moodwriter.global.s3.dto.FileDto;
+import com.example.moodwriter.global.s3.service.S3FileService;
 import java.time.LocalDateTime;
 import java.util.List;
 import java.util.UUID;
@@ -101,19 +101,7 @@ public class UserService {
       user.updateName(request.getName());
     }
 
-    if (request.getProfileImages() != null && !request.getProfileImages().isEmpty()) {
-      List<FileDto> oldImages = user.getProfilePictureUrl();
-      List<FileDto> fileDtoList = s3FileService.uploadManyFiles(
-          request.getProfileImages(),
-          FilePath.PROFILE);
-
-      user.updateProfileImage(fileDtoList);
-
-      s3FileService.deleteManyFile(oldImages);
-
-      userRepository.save(user);
-    }
-
+    userRepository.save(user);
     return UserResponse.fromEntity(user);
   }
 
