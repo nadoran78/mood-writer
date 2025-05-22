@@ -359,10 +359,6 @@ class UserServiceTest {
     UUID userId = UUID.randomUUID();
     String newName = "UpdatedName";
 
-    List<MultipartFile> profileImages = new ArrayList<>();
-    profileImages.add(new MockMultipartFile("image.jpg", "image.jpg",
-        "image/jpeg", "image content".getBytes()));
-
     User user = User.builder()
         .name("oldName")
         .profilePictureUrl(Collections.emptyList())
@@ -370,28 +366,15 @@ class UserServiceTest {
 
     UserUpdateRequest request = UserUpdateRequest.builder()
         .name(newName)
-        .profileImages(profileImages)
         .build();
 
     given(userRepository.findById(userId)).willReturn(Optional.of(user));
-
-    List<FileDto> uploadedFiles = Collections.singletonList(
-        new FileDto("url-to-uploaded-image", "image1.jpg", "image/jpeg"));
-    given(s3FileService.uploadManyFiles(anyList(), any(FilePath.class))).willReturn(
-        uploadedFiles);
 
     // when
     UserResponse response = userService.updateUser(userId, request);
 
     // then
     assertEquals(newName, response.getName());
-    assertEquals(uploadedFiles.get(0).getUrl(),
-        response.getProfilePictureUrl().get(0).getUrl());
-    assertEquals(uploadedFiles.get(0).getFilename(),
-        response.getProfilePictureUrl().get(0).getFilename());
-
-    verify(s3FileService).uploadManyFiles(anyList(), any(FilePath.class));
-    verify(s3FileService).deleteManyFile(anyList());
   }
 
   @Test
@@ -412,7 +395,7 @@ class UserServiceTest {
   }
 
   @Test
-  void successUpdateUserWhenNameAndProfileImagesAreNull() {
+  void successUpdateUserWhenNameIsNull() {
     // given
     UUID userId = UUID.randomUUID();
 
@@ -430,9 +413,6 @@ class UserServiceTest {
 
     // then
     assertEquals("oldName", response.getName());
-    assertEquals(Collections.emptyList(), response.getProfilePictureUrl());
-    verify(s3FileService, never()).uploadManyFiles(anyList(), any(FilePath.class));
-    verify(s3FileService, never()).deleteManyFile(anyList());
   }
 
   @Test
